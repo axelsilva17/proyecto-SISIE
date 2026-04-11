@@ -22,6 +22,11 @@
 | SDD: verify, validar | sdd-verify | ~/.config/opencode/skills/sdd-verify/SKILL.md |
 | Crear nuevo skill | skill-creator | ~/.config/opencode/skills/skill-creator/SKILL.md |
 | "actualizar skills", "skill registry" | skill-registry | ~/.config/opencode/skills/skill-registry/SKILL.md |
+| Frontend interfaces, web components | **frontend-design** | ~/.agents/skills/frontend-design/SKILL.md |
+| Canvas, gráficos interactivos | **canvas-design** | ~/.agents/skills/canvas-design/SKILL.md |
+| Theming, temas CSS | **theme-factory** | ~/.agents/skills/theme-factory/SKILL.md |
+| Brand, identidad visual | **brand-guidelines** | ~/.agents/skills/brand-guidelines/SKILL.md |
+| Buscar skills, encontrar | **find-skills** | ~/.agents/skills/find-skills/SKILL.md |
 
 ## Compact Rules
 
@@ -59,7 +64,7 @@
 
 ### branch-pr
 - Issue-first: siempre crear issue antes de PR
-- Rama feature desde main/main
+- Rama feature desde main
 - Commits convencionales: feat, fix, chore, docs
 - PR con description clara
 
@@ -79,13 +84,42 @@
 - Crear proposal formal con intent, scope, approach
 - Incluir rollback plan para cambios riesgosos
 - Identificar módulos afectados
--guardar en sdd/{change}/proposal
+- Guardar en sdd/{change}/proposal
 
 ### go-testing
--Tests en Go con bubbletea TUI pattern
+- Tests en Go con bubbletea TUI pattern
 - Usar teatest para testing helpers
 - Unit tests + integration tests
 - Coverage con go test -cover
+
+### frontend-design (NUEVA)
+- Elige dirección estética clara ANTES de codear (minimalismo, maximalismo, retro-futurista, etc.)
+- Tipografía distintiva y única — evitar Arial/Inter genéricos
+- Atención extrema al detalle visual
+- Código functional y production-grade
+
+### canvas-design (NUEVA)
+- Gráficos interactivos con Canvas API
+- Animaciones fluidas y performantes
+- Eventos de mouse/touch optimizados
+- requestAnimationFrame para loops de animación
+
+### theme-factory (NUEVA)
+- CSS custom properties para theming
+- Variables de color, spacing, tipografía
+- dark mode support
+- Diseño atómico de tokens
+
+### brand-guidelines (NUEVA)
+- Paleta de colores de marca
+- Tipografía de marca
+- Espaciados y proporciones consistentes
+- Iconografía y estilo visual unificado
+
+### find-skills (NUEVA)
+- Buscar en ~/.config/opencode/skills/ y ~/.agents/skills/
+- glob */SKILL.md para encontrar skills disponibles
+- Mostrar triggers y paths
 
 ## Project Conventions
 
