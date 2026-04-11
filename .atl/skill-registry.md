@@ -27,6 +27,11 @@
 | Theming, temas CSS | **theme-factory** | ~/.agents/skills/theme-factory/SKILL.md |
 | Brand, identidad visual | **brand-guidelines** | ~/.agents/skills/brand-guidelines/SKILL.md |
 | Buscar skills, encontrar | **find-skills** | ~/.agents/skills/find-skills/SKILL.md |
+| Word documentos, .docx | **docx** | ~/.agents/skills/docx/SKILL.md |
+| PDF, archivos PDF | **pdf** | ~/.agents/skills/pdf/SKILL.md |
+| PowerPoint, .pptx | **pptx** | ~/.agents/skills/pptx/SKILL.md |
+| Excel, .xlsx | **xlsx** | ~/.agents/skills/xlsx/SKILL.md |
+| Testing webapp | **webapp-testing** | ~/.agents/skills/webapp-testing/SKILL.md |
 
 ## Compact Rules
 
@@ -120,6 +125,32 @@
 - Buscar en ~/.config/opencode/skills/ y ~/.agents/skills/
 - glob */SKILL.md para encontrar skills disponibles
 - Mostrar triggers y paths
+
+### docx
+- Archivos .docx son ZIP con XML adentro
+- Usar pandoc para leer, docx-js para crear
+- Editing: unpack → edit XML → repack
+- Soporta tablas, headers, page numbers, imágenes
+
+### pdf
+- Generación de PDFs con librerías especializadas
+- Soporta imágenes, tablas, fuentes personalizadas
+- Conversión desde HTML/Markdown
+
+### pptx
+- PowerPoint como ZIP de XMLs
+- Slides, transiciones, animaciones
+- Tablas, gráficos, imágenes embebidas
+
+### xlsx
+- Excel como ZIP de XMLs
+- Fórmulas, gráficos, formatos
+- Múltiples sheets
+
+### webapp-testing
+- Testing de aplicaciones web
+- Selenium, Playwright, puppeteer
+- E2E tests, integration tests
 
 ## Project Conventions
 
