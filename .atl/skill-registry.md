@@ -48,8 +48,8 @@
 - Arquitectura con capas claramente definidas
 
 ### sdd-tasks
-- Numeração jerárquica: 1.0, 1.1, 1.2, etc.
--agrupar por fase: infraestructura, implementación, testing
+- Numeración jerárquica: 1.0, 1.1, 1.2, etc.
+- Agrupar por fase: infraestructura, implementación, testing
 - Tareas pequeñas (completables en una sesión)
 
 ### sdd-verify
@@ -57,9 +57,41 @@
 - Probar happy path + edge cases
 - Reportar CRITICAL / WARNING / SUGGESTION
 
+### branch-pr
+- Issue-first: siempre crear issue antes de PR
+- Rama feature desde main/main
+- Commits convencionales: feat, fix, chore, docs
+- PR con description clara
+
+### judgment-day
+- Lanzar 2 sub-agentes independientes a revisar mismo target
+- Sintetizar hallazgos de ambos
+- Aplicar fixes y re-juzgar hasta que pasen
+- Escalar después de 2 iteraciones si no pasan
+
+### sdd-explore
+- Investigar codebase antes de comprometer
+- Comparar approaches técnicos
+- Documentar tradeoffs
+- No crea archivos, solo investigación
+
+### sdd-propose
+- Crear proposal formal con intent, scope, approach
+- Incluir rollback plan para cambios riesgosos
+- Identificar módulos afectados
+-guardar en sdd/{change}/proposal
+
+### go-testing
+-Tests en Go con bubbletea TUI pattern
+- Usar teatest para testing helpers
+- Unit tests + integration tests
+- Coverage con go test -cover
+
 ## Project Conventions
 
-Aún no hay conventions específicas del proyecto.
+| Archivo | Path | Notas |
+|---------|------|-------|
+| AGENTS.md | .atl/AGENTS.md | Agentes Axel (Backend) y Nico (Frontend) |
 
 ---
 
@@ -67,3 +99,5 @@ Aún no hay conventions específicas del proyecto.
 
 El orquestador lee este archivo para resolver skills antes de lanzar sub-agentes.
 Para actualizar tras agregar skills nuevos, ejecutar skill-registry skill.
+
+**Última actualización:** 2026-04-11
