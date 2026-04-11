@@ -1,0 +1,6 @@
+@proyecto_SISIE_HostAddress = http://localhost:5082
+
+GET {{proyecto_SISIE_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -1,0 +1,96 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using proyecto_SISIE.Models.DTOs;
+using proyecto_SISIE.Services.Interfaces;
+
+namespace proyecto_SISIE.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+[Authorize]
+public class ProductosController : ControllerBase
+{
+    private readonly IProductoService _productoService;
+
+    public ProductosController(IProductoService productoService)
+    {
+        _productoService = productoService;
+    }
+
+    [HttpGet]
+    public async Task<ActionResult<ProductoPagedResult>> GetAll(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] int? idCategoria = null,
+        [FromQuery] bool? activo = null)
+    {
+        if (page < 1) page = 1;
+        if (pageSize < 1) pageSize = 10;
+        if (pageSize > 100) pageSize = 100;
+
+        var (items, total) = await _productoService.GetAllAsync(page, pageSize, idCategoria, activo);
+
+        return Ok(new ProductoPagedResult
+        {
+            Items = items,
+            Total = total,
+            Page = page,
+            PageSize = pageSize
+        });
+    }
+
+    [HttpGet("{id}")]
+    public async Task<ActionResult<ProductoDTO>> GetById(int id)
+    {
+        var producto = await _productoService.GetByIdAsync(id);
+        if (producto == null)
+            return NotFound(new { message = "Producto no encontrado" });
+
+        return Ok(producto);
+    }
+
+    [HttpPost]
+    public async Task<ActionResult<ProductoDTO>> Create([FromBody] ProductoCreateDTO producto)
+    {
+        if (string.IsNullOrWhiteSpace(producto.Nombre))
+            return BadRequest(new { message = "El nombre es requerido" });
+        
+        if (producto.Precio < 0)
+            return BadRequest(new { message = "El precio no puede ser negativo" });
+        
+        if (producto.Stock < 0)
+            return BadRequest(new { message = "El stock no puede ser negativo" });
+
+        var created = await _productoService.CreateAsync(producto);
+        return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+    }
+
+    [HttpPut("{id}")]
+    public async Task<ActionResult<ProductoDTO>> Update(int id, [FromBody] ProductoCreateDTO producto)
+    {
+        if (string.IsNullOrWhiteSpace(producto.Nombre))
+            return BadRequest(new { message = "El nombre es requerido" });
+        
+        if (producto.Precio < 0)
+            return BadRequest(new { message = "El precio no puede ser negativo" });
+        
+        if (producto.Stock < 0)
+            return BadRequest(new { message = "El stock no puede ser negativo" });
+
+        var updated = await _productoService.UpdateAsync(id, producto);
+        if (updated == null)
+            return NotFound(new { message = "Producto no encontrado" });
+
+        return Ok(updated);
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<ActionResult> Delete(int id)
+    {
+        var result = await _productoService.DeleteAsync(id);
+        if (!result)
+            return NotFound(new { message = "Producto no encontrado" });
+
+        return Ok(new { message = "Producto eliminado" });
+    }
+}

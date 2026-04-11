@@ -1,0 +1,21 @@
+# Build results
+bin/
+obj/
+
+# NuGet packages
+*.nupkg
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.cache
+
+# Entity Framework
+*.db
+
+# Dotnet tools
+.DS_Store
+
+# Logs
+*.log
