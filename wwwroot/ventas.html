@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nueva Venta - SISIE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            orange: '#F25C05',
+                            orangeLight: '#FF7A1A',
+                            dark: '#052741',
+                            medium: '#1F4E79'
+                        },
+                        neutral: {
+                            light: '#F2F2F2',
+                            medium: '#D9D9D9',
+                            dark: '#555555'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in-up { animation: fadeInUp 0.4s ease-out forwards; }
+    </style>
+</head>
+<body class="bg-neutral-light min-h-screen">
+    
+    <!-- Navbar -->
+    <nav class="bg-brand-dark text-white p-4 shadow-lg">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <a href="/index.html" class="flex items-center gap-2 hover:opacity-80 transition">
+                <img src="/img/Logo.jpeg" alt="SISIE" class="h-8">
+                <span class="font-bold text-lg">SISIE</span>
+            </a>
+            <div class="flex items-center gap-4">
+                <a href="/index.html" class="text-sm hover:text-brand-orange transition">
+                    <i class="fas fa-home mr-1"></i> Inicio
+                </a>
+                <a href="/productos.html" class="text-sm hover:text-brand-orange transition">
+                    <i class="fas fa-box mr-1"></i> Productos
+                </a>
+                <a href="/categorias.html" class="text-sm hover:text-brand-orange transition">
+                    <i class="fas fa-tags mr-1"></i> Categorías
+                </a>
+                <button onclick="logout()" class="text-red-400 hover:text-red-300 text-sm">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-6xl mx-auto p-4 md:p-6">
+        
+        <!-- Título -->
+        <div class="mb-6 fade-in-up">
+            <h1 class="text-2xl md:text-3xl font-bold text-brand-dark flex items-center gap-3">
+                <i class="fas fa-cash-register text-brand-orange"></i>
+                Nueva Venta
+            </h1>
+            <p class="text-neutral-dark text-sm mt-1">Registrá una nueva venta del sistema</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Columna Izquierda: Datos de la venta -->
+            <div class="lg:col-span-2 space-y-6">
+                
+                <!-- Selección de Usuario -->
+                <div class="bg-white rounded-xl shadow-md p-6 fade-in-up">
+                    <h2 class="text-lg font-semibold text-brand-dark mb-4 flex items-center gap-2">
+                        <i class="fas fa-user text-brand-orange"></i>
+                        Datos del Cliente
+                    </h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Cliente *</label>
+                            <select id="cliente" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-orange focus:border-transparent">
+                                <option value="">Seleccionar cliente...</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">DNI / CUIT</label>
+                            <input type="text" id="documento"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-orange focus:border-transparent"
+                                placeholder="XX-XXXXXXXX-X">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                            <input type="tel" id="telefono"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-orange focus:border-transparent"
+                                placeholder="11-XXXX-XXXX">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                            <input type="email" id="email"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-orange focus:border-transparent"
+                                placeholder="email@ejemplo.com">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Agregar Productos -->
+                <div class="bg-white rounded-xl shadow-md p-6 fade-in-up">
+                    <h2 class="text-lg font-semibold text-brand-dark mb-4 flex items-center gap-2">
+                        <i class="fas fa-shopping-cart text-brand-orange"></i>
+                        Productos
+                    </h2>
+                    
+                    <div class="flex gap-2 mb-4">
+                        <select id="productoSelect" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-orange">
+                            <option value="">Seleccionar producto...</option>
+                        </select>
+                        <input type="number" id="cantidad" min="1" value="1" 
+                            class="w-20 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-orange text-center">
+                        <button onclick="agregarProducto()" class="bg-brand-orange text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+
+                    <!-- Tabla de productos agregados -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead class="bg-neutral-light text-gray-700">
+                                <tr>
+                                    <th class="px-3 py-2 text-left font-semibold">Producto</th>
+                                    <th class="px-3 py-2 text-center font-semibold">Precio</th>
+                                    <th class="px-3 py-2 text-center font-semibold">Cant</th>
+                                    <th class="px-3 py-2 text-right font-semibold">Subtotal</th>
+                                    <th class="px-3 py-2"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="productosVenta">
+                                <tr>
+                                    <td colspan="5" class="px-3 py-4 text-center text-gray-500">
+                                        Agregá productos desde el select de arriba
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Métodos de Pago y Envío -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Pago -->
+                    <div class="bg-white rounded-xl shadow-md p-6 fade-in-up">
+                        <h2 class="text-lg font-semibold text-brand-dark mb-4 flex items-center gap-2">
+                            <i class="fas fa-credit-card text-brand-orange"></i>
+                            Método de Pago
+                        </h2>
+                        
+                        <div class="space-y-2">
+                            <label class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                                <input type="radio" name="pago" value="efectivo" checked class="text-brand-orange">
+                                <i class="fas fa-money-bill-wave text-green-600 w-5"></i>
+                                <span>Efectivo</span>
+                            </label>
+                            <label class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                                <input type="radio" name="pago" value="debito" class="text-brand-orange">
+                                <i class="fas fa-credit-card text-blue-600 w-5"></i>
+                                <span>Tarjeta Débito</span>
+                            </label>
+                            <label class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                                <input type="radio" name="pago" value="credito" class="text-brand-orange">
+                                <i class="fas fa-credit-card text-purple-600 w-5"></i>
+                                <span>Tarjeta Crédito</span>
+                            </label>
+                            <label class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                                <input type="radio" name="pago" value="transferencia" class="text-brand-orange">
+                                <i class="fas fa-university text-gray-600 w-5"></i>
+                                <span>Transferencia</span>
+                            </label>
+                        </div>
+
+                        <!-- Datos tarjeta si aplica -->
+                        <div id="datosTarjeta" class="mt-4 hidden">
+                            <input type="text" placeholder="Últimos 4 dígitos" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                        </div>
+                    </div>
+
+                    <!-- Envío -->
+                    <div class="bg-white rounded-xl shadow-md p-6 fade-in-up">
+                        <h2 class="text-lg font-semibold text-brand-dark mb-4 flex items-center gap-2">
+                            <i class="fas fa-shipping-fast text-brand-orange"></i>
+                            Método de Envío
+                        </h2>
+                        
+                        <div class="space-y-2">
+                            <label class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                                <input type="radio" name="envio" value="retiro" checked class="text-brand-orange" onchange="toggleDomicilio()">
+                                <i class="fas fa-store text-gray-600 w-5"></i>
+                                <span>Retiro enLocal</span>
+                            </label>
+                            <label class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                                <input type="radio" name="envio" value="delivery" class="text-brand-orange" onchange="toggleDomicilio()">
+                                <i class="fas fa-truck text-brand-orange w-5"></i>
+                                <span>Envio</span>
+                            </label>
+                        </div>
+
+                        <!-- Dirección de envío -->
+                        <div id="domicilioEntrega" class="mt-4 hidden">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Dirección de entrega</label>
+                            <input type="text" id="direccion" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg mb-2"
+                                placeholder="Calle y número">
+                            <input type="text" id="localidad" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg mb-2"
+                                placeholder="Localidad">
+                            <input type="text" id="cp" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                                placeholder="Código Postal">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notas -->
+                <div class="bg-white rounded-xl shadow-md p-6 fade-in-up">
+                    <h2 class="text-lg font-semibold text-brand-dark mb-4 flex items-center gap-2">
+                        <i class="fas fa-sticky-note text-brand-orange"></i>
+                        Notas / Observaciones
+                    </h2>
+                    <textarea id="notas" rows="3"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-orange focus:border-transparent"
+                        placeholder="Observaciones adicionales para esta venta..."></textarea>
+                </div>
+            </div>
+
+            <!-- Columna Derecha: Resumen -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-xl shadow-md p-6 fade-in-up sticky top-4">
+                    <h2 class="text-lg font-semibold text-brand-dark mb-4 flex items-center gap-2">
+                        <i class="fas fa-receipt text-brand-orange"></i>
+                        Resumen
+                    </h2>
+
+                    <div class="space-y-3 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Productos:</span>
+                            <span id="totalItems">0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Subtotal:</span>
+                            <span id="subtotal">$0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Descuento:</span>
+                            <div class="flex items-center gap-2">
+                                <input type="number" id="descuento" min="0" max="100" value="0" 
+                                    class="w-16 px-2 py-1 border rounded text-right" 
+                                    onchange="recalcular()">
+                                <span class="text-gray-600">%</span>
+                            </div>
+                        </div>
+                        <hr class="my-3">
+                        <div class="flex justify-between text-lg font-bold">
+                            <span class="text-brand-dark">Total:</span>
+                            <span id="total" class="text-brand-orange">$0</span>
+                        </div>
+                    </div>
+
+                    <!-- Botón guardar -->
+                    <button onclick="guardarVenta()" id="btnGuardar"
+                        class="w-full bg-brand-orange text-white py-3 px-4 rounded-lg hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-brand-orange transition font-semibold mt-6">
+                        <i class="fas fa-save mr-2"></i>Confirmar Venta
+                    </button>
+
+                    <!-- Mensaje -->
+                    <div id="message" class="mt-4 p-3 rounded-lg hidden text-sm"></div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = '/login.html';
+
+        let productosDisponibles = [];
+        let productosEnVenta = [];
+        let descuento = 0;
+
+        // Cargar productos al iniciar
+        async function loadProductos() {
+            try {
+                const response = await fetch('/api/productos?pageSize=100', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                if (data.items) {
+                    productosDisponibles = data.items.filter(p => p.activo && p.stock > 0);
+                    renderProductoSelect();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Render select de productos
+        function renderProductoSelect() {
+            const select = document.getElementById('productoSelect');
+            select.innerHTML = '<option value="">Seleccionar producto...</option>';
+            productosDisponibles.forEach(p => {
+                select.innerHTML += `<option value="${p.id}" data-precio="${p.precio}" data-stock="${p.stock}">${p.nombre} - $${p.precio.toFixed(2)} (Stock: ${p.stock})</option>`;
+            });
+        }
+
+        // Agregar producto a la venta
+        function agregarProducto() {
+            const select = document.getElementById('productoSelect');
+            const cantidad = parseInt(document.getElementById('cantidad').value);
+            const productoId = parseInt(select.value);
+
+            if (!productoId) {
+                showMessage('Seleccioná un producto', 'error');
+                return;
+            }
+
+            const producto = productosDisponibles.find(p => p.id === productoId);
+            if (!producto) return;
+
+            // Verificar stock
+            const enVenta = productosEnVenta.find(p => p.id === productoId);
+            const cantidadActual = enVenta ? enVenta.cantidad : 0;
+            if (cantidadActual + cantidad > producto.stock) {
+                showMessage(`Stock insuficiente. Disponible: ${producto.stock}`, 'error');
+                return;
+            }
+
+            // Agregar o incrementar
+            if (enVenta) {
+                enVenta.cantidad += cantidad;
+            } else {
+                productosEnVenta.push({
+                    id: producto.id,
+                    nombre: producto.nombre,
+                    precio: producto.precio,
+                    cantidad: cantidad
+                });
+            }
+
+            document.getElementById('cantidad').value = 1;
+            renderProductosVenta();
+        }
+
+        // Quitar producto de la venta
+        function quitarProducto(id) {
+            productosEnVenta = productosEnVenta.filter(p => p.id !== id);
+            renderProductosVenta();
+        }
+
+        // Render tabla de productos en venta
+        function renderProductosVenta() {
+            const tbody = document.getElementById('productosVenta');
+            if (productosEnVenta.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="px-3 py-4 text-center text-gray-500">Agregá productos desde el select de arriba</td></tr>`;
+            } else {
+                tbody.innerHTML = productosEnVenta.map(p => `
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="px-3 py-2">${p.nombre}</td>
+                        <td class="px-3 py-2 text-center">$${p.precio.toFixed(2)}</td>
+                        <td class="px-3 py-2 text-center">${p.cantidad}</td>
+                        <td class="px-3 py-2 text-right font-medium">$${(p.precio * p.cantidad).toFixed(2)}</td>
+                        <td class="px-3 py-2 text-right">
+                            <button onclick="quitarProducto(${p.id})" class="text-red-500 hover:text-red-700">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+            recalcular();
+        }
+
+        // Recalcular totales
+        function recalcular() {
+            descuento = parseFloat(document.getElementById('descuento').value) || 0;
+            const subtotal = productosEnVenta.reduce((sum, p) => sum + (p.precio * p.cantidad), 0);
+            const montoDescuento = subtotal * (descuento / 100);
+            const total = subtotal - montoDescuento;
+
+            document.getElementById('totalItems').textContent = productosEnVenta.reduce((sum, p) => sum + p.cantidad, 0);
+            document.getElementById('subtotal').textContent = `$${subtotal.toFixed(2)}`;
+            document.getElementById('total').textContent = `$${total.toFixed(2)}`;
+        }
+
+        // Toggle domicilio
+        function toggleDomicilio() {
+            const entrega = document.getElementById('domicilioEntrega');
+            const envio = document.querySelector('input[name="envio"]:checked').value;
+            entrega.classList.toggle('hidden', envio !== 'delivery');
+        }
+
+        // Mostrar mensaje
+        function showMessage(msg, type) {
+            const el = document.getElementById('message');
+            el.textContent = msg;
+            el.className = `mt-4 p-3 rounded-lg ${type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`;
+            el.classList.remove('hidden');
+            setTimeout(() => el.classList.add('hidden'), 3000);
+        }
+
+        // Guardar venta
+        function guardarVenta() {
+            if (productosEnVenta.length === 0) {
+                showMessage('Agregá al menos un producto', 'error');
+                return;
+            }
+
+            const cliente = document.getElementById('cliente').value;
+            if (!cliente) {
+                showMessage(' Seleccioná un cliente', 'error');
+                return;
+            }
+
+            showMessage('Venta guardada correctamente', 'success');
+            
+            // Limpiar
+            productosEnVenta = [];
+            document.getElementById('descuento').value = 0;
+            renderProductosVenta();
+            document.getElementById('cliente').value = '';
+            document.getElementById('documento').value = '';
+            document.getElementById('telefono').value = '';
+            document.getElementById('email').value = '';
+            document.getElementById('notas').value = '';
+            toggleDomicilio();
+        }
+
+        // Logout
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = '/login.html';
+        }
+
+        // Iniciar
+        loadProductos();
+    </script>
+</body>
+</html>
