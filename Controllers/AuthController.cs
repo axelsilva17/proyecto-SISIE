@@ -20,6 +20,21 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<ActionResult<AuthResult>> Register([FromBody] RegisterRequest request)
     {
+        // Validar con DataAnnotations
+        if (!ModelState.IsValid)
+        {
+            var errores = ModelState
+                .Where(x => x.Value?.Errors.Count > 0)
+                .Select(x => x.Value?.Errors.First().ErrorMessage)
+                .ToList();
+            
+            return BadRequest(new { 
+                success = false, 
+                message = "Error de validación",
+                errors = errores 
+            });
+        }
+
         var result = await _authService.RegisterAsync(request);
         
         if (!result.Success)
@@ -31,6 +46,21 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<ActionResult<AuthResult>> Login([FromBody] LoginRequest request)
     {
+        // Validar con DataAnnotations
+        if (!ModelState.IsValid)
+        {
+            var errores = ModelState
+                .Where(x => x.Value?.Errors.Count > 0)
+                .Select(x => x.Value?.Errors.First().ErrorMessage)
+                .ToList();
+            
+            return BadRequest(new { 
+                success = false, 
+                message = "Error de validación",
+                errors = errores 
+            });
+        }
+
         var result = await _authService.LoginAsync(request);
 
         if (!result.Success)
