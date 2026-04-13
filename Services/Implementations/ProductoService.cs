@@ -105,7 +105,7 @@ public class ProductoService : IProductoService
         };
     }
 
-    public async Task<ProductoDTO?> UpdateAsync(int id, ProductoCreateDTO dto)
+    public async Task<ProductoDTO?> UpdateAsync(int id, ProductoUpdateDTO dto)
     {
         var producto = await _context.Productos.FindAsync(id);
         if (producto == null) return null;

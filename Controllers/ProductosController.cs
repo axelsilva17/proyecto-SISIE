@@ -52,30 +52,42 @@ public class ProductosController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<ProductoDTO>> Create([FromBody] ProductoCreateDTO producto)
     {
-        if (string.IsNullOrWhiteSpace(producto.Nombre))
-            return BadRequest(new { message = "El nombre es requerido" });
-        
-        if (producto.Precio < 0)
-            return BadRequest(new { message = "El precio no puede ser negativo" });
-        
-        if (producto.Stock < 0)
-            return BadRequest(new { message = "El stock no puede ser negativo" });
+        // Validar con DataAnnotations
+        if (!ModelState.IsValid)
+        {
+            var errores = ModelState
+                .Where(x => x.Value?.Errors.Count > 0)
+                .Select(x => x.Value?.Errors.First().ErrorMessage)
+                .ToList();
+            
+            return BadRequest(new { 
+                success = false, 
+                message = "Error de validación",
+                errors = errores 
+            });
+        }
 
         var created = await _productoService.CreateAsync(producto);
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult<ProductoDTO>> Update(int id, [FromBody] ProductoCreateDTO producto)
+    public async Task<ActionResult<ProductoDTO>> Update(int id, [FromBody] ProductoUpdateDTO producto)
     {
-        if (string.IsNullOrWhiteSpace(producto.Nombre))
-            return BadRequest(new { message = "El nombre es requerido" });
-        
-        if (producto.Precio < 0)
-            return BadRequest(new { message = "El precio no puede ser negativo" });
-        
-        if (producto.Stock < 0)
-            return BadRequest(new { message = "El stock no puede ser negativo" });
+        // Validar con DataAnnotations
+        if (!ModelState.IsValid)
+        {
+            var errores = ModelState
+                .Where(x => x.Value?.Errors.Count > 0)
+                .Select(x => x.Value?.Errors.First().ErrorMessage)
+                .ToList();
+            
+            return BadRequest(new { 
+                success = false, 
+                message = "Error de validación",
+                errors = errores 
+            });
+        }
 
         var updated = await _productoService.UpdateAsync(id, producto);
         if (updated == null)
