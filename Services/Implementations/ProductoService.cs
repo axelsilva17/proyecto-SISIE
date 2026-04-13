@@ -144,4 +144,30 @@ public class ProductoService : IProductoService
         await _context.SaveChangesAsync();
         return true;
     }
+
+    public async Task<ProductoDTO?> ToggleActivoAsync(int id)
+    {
+        var producto = await _context.Productos.FindAsync(id);
+        if (producto == null) return null;
+
+        // Toggle activo
+        producto.Activo = !producto.Activo;
+        await _context.SaveChangesAsync();
+
+        // Load categoria for response
+        var categoria = await _context.Categorias.FindAsync(producto.IdCategoria);
+
+        return new ProductoDTO
+        {
+            Id = producto.Id,
+            Nombre = producto.Nombre,
+            Descripcion = producto.Descripcion,
+            Precio = producto.Precio,
+            Stock = producto.Stock,
+            IdCategoria = producto.IdCategoria,
+            NombreCategoria = categoria?.NombreCategoria,
+            FechaCreacion = producto.FechaCreacion,
+            Activo = producto.Activo
+        };
+    }
 }

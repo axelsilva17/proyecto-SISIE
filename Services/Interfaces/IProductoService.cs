@@ -9,4 +9,5 @@ public interface IProductoService
     Task<ProductoDTO> CreateAsync(ProductoCreateDTO producto);
     Task<ProductoDTO?> UpdateAsync(int id, ProductoCreateDTO producto);
     Task<bool> DeleteAsync(int id);
+    Task<ProductoDTO?> ToggleActivoAsync(int id);
 }

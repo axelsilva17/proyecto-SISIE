@@ -93,4 +93,18 @@ public class ProductosController : ControllerBase
 
         return Ok(new { message = "Producto eliminado" });
     }
+
+    [HttpPatch("{id}/toggle")]
+    public async Task<ActionResult> ToggleActivo(int id)
+    {
+        var producto = await _productoService.GetByIdAsync(id);
+        if (producto == null)
+            return NotFound(new { message = "Producto no encontrado" });
+
+        var updated = await _productoService.ToggleActivoAsync(id);
+        if (updated == null)
+            return NotFound(new { message = "Producto no encontrado" });
+
+        return Ok(new { activo = updated.Activo, message = updated.Activo ? "Producto activado" : "Producto desactivado" });
+    }
 }

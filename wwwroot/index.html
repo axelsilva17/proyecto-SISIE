@@ -192,14 +192,15 @@
         // Cargar stats
         async function loadStats() {
             try {
-                // Cargar productos
-                const prodsResponse = await fetch('/api/productos', {
+                // Cargar productos - sin paginación para obtener todos
+                const prodsResponse = await fetch('/api/productos?pageSize=1000', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const prodsData = await prodsResponse.json();
-                if (prodsData.success) {
-                    const total = prodsData.productos.length;
-                    const bajoStock = prodsData.productos.filter(p => p.stock <= 5).length;
+                // API devuelve { items, total, page, pageSize }
+                if (prodsData.items) {
+                    const total = prodsData.items.length;
+                    const bajoStock = prodsData.items.filter(p => p.stock <= 5).length;
                     document.getElementById('totalProductos').textContent = total;
                     document.getElementById('stockBajo').textContent = bajoStock;
                 }
