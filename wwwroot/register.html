@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - SISIE</title>
+    <title>Registro - SISIE</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -59,14 +59,33 @@
             <img src="/img/Logo.jpeg" alt="SISIE" class="h-24 w-auto">
         </div>
         
-        <!-- Card Login -->
+        <!-- Card Registro -->
         <div class="bg-white rounded-xl shadow-xl p-6 md:p-8 border-t-4 border-brand-orange">
             
-            <form id="loginForm" class="space-y-5" novalidate>
+            <form id="registerForm" class="space-y-4" novalidate>
                 <h2 class="text-xl md:text-2xl font-semibold text-brand-dark mb-6 text-center">
-                    Iniciar Sesión
+                    Crear Cuenta
                 </h2>
                 
+                <!-- Nombre -->
+                <div>
+                    <label for="nombreUsuario" class="block text-sm font-medium text-brand-dark mb-1">Nombre</label>
+                    <div class="relative">
+                        <input 
+                            type="text" 
+                            id="nombreUsuario" 
+                            required
+                            minlength="3"
+                            placeholder="Tu nombre"
+                            class="w-full px-4 py-3 pl-11 text-base border border-neutral-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-orange"
+                        >
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-user text-neutral-dark text-sm"></i>
+                        </div>
+                    </div>
+                    <p id="nombreError" class="text-red-500 text-xs mt-1 hidden">Mínimo 3 caracteres</p>
+                </div>
+
                 <!-- Email -->
                 <div>
                     <label for="email" class="block text-sm font-medium text-brand-dark mb-1">Correo</label>
@@ -76,8 +95,7 @@
                             id="email" 
                             required
                             placeholder="tu@email.com"
-                            class="w-full px-4 py-3 pl-11 text-base md:text-sm border border-neutral-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-orange focus:border-transparent"
-                            autocomplete="email"
+                            class="w-full px-4 py-3 pl-11 text-base border border-neutral-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-orange"
                         >
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <i class="fas fa-envelope text-neutral-dark text-sm"></i>
@@ -94,9 +112,9 @@
                             type="password" 
                             id="password" 
                             required
+                            minlength="6"
                             placeholder="••••••••"
-                            class="w-full px-4 py-3 pl-11 pr-11 text-base md:text-sm border border-neutral-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-orange focus:border-transparent"
-                            autocomplete="current-password"
+                            class="w-full px-4 py-3 pl-11 pr-11 text-base border border-neutral-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-orange"
                         >
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <i class="fas fa-lock text-neutral-dark text-sm"></i>
@@ -105,13 +123,36 @@
                             <i id="eyeIcon" class="fas fa-eye text-neutral-dark hover:text-brand-dark text-sm"></i>
                         </button>
                     </div>
-                    <p id="passwordError" class="text-red-500 text-xs mt-1 hidden">Requerida</p>
+                    <p class="text-xs text-neutral-dark mt-1">Mínimo 6 caracteres</p>
                 </div>
 
-                <!-- Recordar -->
-                <div class="flex items-center">
-                    <input type="checkbox" id="remember" class="w-4 h-4 text-brand-orange rounded">
-                    <label for="remember" class="ml-2 text-sm text-neutral-dark">Recordar</label>
+                <!-- Confirmar -->
+                <div>
+                    <label for="confirmPassword" class="block text-sm font-medium text-brand-dark mb-1">Confirmar</label>
+                    <div class="relative">
+                        <input 
+                            type="password" 
+                            id="confirmPassword" 
+                            required
+                            placeholder="••••••••"
+                            class="w-full px-4 py-3 pl-11 text-base border border-neutral-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-orange"
+                        >
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-lock text-neutral-dark text-sm"></i>
+                        </div>
+                        <div id="matchIcon" class="absolute inset-y-0 right-0 pr-3 flex items-center hidden">
+                            <i class="fas fa-check text-green-500 text-sm"></i>
+                        </div>
+                    </div>
+                    <p id="confirmError" class="text-red-500 text-xs mt-1 hidden">No coincide</p>
+                </div>
+
+                <!-- Términos -->
+                <div class="flex items-start">
+                    <input type="checkbox" id="terminos" required class="w-4 h-4 mt-1 text-brand-orange rounded">
+                    <label for="terminos" class="ml-2 text-xs text-neutral-dark">
+                        Acepto <a href="#" class="text-brand-orange">términos</a>
+                    </label>
                 </div>
 
                 <!-- Botón -->
@@ -120,14 +161,14 @@
                     id="submitBtn"
                     class="w-full bg-brand-orange text-white py-3 rounded-lg font-semibold hover:bg-orange-600 transition-colors text-base flex items-center justify-center gap-2 disabled:opacity-75"
                 >
-                    <span id="btnText">Entrar</span>
+                    <span id="btnText">Crear Cuenta</span>
                     <div id="btnLoader" class="loader hidden"></div>
                 </button>
             </form>
 
-            <!-- Registro link -->
+            <!-- Login link -->
             <p class="mt-6 text-center text-neutral-dark text-sm">
-                ¿Sin cuenta? <a href="/register.html" class="text-brand-orange font-medium hover:underline">Regístrate</a>
+                ¿Ya tienes cuenta? <a href="/login.html" class="text-brand-orange font-medium">Inicia sesión</a>
             </p>
 
             <!-- Mensaje -->
@@ -150,81 +191,114 @@
             eyeIcon.classList.toggle('fa-eye-slash');
         });
 
+        const nombreInput = document.getElementById('nombreUsuario');
+        const nombreError = document.getElementById('nombreError');
         const emailInput = document.getElementById('email');
         const emailError = document.getElementById('emailError');
-        const passwordError = document.getElementById('passwordError');
+        const confirmInput = document.getElementById('confirmPassword');
+        const confirmError = document.getElementById('confirmError');
+        const matchIcon = document.getElementById('matchIcon');
+
+        nombreInput.addEventListener('blur', () => {
+            if (nombreInput.value.trim().length < 3) {
+                nombreError.classList.remove('hidden');
+                nombreInput.classList.add('border-red-500', 'shake');
+                setTimeout(() => nombreInput.classList.remove('shake'), 300);
+            }
+        });
 
         emailInput.addEventListener('blur', () => {
-            if (emailInput.value.trim() && !emailInput.value.includes('@')) {
+            if (!emailInput.value.includes('@')) {
                 emailError.classList.remove('hidden');
-                emailInput.classList.add('border-red-500');
-            }
-        });
-        emailInput.addEventListener('input', () => {
-            if (emailInput.value.includes('@')) {
-                emailError.classList.add('hidden');
-                emailInput.classList.remove('border-red-500');
+                emailInput.classList.add('border-red-500', 'shake');
+                setTimeout(() => emailInput.classList.remove('shake'), 300);
             }
         });
 
-        passwordInput.addEventListener('blur', () => {
-            if (!passwordInput.value) {
-                passwordError.classList.remove('hidden');
-                passwordInput.classList.add('border-red-500');
-            }
-        });
-        passwordInput.addEventListener('input', () => {
-            if (passwordInput.value) {
-                passwordError.classList.add('hidden');
-                passwordInput.classList.remove('border-red-500');
+        confirmInput.addEventListener('input', () => {
+            if (confirmInput.value === passwordInput.value && confirmInput.value.length > 0) {
+                confirmInput.classList.remove('border-red-500');
+                confirmInput.classList.add('border-green-500');
+                matchIcon.classList.remove('hidden');
+            } else {
+                confirmInput.classList.remove('border-green-500');
+                matchIcon.classList.add('hidden');
             }
         });
 
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const nombreUsuario = nombreInput.value.trim();
             const email = emailInput.value.trim();
             const password = passwordInput.value;
+            const confirmPassword = confirmInput.value;
             const submitBtn = document.getElementById('submitBtn');
             const btnText = document.getElementById('btnText');
 
             let hasError = false;
-            if (!email || !email.includes('@')) {
+            if (nombreUsuario.length < 3) {
+                nombreError.classList.remove('hidden');
+                nombreInput.classList.add('border-red-500', 'shake');
+                setTimeout(() => nombreInput.classList.remove('shake'), 300);
+                hasError = true;
+            }
+            if (!email.includes('@')) {
                 emailError.classList.remove('hidden');
                 emailInput.classList.add('border-red-500', 'shake');
                 setTimeout(() => emailInput.classList.remove('shake'), 300);
                 hasError = true;
             }
-            if (!password) {
-                passwordError.classList.remove('hidden');
-                passwordInput.classList.add('border-red-500', 'shake');
-                setTimeout(() => passwordInput.classList.remove('shake'), 300);
+            if (password.length < 6) {
+                passwordInput.classList.add('border-red-500');
+                hasError = true;
+            }
+            if (password !== confirmPassword) {
+                confirmError.classList.remove('hidden');
+                confirmInput.classList.add('border-red-500', 'shake');
+                setTimeout(() => confirmInput.classList.remove('shake'), 300);
                 hasError = true;
             }
             if (hasError) return;
 
-            btnText.innerHTML = '<span class="loader mr-2"></span> Entrando...';
+            btnText.innerHTML = '<span class="loader mr-2"></span> Creando...';
             submitBtn.disabled = true;
 
             try {
-                const response = await fetch('/api/auth/login', {
+                console.log('Enviando petición...');
+                const response = await fetch('/api/auth/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
+                    body: JSON.stringify({ nombreUsuario, email, password })
                 });
-                const data = await response.json();
+                console.log('Response status:', response.status);
+                
+                const text = await response.text();
+                console.log('Response text:', text);
+                
+                // Mostrar error del servidor en pantalla
+                if (!response.ok) {
+                    showMessage('Error del servidor (500): ' + text.substring(0, 200), 'error');
+                    btnText.textContent = 'Crear Cuenta';
+                    submitBtn.disabled = false;
+                    return;
+                }
+                
+                let data = JSON.parse(text);
                 if (data.success) {
                     localStorage.setItem('token', data.token);
-                    showMessage('¡Bienvenido!', 'success');
-                    setTimeout(() => window.location.href = '/index.html', 1000);
+                    showMessage('¡Cuenta creada!', 'success');
+                    setTimeout(() => window.location.href = '/index.html', 1500);
                 } else {
-                    showMessage(data.message || 'Credenciales inválidas', 'error');
-                    btnText.textContent = 'Entrar';
+                    showMessage(data.message || 'Error al crear cuenta', 'error');
+                    btnText.textContent = 'Crear Cuenta';
                     submitBtn.disabled = false;
                 }
             } catch (error) {
                 console.error('Error:', error);
-                showMessage('Error de conexión: ' + error.message, 'error');
-                btnText.textContent = 'Entrar';
+                // Mostrar error más detallado
+                const errorText = error.message || error.statusText || 'Error de conexión';
+                showMessage('Error: ' + errorText + ' (revisa la consola para más info)', 'error');
+                btnText.textContent = 'Crear Cuenta';
                 submitBtn.disabled = false;
             }
         });

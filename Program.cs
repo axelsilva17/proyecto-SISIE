@@ -58,6 +58,17 @@ builder.Services.AddAuthentication(options =>
 // Controllers con Views (para static files)
 builder.Services.AddControllersWithViews();
 
+// CORS - permitir todo durante desarrollo
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
+
 // Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -87,20 +98,24 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// Archivos estáticos (wwwroot)
+// Archivos estáticos (wwwroot) - DEBE IR ANTES de routing
+app.UseDefaultFiles();
 app.UseStaticFiles();
 
 // Routing
 app.UseRouting();
 
+// CORS
+app.UseCors("AllowAll");
+
 // Auth
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Controllers
+// Controllers API
 app.MapControllers();
 
-// Página por defecto (Frontend)
+// Página por defecto del Frontend
 app.MapFallbackToFile("index.html");
 
 app.Run();
