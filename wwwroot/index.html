@@ -74,7 +74,7 @@
         </div>
         
         <!-- Menu Grid -->
-        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 mb-8">
+        <div class="grid grid-cols-3 gap-4 md:gap-6 mb-8">
             
             <!-- Productos -->
             <a href="/productos.html" class="card-menu bg-white rounded-xl p-6 text-center border-b-4 border-brand-orange shadow-md fade-in-up delay-100">
@@ -103,57 +103,22 @@
                 <p class="text-xs text-neutral-dark mt-1">Registrar venta</p>
             </a>
             
-            <!-- Stock -->
-            <a href="#" class="card-menu bg-white rounded-xl p-6 text-center border-b-4 border-blue-500 shadow-md fade-in-up delay-400">
-                <div class="w-14 h-14 mx-auto mb-3 bg-blue-50 rounded-full flex items-center justify-center">
-                    <i class="fas fa-chart-line text-blue-500 text-2xl"></i>
-                </div>
-                <h3 class="font-semibold text-brand-dark text-base">Stock</h3>
-                <p class="text-xs text-neutral-dark mt-1">Ver niveles</p>
-            </a>
-            
-            <!-- Usuarios -->
-            <a href="#" class="card-menu bg-white rounded-xl p-6 text-center border-b-4 border-purple-500 shadow-md fade-in-up delay-400">
-                <div class="w-14 h-14 mx-auto mb-3 bg-purple-50 rounded-full flex items-center justify-center">
-                    <i class="fas fa-users text-purple-500 text-2xl"></i>
-                </div>
-                <h3 class="font-semibold text-brand-dark text-base">Usuarios</h3>
-                <p class="text-xs text-neutral-dark mt-1">Administrar</p>
-            </a>
-            
-            <!-- Configuración -->
-            <a href="#" class="card-menu bg-white rounded-xl p-6 text-center border-b-4 border-gray-400 shadow-md fade-in-up delay-400">
-                <div class="w-14 h-14 mx-auto mb-3 bg-gray-50 rounded-full flex items-center justify-center">
-                    <i class="fas fa-cog text-gray-400 text-2xl"></i>
-                </div>
-                <h3 class="font-semibold text-brand-dark text-base">Ajustes</h3>
-                <p class="text-xs text-neutral-dark mt-1">Configuración</p>
-            </a>
-            
         </div>
         
         <!-- Resumen Hoy -->
         <div class="bg-white rounded-xl shadow-md p-6 fade-in-up delay-400">
             <h2 class="text-lg font-semibold text-brand-dark mb-4 flex items-center gap-2">
                 <i class="fas fa-chart-pie text-brand-orange"></i>
-                Resumen de Hoy
+                Resumen del Sistema
             </h2>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="grid grid-cols-2 gap-4">
                 <div class="text-center p-3 bg-neutral-light rounded-lg">
-                    <p class="text-2xl font-bold text-brand-dark" id="ventasHoy">$0</p>
-                    <p class="text-xs text-neutral-dark">Ventas</p>
-                </div>
-                <div class="text-center p-3 bg-neutral-light rounded-lg">
-                    <p class="text-2xl font-bold text-brand-dark" id="productosVendidos">0</p>
-                    <p class="text-xs text-neutral-dark">Productos</p>
+                    <p class="text-2xl font-bold text-brand-dark" id="totalProductos">0</p>
+                    <p class="text-xs text-neutral-dark">Total Productos</p>
                 </div>
                 <div class="text-center p-3 bg-neutral-light rounded-lg">
                     <p class="text-2xl font-bold text-brand-dark" id="stockBajo">0</p>
                     <p class="text-xs text-neutral-dark">Stock Bajo</p>
-                </div>
-                <div class="text-center p-3 bg-neutral-light rounded-lg">
-                    <p class="text-2xl font-bold text-brand-dark" id="totalProductos">0</p>
-                    <p class="text-xs text-neutral-dark">En Stock</p>
                 </div>
             </div>
         </div>
@@ -199,15 +164,11 @@
                 const prodsData = await prodsResponse.json();
                 // API devuelve { items, total, page, pageSize }
                 if (prodsData.items) {
-                    const total = prodsData.items.length;
+                    const total = prodsData.total;
                     const bajoStock = prodsData.items.filter(p => p.stock <= 5).length;
                     document.getElementById('totalProductos').textContent = total;
                     document.getElementById('stockBajo').textContent = bajoStock;
                 }
-                
-                // TODO: Cargar ventas de hoy cuando esté implementado
-                document.getElementById('ventasHoy').textContent = '$0';
-                document.getElementById('productosVendidos').textContent = '0';
                 
             } catch (error) {
                 console.error('Error:', error);
