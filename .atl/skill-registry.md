@@ -32,6 +32,7 @@
 | PowerPoint, .pptx | **pptx** | ~/.agents/skills/pptx/SKILL.md |
 | Excel, .xlsx | **xlsx** | ~/.agents/skills/xlsx/SKILL.md |
 | Testing webapp | **webapp-testing** | ~/.agents/skills/webapp-testing/SKILL.md |
+| "git sync", "git push", sync | git-sync | Regla integrada |
 
 ## Compact Rules
 
@@ -152,6 +153,11 @@
 - Selenium, Playwright, puppeteer
 - E2E tests, integration tests
 
+### git-sync
+- Después de hacer git push, INDICAR al usuario qué debe hacer su compañero
+- Ejemplos: "tu compañero debe hacer git pull origin main", "hacé git pull para descargar los cambios", etc.
+- Esto aplica para: git push, git commit, merge de PR, o cualquier cambio que requiera acción del compañero
+
 ## Project Conventions
 
 | Archivo | Path | Notas |
@@ -165,4 +171,4 @@
 El orquestador lee este archivo para resolver skills antes de lanzar sub-agentes.
 Para actualizar tras agregar skills nuevos, ejecutar skill-registry skill.
 
-**Última actualización:** 2026-04-11
+**Última actualización:** 2026-04-16
