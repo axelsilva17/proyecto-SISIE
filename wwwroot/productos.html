@@ -273,11 +273,11 @@
             tbody.innerHTML = items.map(p => `
                 <tr class="border-b hover:bg-gray-50 transition">
                     <td class="px-4 py-3">
-                        <div class="font-medium text-gray-800">${p.nombre}</div>
+                        <div class="font-medium text-gray-800">${p.nombreProducto}</div>
                         ${p.descripcion ? `<div class="text-xs text-gray-500 truncate max-w-xs">${p.descripcion}</div>` : ''}
                     </td>
                     <td class="px-4 py-3 text-gray-600">${p.nombreCategoria || '-'}</td>
-                    <td class="px-4 py-3 text-right font-medium">$${p.precio.toFixed(2)}</td>
+                    <td class="px-4 py-3 text-right font-medium">$${p.precioUnitario.toFixed(2)}</td>
                     <td class="px-4 py-3 text-center">
                         <span class="px-2 py-1 rounded text-xs font-medium ${p.stock <= 5 ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}">
                             ${p.stock}
@@ -315,9 +315,9 @@
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Guardando...';
 
             const data = {
-                nombre: document.getElementById('nombre').value,
+                nombreProducto: document.getElementById('nombre').value,
                 descripcion: document.getElementById('descripcion').value,
-                precio: parseFloat(document.getElementById('precio').value),
+                precioUnitario: parseFloat(document.getElementById('precio').value),
                 stock: parseInt(document.getElementById('stock').value),
                 idCategoria: parseInt(document.getElementById('categoria').value)
             };
@@ -358,9 +358,9 @@
             const p = productos.find(p => p.id === id);
             if (!p) return;
             
-            document.getElementById('nombre').value = p.nombre;
+            document.getElementById('nombre').value = p.nombreProducto;
             document.getElementById('descripcion').value = p.descripcion || '';
-            document.getElementById('precio').value = p.precio;
+            document.getElementById('precio').value = p.precioUnitario;
             document.getElementById('stock').value = p.stock;
             document.getElementById('categoria').value = p.idCategoria;
             
@@ -398,7 +398,7 @@
         document.getElementById('busqueda').addEventListener('input', (e) => {
             const term = e.target.value.toLowerCase();
             const filtered = productos.filter(p => 
-                p.nombre.toLowerCase().includes(term) || 
+                p.nombreProducto.toLowerCase().includes(term) || 
                 (p.nombreCategoria && p.nombreCategoria.toLowerCase().includes(term))
             );
             renderTable(filtered);

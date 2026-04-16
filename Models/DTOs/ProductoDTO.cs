@@ -8,16 +8,16 @@ public class ProductoDTO
     public int Id { get; set; }
     
     [Required(ErrorMessage = "El nombre es requerido")]
-    [StringLength(100, MinimumLength = 3, ErrorMessage = "El nombre debe tener entre 3 y 100 caracteres")]
-    public string Nombre { get; set; } = string.Empty;
+    [StringLength(20, MinimumLength = 3, ErrorMessage = "El nombre debe tener entre 3 y 20 caracteres")]
+    public string NombreProducto { get; set; } = string.Empty;
     
-    [StringLength(500, ErrorMessage = "La descripción no puede exceder 500 caracteres")]
+    [StringLength(20, ErrorMessage = "La descripción no puede exceder 20 caracteres")]
     public string? Descripcion { get; set; }
     
     [Required(ErrorMessage = "El precio es requerido")]
     [Range(0.01, 999999.99, ErrorMessage = "El precio debe ser mayor a 0")]
-    [Column(TypeName = "decimal(10,2)")]
-    public decimal Precio { get; set; }
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal PrecioUnitario { get; set; }
     
     [Required(ErrorMessage = "El stock es requerido")]
     [Range(0, 99999, ErrorMessage = "El stock debe estar entre 0 y 99999")]
@@ -37,16 +37,16 @@ public class ProductoListDTO
     public int Id { get; set; }
     
     [Required]
-    [StringLength(100, MinimumLength = 3)]
-    public string Nombre { get; set; } = string.Empty;
+    [StringLength(20, MinimumLength = 3)]
+    public string NombreProducto { get; set; } = string.Empty;
     
-    [StringLength(500)]
+    [StringLength(20)]
     public string? Descripcion { get; set; }
     
     [Required]
     [Range(0.01, 999999.99)]
-    [Column(TypeName = "decimal(10,2)")]
-    public decimal Precio { get; set; }
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal PrecioUnitario { get; set; }
     
     [Required]
     [Range(0, 99999)]
@@ -64,16 +64,16 @@ public class ProductoListDTO
 public class ProductoCreateDTO
 {
     [Required(ErrorMessage = "El nombre es requerido")]
-    [StringLength(100, MinimumLength = 3, ErrorMessage = "El nombre debe tener entre 3 y 100 caracteres")]
-    public string Nombre { get; set; } = string.Empty;
+    [StringLength(20, MinimumLength = 3, ErrorMessage = "El nombre debe tener entre 3 y 20 caracteres")]
+    public string NombreProducto { get; set; } = string.Empty;
     
-    [StringLength(500, ErrorMessage = "La descripción no puede exceder 500 caracteres")]
+    [StringLength(20, ErrorMessage = "La descripción no puede exceder 20 caracteres")]
     public string? Descripcion { get; set; }
     
     [Required(ErrorMessage = "El precio es requerido")]
     [Range(0.01, 999999.99, ErrorMessage = "El precio debe ser mayor a 0")]
-    [Column(TypeName = "decimal(10,2)")]
-    public decimal Precio { get; set; }
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal PrecioUnitario { get; set; }
     
     [Required(ErrorMessage = "El stock es requerido")]
     [Range(0, 99999, ErrorMessage = "El stock debe estar entre 0 y 99999")]
@@ -90,16 +90,16 @@ public class ProductoUpdateDTO
     public int Id { get; set; }
     
     [Required(ErrorMessage = "El nombre es requerido")]
-    [StringLength(100, MinimumLength = 3, ErrorMessage = "El nombre debe tener entre 3 y 100 caracteres")]
-    public string Nombre { get; set; } = string.Empty;
+    [StringLength(20, MinimumLength = 3, ErrorMessage = "El nombre debe tener entre 3 y 20 caracteres")]
+    public string NombreProducto { get; set; } = string.Empty;
     
-    [StringLength(500, ErrorMessage = "La descripción no puede exceder 500 caracteres")]
+    [StringLength(20, ErrorMessage = "La descripción no puede exceder 20 caracteres")]
     public string? Descripcion { get; set; }
     
     [Required(ErrorMessage = "El precio es requerido")]
     [Range(0.01, 999999.99, ErrorMessage = "El precio debe ser mayor a 0")]
-    [Column(TypeName = "decimal(10,2)")]
-    public decimal Precio { get; set; }
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal PrecioUnitario { get; set; }
     
     [Required(ErrorMessage = "El stock es requerido")]
     [Range(0, 99999, ErrorMessage = "El stock debe estar entre 0 y 99999")]

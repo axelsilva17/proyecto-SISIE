@@ -21,7 +21,6 @@ public class ProductoService : IProductoService
             .Include(p => p.Categoria)
             .Where(p => true);
 
-        // Filtros
         if (idCategoria.HasValue)
             query = query.Where(p => p.IdCategoria == idCategoria.Value);
         
@@ -37,9 +36,9 @@ public class ProductoService : IProductoService
             .Select(p => new ProductoListDTO
             {
                 Id = p.Id,
-                Nombre = p.Nombre,
+                NombreProducto = p.NombreProducto,
                 Descripcion = p.Descripcion,
-                Precio = p.Precio,
+                PrecioUnitario = p.PrecioUnitario,
                 Stock = p.Stock,
                 IdCategoria = p.IdCategoria,
                 NombreCategoria = p.Categoria!.NombreCategoria,
@@ -62,9 +61,9 @@ public class ProductoService : IProductoService
         return new ProductoDTO
         {
             Id = producto.Id,
-            Nombre = producto.Nombre,
+            NombreProducto = producto.NombreProducto,
             Descripcion = producto.Descripcion,
-            Precio = producto.Precio,
+            PrecioUnitario = producto.PrecioUnitario,
             Stock = producto.Stock,
             IdCategoria = producto.IdCategoria,
             NombreCategoria = producto.Categoria?.NombreCategoria,
@@ -77,9 +76,9 @@ public class ProductoService : IProductoService
     {
         var producto = new Producto
         {
-            Nombre = dto.Nombre,
+            NombreProducto = dto.NombreProducto,
             Descripcion = dto.Descripcion,
-            Precio = dto.Precio,
+            PrecioUnitario = dto.PrecioUnitario,
             Stock = dto.Stock,
             IdCategoria = dto.IdCategoria,
             FechaCreacion = DateTime.Now,
@@ -89,17 +88,14 @@ public class ProductoService : IProductoService
         _context.Productos.Add(producto);
         await _context.SaveChangesAsync();
 
-        var categoria = await _context.Categorias.FindAsync(producto.IdCategoria);
-
         return new ProductoDTO
         {
             Id = producto.Id,
-            Nombre = producto.Nombre,
+            NombreProducto = producto.NombreProducto,
             Descripcion = producto.Descripcion,
-            Precio = producto.Precio,
+            PrecioUnitario = producto.PrecioUnitario,
             Stock = producto.Stock,
             IdCategoria = producto.IdCategoria,
-            NombreCategoria = categoria?.NombreCategoria,
             FechaCreacion = producto.FechaCreacion,
             Activo = producto.Activo
         };
@@ -110,25 +106,22 @@ public class ProductoService : IProductoService
         var producto = await _context.Productos.FindAsync(id);
         if (producto == null) return null;
 
-        producto.Nombre = dto.Nombre;
+        producto.NombreProducto = dto.NombreProducto;
         producto.Descripcion = dto.Descripcion;
-        producto.Precio = dto.Precio;
+        producto.PrecioUnitario = dto.PrecioUnitario;
         producto.Stock = dto.Stock;
         producto.IdCategoria = dto.IdCategoria;
 
         await _context.SaveChangesAsync();
 
-        var categoria = await _context.Categorias.FindAsync(producto.IdCategoria);
-
         return new ProductoDTO
         {
             Id = producto.Id,
-            Nombre = producto.Nombre,
+            NombreProducto = producto.NombreProducto,
             Descripcion = producto.Descripcion,
-            Precio = producto.Precio,
+            PrecioUnitario = producto.PrecioUnitario,
             Stock = producto.Stock,
             IdCategoria = producto.IdCategoria,
-            NombreCategoria = categoria?.NombreCategoria,
             FechaCreacion = producto.FechaCreacion,
             Activo = producto.Activo
         };
@@ -139,8 +132,7 @@ public class ProductoService : IProductoService
         var producto = await _context.Productos.FindAsync(id);
         if (producto == null) return false;
 
-        // Soft delete
-        producto.Activo = false;
+        _context.Productos.Remove(producto);
         await _context.SaveChangesAsync();
         return true;
     }
@@ -150,22 +142,17 @@ public class ProductoService : IProductoService
         var producto = await _context.Productos.FindAsync(id);
         if (producto == null) return null;
 
-        // Toggle activo
         producto.Activo = !producto.Activo;
         await _context.SaveChangesAsync();
-
-        // Load categoria for response
-        var categoria = await _context.Categorias.FindAsync(producto.IdCategoria);
 
         return new ProductoDTO
         {
             Id = producto.Id,
-            Nombre = producto.Nombre,
+            NombreProducto = producto.NombreProducto,
             Descripcion = producto.Descripcion,
-            Precio = producto.Precio,
+            PrecioUnitario = producto.PrecioUnitario,
             Stock = producto.Stock,
             IdCategoria = producto.IdCategoria,
-            NombreCategoria = categoria?.NombreCategoria,
             FechaCreacion = producto.FechaCreacion,
             Activo = producto.Activo
         };

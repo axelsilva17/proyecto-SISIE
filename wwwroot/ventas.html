@@ -413,7 +413,7 @@
             const select = document.getElementById('productoSelect');
             select.innerHTML = '<option value="">Seleccionar producto...</option>';
             productosDisponibles.forEach(p => {
-                select.innerHTML += `<option value="${p.id}" data-precio="${p.precio}" data-stock="${p.stock}">${p.nombre} - $${p.precio.toFixed(2)} (Stock: ${p.stock})</option>`;
+                select.innerHTML += `<option value="${p.id}" data-precio="${p.precioUnitario}" data-stock="${p.stock}">${p.nombreProducto} - $${p.precioUnitario.toFixed(2)} (Stock: ${p.stock})</option>`;
             });
         }
 
@@ -445,8 +445,8 @@
             } else {
                 productosEnVenta.push({
                     id: producto.id,
-                    nombre: producto.nombre,
-                    precio: producto.precio,
+                    nombre: producto.nombreProducto,
+                    precio: producto.precioUnitario,
                     cantidad: cantidad
                 });
             }
