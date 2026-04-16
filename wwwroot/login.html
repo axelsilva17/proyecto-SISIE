@@ -4,6 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - SISIE</title>
+    
+    <!-- Speculation Rules - Preload de páginas para navegación más rápida -->
+    <script type="speculationrules">
+    {
+      "prefetch": [
+        { "urls": ["/index.html", "/register.html", "/productos.html"] }
+      ]
+    }
+    </script>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <script>
@@ -51,7 +61,7 @@
         .fade-in { animation: fadeIn 0.3s ease-out; }
     </style>
 </head>
-<body class="bg-white min-h-screen flex items-center justify-center p-4 relative">
+<body class="bg-neutral-light min-h-screen flex items-center justify-center p-4 relative">
     
     <!-- Logo de fondo -->
     <div class="absolute inset-0 flex items-center justify-center pointer-events-none" style="opacity: 0.20;">
@@ -112,12 +122,6 @@
                         </button>
                     </div>
                     <p id="passwordError" class="text-red-500 text-xs mt-1 hidden">Requerida</p>
-                </div>
-
-                <!-- Recordar -->
-                <div class="flex items-center">
-                    <input type="checkbox" id="remember" class="w-4 h-4 text-brand-orange rounded">
-                    <label for="remember" class="ml-2 text-sm text-neutral-dark">Recordar</label>
                 </div>
 
                 <!-- Botón -->

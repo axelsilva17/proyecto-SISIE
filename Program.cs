@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using AspNetCoreRateLimit;
 using proyecto_SISIE.Data;
 using proyecto_SISIE.Models.Entities;
 using proyecto_SISIE.Services;
@@ -70,6 +72,37 @@ builder.Services.AddCors(options =>
               .AllowAnyHeader();
     });
 });
+
+// Rate Limiting - limitar peticiones para seguridad
+builder.Services.AddMemoryCache();
+builder.Services.Configure<IpRateLimitOptions>(options =>
+{
+    options.GeneralRules = new List<RateLimitRule>
+    {
+        new RateLimitRule
+        {
+            Endpoint = "*",  // todas las rutas
+            Period = "1m",    // por minuto
+            Limit = 100      // máximo 100 requests por minuto
+        },
+        new RateLimitRule
+        {
+            Endpoint = "post:/api/auth/login",  // solo login
+            Period = "1m",
+            Limit = 20   // máximo 20 intentos de login por minuto
+        },
+        new RateLimitRule
+        {
+            Endpoint = "post:/api/auth/register",  // solo registro
+            Period = "1m",
+            Limit = 15    // máximo 15 registros por minuto
+        }
+    };
+});
+builder.Services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>();
+builder.Services.AddSingleton<IIpPolicyStore, MemoryCacheIpPolicyStore>();
+builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
+builder.Services.AddSingleton<IProcessingStrategy, AsyncKeyLockProcessingStrategy>();
 
 // Swagger
 builder.Services.AddEndpointsApiExplorer();
@@ -151,6 +184,9 @@ app.UseRouting();
 
 // CORS
 app.UseCors("AllowAll");
+
+// Rate Limiting
+app.UseIpRateLimiting();
 
 // Auth
 app.UseAuthentication();

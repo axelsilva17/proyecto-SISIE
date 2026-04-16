@@ -4,6 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nueva Venta - SISIE</title>
+    
+    <!-- Speculation Rules - Preload de páginas para navegación más rápida -->
+    <script type="speculationrules">
+    {
+      "prefetch": [
+        { "urls": ["/index.html", "/productos.html", "/categorias.html"] }
+      ]
+    }
+    </script>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <script>
@@ -40,8 +50,8 @@
     <!-- Navbar -->
     <nav class="bg-brand-dark text-white p-4 shadow-lg">
         <div class="max-w-6xl mx-auto flex justify-between items-center">
-            <a href="/index.html" class="flex items-center gap-2 hover:opacity-80 transition">
-                <img src="/img/LogoCaja.png" alt="SISIE" class="h-10">
+            <a href="/index.html" class="flex items-center gap-2 hover:opacity-80 transition -ml-2">
+                <img src="/img/LogoCaja.png" alt="SISIE" class="h-14">
                 <span class="font-bold text-lg">SISIE</span>
             </a>
             <div class="flex items-center gap-4">
