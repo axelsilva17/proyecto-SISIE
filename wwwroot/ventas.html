@@ -132,24 +132,22 @@
                         Productos
                     </h2>
                     
-                    <!-- Buscador con dropdown -->
+                    <!-- Buscador sin dropdown -->
                     <div class="mb-4 relative">
                         <input type="text" id="buscadorProducto" placeholder="Buscar producto..." 
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-orange"
                             onkeyup="buscarProductos(this.value)"
                             onblur="setTimeout(() => document.getElementById('resultadosBusqueda').classList.add('hidden'), 200)">
-                        <div id="resultadosBusqueda" class="hidden absolute z-50 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto mt-1">
+                        <div id="resultadosBusqueda" class="hidden absolute z-50 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto mt-1">
                         </div>
                     </div>
                     
                     <div class="flex gap-2 mb-4">
-                        <select id="productoSelect" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-orange">
-                            <option value="">Seleccionar producto...</option>
-                        </select>
                         <input type="number" id="cantidad" min="1" value="1" 
-                            class="w-20 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-orange text-center">
-                        <button onclick="agregarProducto()" class="bg-brand-orange text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition">
-                            <i class="fas fa-plus"></i>
+                            class="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-orange text-center"
+                            title="Cantidad">
+                        <button onclick="agregarProducto()" class="bg-brand-orange text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition flex-1">
+                            <i class="fas fa-plus mr-2"></i>Agregar
                         </button>
                     </div>
 
@@ -168,7 +166,7 @@
                             <tbody id="productosVenta">
                                 <tr>
                                     <td colspan="5" class="px-3 py-4 text-center text-gray-500">
-                                        Agregá productos desde el select de arriba
+                                        Escribí el nombre del producto en el buscador
                                     </td>
                                 </tr>
                             </tbody>
@@ -418,34 +416,32 @@
                 if (data.items && data.items.length > 0) {
                     productosDisponibles = data.items.filter(p => p.activo && p.stock > 0);
                     console.log('Productos disponibles:', productosDisponibles);
-                    renderProductoSelect();
                 } else {
                     console.log('No hay productos o no están activos');
-                    document.getElementById('productoSelect').innerHTML = '<option value="">No hay productos disponibles</option>';
                 }
             } catch (error) {
                 console.error('Error:', error);
             }
         }
 
-        // Render select de productos (todos)
-        function renderProductoSelect() {
-            renderFiltrado('');
-        }
-
         // Buscar productos en tiempo real
+        let ultimoTerminoBusqueda = '';
+        let productoSeleccionado = null; // Producto seleccionado del buscador
+        
         function buscarProductos(texto) {
             const resultados = document.getElementById('resultadosBusqueda');
             
             if (!texto || texto.trim() === '') {
                 resultados.classList.add('hidden');
+                ultimoTerminoBusqueda = '';
+                productoSeleccionado = null;
                 return;
             }
             
-            const term = texto.toLowerCase();
+            ultimoTerminoBusqueda = texto.toLowerCase();
             const filtrados = productosDisponibles.filter(p => {
                 const nombre = p.nombreProducto || p.nombre || '';
-                return nombre.toLowerCase().includes(term);
+                return nombre.toLowerCase().includes(ultimoTerminoBusqueda);
             });
             
             if (filtrados.length === 0) {
@@ -465,77 +461,64 @@
             resultados.classList.remove('hidden');
         }
 
-        // Seleccionar producto del dropdown
+        // Seleccionar producto del buscador - solo guarda el producto, NO agrega
         function seleccionarProducto(id, nombre, precio, stock) {
+            // Guardar el producto seleccionado
+            productoSeleccionado = { id, nombre, precio, stock };
+            
+            // Mostrar en el buscador
             document.getElementById('buscadorProducto').value = nombre;
             document.getElementById('resultadosBusqueda').classList.add('hidden');
             
-            // Agregar directamente
-            productosEnVenta.push({
-                id: id,
-                nombre: nombre,
-                precio: precio,
-                cantidad: parseInt(document.getElementById('cantidad').value) || 1
-            });
-            renderProductosVenta();
+            // Focus en cantidad para que el usuario ingrese la cantidad
+            document.getElementById('cantidad').focus();
             
-            document.getElementById('buscadorProducto').value = '';
+            showMessage('Producto seleccionado. Elegí la cantidad y presioná Agregar', 'success');
         }
 
-        // Render select filtrado
-        function renderFiltrado(filtro) {
-            const select = document.getElementById('productoSelect');
-            select.innerHTML = '<option value="">Seleccionar producto...</option>';
-            
-            const term = filtro.toLowerCase();
-            const filtrados = productosDisponibles.filter(p => {
-                const nombre = p.nombreProducto || p.nombre || '';
-                return nombre.toLowerCase().includes(term);
-            });
-            
-            filtrados.forEach(p => {
-                const nombre = p.nombreProducto || p.nombre || 'Sin nombre';
-                const precio = p.precioUnitario || p.precio || 0;
-                select.innerHTML += `<option value="${p.id}" data-precio="${precio}" data-stock="${p.stock}">${nombre} - $${precio.toFixed(2)} (Stock: ${p.stock})</option>`;
-            });
-        }
-
-        // Agregar producto a la venta
+        // Agregar producto - usa el producto seleccionado del buscador
         function agregarProducto() {
-            const select = document.getElementById('productoSelect');
-            const cantidad = parseInt(document.getElementById('cantidad').value);
-            const productoId = parseInt(select.value);
-
-            if (!productoId) {
-                showMessage('Seleccioná un producto', 'error');
+            if (!productoSeleccionado) {
+                showMessage('Buscá y seleccioná un producto primero', 'error');
                 return;
             }
-
-            const producto = productosDisponibles.find(p => p.id === productoId);
-            if (!producto) return;
-
+            
+            const cantidad = parseInt(document.getElementById('cantidad').value) || 1;
+            if (cantidad < 1) {
+                showMessage('Ingresá una cantidad válida', 'error');
+                return;
+            }
+            
+            const { id, nombre, precio, stock } = productoSeleccionado;
+            
             // Verificar stock
-            const enVenta = productosEnVenta.find(p => p.id === productoId);
+            const enVenta = productosEnVenta.find(p => p.id === id);
             const cantidadActual = enVenta ? enVenta.cantidad : 0;
-            if (cantidadActual + cantidad > producto.stock) {
-                showMessage(`Stock insuficiente. Disponible: ${producto.stock}`, 'error');
+            if (cantidadActual + cantidad > stock) {
+                showMessage(`Stock insuficiente. Disponible: ${stock}`, 'error');
                 return;
             }
-
+            
             // Agregar o incrementar
             if (enVenta) {
                 enVenta.cantidad += cantidad;
             } else {
                 productosEnVenta.push({
-                    id: producto.id,
-                    nombre: producto.nombreProducto,
-                    precio: producto.precioUnitario,
+                    id: id,
+                    nombre: nombre,
+                    precio: precio,
                     cantidad: cantidad
                 });
             }
-
+            
+            // Limpiar
+            document.getElementById('buscadorProducto').value = '';
             document.getElementById('cantidad').value = 1;
+            ultimoTerminoBusqueda = '';
+            productoSeleccionado = null;
+            
             renderProductosVenta();
+            showMessage('Producto agregado', 'success');
         }
 
         // Quitar producto de la venta
@@ -548,7 +531,7 @@
         function renderProductosVenta() {
             const tbody = document.getElementById('productosVenta');
             if (productosEnVenta.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="px-3 py-4 text-center text-gray-500">Agregá productos desde el select de arriba</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="px-3 py-4 text-center text-gray-500">Escribí el nombre del producto en el buscador</td></tr>`;
             } else {
                 tbody.innerHTML = productosEnVenta.map(p => `
                     <tr class="border-b hover:bg-gray-50">
@@ -856,7 +839,7 @@
             }
         }
 
-        // Generar comprobante (simplificado para evitar errores)
+        // Generar comprobante
         function generarComprobante(venta) {
             // Crear el HTML del ticket
             let html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Comprobante</title></head><body style="font-family: Courier New; width: 280px; margin: 0 auto; padding: 10px; font-size: 12px;">';
@@ -962,6 +945,40 @@
             localStorage.removeItem('token');
             window.location.href = '/login.html';
         }
+        
+        // Atajos de teclado
+        document.addEventListener('keydown', (e) => {
+            // Ctrl+Enter - Guardar venta
+            if (e.ctrlKey && e.key === 'Enter') {
+                e.preventDefault();
+                guardarVenta();
+            }
+            // Ctrl+I - Dashboard
+            if (e.ctrlKey && e.key === 'i') {
+                e.preventDefault();
+                window.location.href = '/index.html';
+            }
+            // Ctrl+P - Productos
+            if (e.ctrlKey && e.key === 'p') {
+                e.preventDefault();
+                window.location.href = '/productos.html';
+            }
+            // Ctrl+K - Categorías
+            if (e.ctrlKey && e.key === 'k') {
+                e.preventDefault();
+                window.location.href = '/categorias.html';
+            }
+            // Escape - Limpiar buscador
+            if (e.key === 'Escape') {
+                document.getElementById('buscadorProducto').value = '';
+                document.getElementById('resultadosBusqueda').classList.add('hidden');
+            }
+            // Ctrl+L - Logout
+            if (e.ctrlKey && e.key === 'l') {
+                e.preventDefault();
+                logout();
+            }
+        });
 
         // Iniciar
         loadProductos();

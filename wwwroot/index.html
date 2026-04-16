@@ -202,6 +202,30 @@
             window.location.href = '/login.html';
         }
         
+        // Atajos de teclado
+        document.addEventListener('keydown', (e) => {
+            // Ctrl+P - Productos
+            if (e.ctrlKey && e.key === 'p') {
+                e.preventDefault();
+                window.location.href = '/productos.html';
+            }
+            // Ctrl+V - Ventas
+            if (e.ctrlKey && e.key === 'v') {
+                e.preventDefault();
+                window.location.href = '/ventas.html';
+            }
+            // Ctrl+K - Categorías
+            if (e.ctrlKey && e.key === 'k') {
+                e.preventDefault();
+                window.location.href = '/categorias.html';
+            }
+            // Ctrl+L - Logout
+            if (e.ctrlKey && e.key === 'l') {
+                e.preventDefault();
+                logout();
+            }
+        });
+        
         // Iniciar
         loadUserData();
         loadStats();

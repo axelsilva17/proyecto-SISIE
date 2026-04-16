@@ -428,6 +428,39 @@
             localStorage.removeItem('token');
             window.location.href = '/login.html';
         }
+        
+        // Atajos de teclado
+        document.addEventListener('keydown', (e) => {
+            // Ctrl+N - Nuevo producto
+            if (e.ctrlKey && e.key === 'n') {
+                e.preventDefault();
+                document.getElementById('btnNuevo').click();
+            }
+            // Ctrl+I - Dashboard (Inicio)
+            if (e.ctrlKey && e.key === 'i') {
+                e.preventDefault();
+                window.location.href = '/index.html';
+            }
+            // Ctrl+K - Categorías
+            if (e.ctrlKey && e.key === 'k') {
+                e.preventDefault();
+                window.location.href = '/categorias.html';
+            }
+            // Ctrl+V - Ventas
+            if (e.ctrlKey && e.key === 'v') {
+                e.preventDefault();
+                window.location.href = '/ventas.html';
+            }
+            // Escape - Cerrar modal
+            if (e.key === 'Escape') {
+                cerrarModal();
+            }
+            // Ctrl+L - Logout
+            if (e.ctrlKey && e.key === 'l') {
+                e.preventDefault();
+                logout();
+            }
+        });
 
         // Iniciar
         loadCategorias();

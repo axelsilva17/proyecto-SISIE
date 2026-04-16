@@ -350,6 +350,19 @@
                 : 'mt-4 p-4 rounded-lg bg-red-100 text-red-700 text-sm fade-in';
             messageEl.classList.remove('hidden');
         }
+        
+        // Atajos de teclado
+        document.addEventListener('keydown', (e) => {
+            // Ctrl+Enter - Enviar formulario de registro
+            if (e.ctrlKey && e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('registerForm').dispatchEvent(new Event('submit'));
+            }
+            // Escape - Ir al login
+            if (e.key === 'Escape') {
+                window.location.href = '/login.html';
+            }
+        });
     </script>
 </body>
 </html>
