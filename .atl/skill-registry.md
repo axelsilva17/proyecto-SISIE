@@ -154,6 +154,9 @@
 - E2E tests, integration tests
 
 ### git-sync
+- ANTES de hacer cualquier push, verificar si hay cambios remotos con git fetch origin
+- Si hay cambios nuevos en la rama destino, hacer git merge o git pull antes de pushear
+- Resolver conflictos si los hay antes de continuar
 - Después de hacer git push, INDICAR al usuario qué debe hacer su compañero
 - Ejemplos: "tu compañero debe hacer git pull origin main", "hacé git pull para descargar los cambios", etc.
 - Esto aplica para: git push, git commit, merge de PR, o cualquier cambio que requiera acción del compañero
