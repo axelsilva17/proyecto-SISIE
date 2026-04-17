@@ -74,6 +74,15 @@ public class ProductoService : IProductoService
 
     public async Task<ProductoDTO> CreateAsync(ProductoCreateDTO dto)
     {
+        // Verificar si ya existe un producto con el mismo nombre
+        var existe = await _context.Productos
+            .AnyAsync(p => p.NombreProducto.ToLower() == dto.NombreProducto.ToLower() && p.Activo);
+        
+        if (existe)
+        {
+            throw new InvalidOperationException("Ya existe un producto con ese nombre");
+        }
+
         var producto = new Producto
         {
             NombreProducto = dto.NombreProducto,

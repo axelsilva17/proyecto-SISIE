@@ -502,6 +502,7 @@
             // Agregar o incrementar
             if (enVenta) {
                 enVenta.cantidad += cantidad;
+                showMessage(`Cantidad actualizada: ${enVenta.cantidad} unidades`, 'success');
             } else {
                 productosEnVenta.push({
                     id: id,

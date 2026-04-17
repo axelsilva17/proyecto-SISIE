@@ -52,8 +52,15 @@ public class CategoriasController : ControllerBase
             });
         }
 
-        var created = await _categoriaService.CreateAsync(categoria);
-        return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+        try
+        {
+            var created = await _categoriaService.CreateAsync(categoria);
+            return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { success = false, message = ex.Message });
+        }
     }
 
     [HttpPut("{id}")]
