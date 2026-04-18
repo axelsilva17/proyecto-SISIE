@@ -107,10 +107,16 @@
                 </div>
                 
                 <!-- Botón guardar -->
-                <button type="submit" id="btnGuardar"
-                    class="bg-brand-orange text-white py-2 px-6 rounded-lg hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-brand-orange transition font-medium">
-                    <i class="fas fa-save mr-2"></i>Guardar
-                </button>
+                <div class="flex gap-2">
+                    <button type="submit" id="btnGuardar"
+                        class="bg-brand-orange text-white py-2 px-6 rounded-lg hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-brand-orange transition font-medium">
+                        <i class="fas fa-save mr-2"></i>Guardar
+                    </button>
+                    <button type="button" id="btnCancelar" onclick="cancelarEdicion()"
+                        class="hidden bg-gray-500 text-white py-2 px-6 rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 transition font-medium">
+                        <i class="fas fa-times mr-2"></i>Cancelar
+                    </button>
+                </div>
             </form>
             
             <!-- Mensaje -->
@@ -265,7 +271,16 @@
             document.getElementById('nombreCategoria').value = cat.nombreCategoria;
             editingId = id;
             document.getElementById('btnGuardar').innerHTML = '<i class="fas fa-save mr-2"></i>Actualizar';
+            document.getElementById('btnCancelar').classList.remove('hidden');
             window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Cancelar edición
+        function cancelarEdicion() {
+            editingId = null;
+            document.getElementById('categoriaForm').reset();
+            document.getElementById('btnGuardar').innerHTML = '<i class="fas fa-save mr-2"></i>Guardar';
+            document.getElementById('btnCancelar').classList.add('hidden');
         }
 
         // Eliminar categoría

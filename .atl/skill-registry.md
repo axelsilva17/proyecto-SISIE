@@ -32,7 +32,7 @@
 | PowerPoint, .pptx | **pptx** | ~/.agents/skills/pptx/SKILL.md |
 | Excel, .xlsx | **xlsx** | ~/.agents/skills/xlsx/SKILL.md |
 | Testing webapp | **webapp-testing** | ~/.agents/skills/webapp-testing/SKILL.md |
-| "git sync", "git push", sync | git-sync | Regla integrada |
+| "git sync", "sincronizar", sync ramas | **git-sync-principal** | ~/.config/opencode/skills/git-sync-principal/SKILL.md |
 
 ## Compact Rules
 
@@ -153,6 +153,19 @@
 - Selenium, Playwright, puppeteer
 - E2E tests, integration tests
 
+### git-sync-principal
+- Antes de cualquier operación, hacer git fetch para detectar cambios remotos
+- Si hay más de 3 commits en la rama, ofrecer opción de SQUASH antes de continuar
+- Presentar 5 opciones al usuario y DETENERSE esperando respuesta:
+  1) Merge todas las ramas en Principal
+  2) Pull de Principal
+  3) Push de mi rama actual
+  4) Elegir una rama específica
+  5) Cancelar
+- Usar sub-agente git-branch-diff para obtener resumen de cambios entre ramas
+- Después de git push, INDICAR al compañero qué debe hacer
+- Usar --no-ff en merges para mantener historial limpio
+
 ### git-sync
 - ANTES de hacer cualquier push, verificar si hay cambios remotos con git fetch origin
 - Si hay cambios nuevos en la rama destino, hacer git merge o git pull antes de pushear
@@ -174,4 +187,4 @@
 El orquestador lee este archivo para resolver skills antes de lanzar sub-agentes.
 Para actualizar tras agregar skills nuevos, ejecutar skill-registry skill.
 
-**Última actualización:** 2026-04-16
+**Última actualización:** 2026-04-18

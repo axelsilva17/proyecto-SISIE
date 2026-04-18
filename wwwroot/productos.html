@@ -147,10 +147,14 @@
                 </div>
                 
                 <!-- Botón guardar -->
-                <div class="md:col-span-3 flex items-end">
+                <div class="md:col-span-3 flex items-end gap-2">
                     <button type="submit" id="btnGuardar"
-                        class="w-full bg-brand-orange text-white py-2 px-4 rounded-lg hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-brand-orange transition font-medium">
+                        class="flex-1 bg-brand-orange text-white py-2 px-4 rounded-lg hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-brand-orange transition font-medium">
                         <i class="fas fa-save mr-2"></i>Guardar Producto
+                    </button>
+                    <button type="button" id="btnCancelar" onclick="cancelarEdicion()"
+                        class="hidden bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 transition font-medium">
+                        <i class="fas fa-times mr-2"></i>Cancelar
                     </button>
                 </div>
             </form>
@@ -376,7 +380,16 @@
             
             editingId = id;
             document.getElementById('btnGuardar').innerHTML = '<i class="fas fa-save mr-2"></i>Actualizar Producto';
+            document.getElementById('btnCancelar').classList.remove('hidden');
             window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Cancelar edición
+        function cancelarEdicion() {
+            editingId = null;
+            document.getElementById('productoForm').reset();
+            document.getElementById('btnGuardar').innerHTML = '<i class="fas fa-save mr-2"></i>Guardar Producto';
+            document.getElementById('btnCancelar').classList.add('hidden');
         }
 
         // Toggle activo (soft delete) - directo sin confirmación
