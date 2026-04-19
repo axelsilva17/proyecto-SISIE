@@ -74,13 +74,22 @@ public class ProductoService : IProductoService
 
     public async Task<ProductoDTO> CreateAsync(ProductoCreateDTO dto)
     {
-        // Verificar si ya existe un producto con el mismo nombre
+        // Verificar si ya existe un producto con el mismo nombre (case-insensitive)
         var existe = await _context.Productos
-            .AnyAsync(p => p.NombreProducto.ToLower() == dto.NombreProducto.ToLower() && p.Activo);
+            .AnyAsync(p => p.NombreProducto.Equals(dto.NombreProducto, StringComparison.OrdinalIgnoreCase) && p.Activo);
         
         if (existe)
         {
             throw new InvalidOperationException("Ya existe un producto con ese nombre");
+        }
+
+        // Verificar que la categoría exista
+        var categoriaExiste = await _context.Categorias
+            .AnyAsync(c => c.Id == dto.IdCategoria);
+        
+        if (!categoriaExiste)
+        {
+            throw new InvalidOperationException("La categoría no existe");
         }
 
         var producto = new Producto
@@ -141,7 +150,8 @@ public class ProductoService : IProductoService
         var producto = await _context.Productos.FindAsync(id);
         if (producto == null) return false;
 
-        _context.Productos.Remove(producto);
+        // Soft delete: marcar como inactivo en vez de borrar
+        producto.Activo = false;
         await _context.SaveChangesAsync();
         return true;
     }

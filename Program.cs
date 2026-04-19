@@ -34,7 +34,9 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 .AddDefaultTokenProviders();
 
 // JWT Authentication
-var jwtKey = builder.Configuration["Jwt:Key"] ?? "SisieSecretKey2026!@#$%";
+var jwtKey = builder.Configuration["Jwt:Key"] 
+    ?? throw new InvalidOperationException(
+        "JWT Key no configurada en appsettings.json");
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "proyecto-SISIE";
 var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "proyecto-SISIE";
 
