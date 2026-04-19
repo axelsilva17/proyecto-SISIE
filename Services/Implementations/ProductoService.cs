@@ -21,7 +21,6 @@ public class ProductoService : IProductoService
             .Include(p => p.Categoria)
             .Where(p => true);
 
-        // Filtros
         if (idCategoria.HasValue)
             query = query.Where(p => p.IdCategoria == idCategoria.Value);
         
@@ -37,9 +36,9 @@ public class ProductoService : IProductoService
             .Select(p => new ProductoListDTO
             {
                 Id = p.Id,
-                Nombre = p.Nombre,
+                NombreProducto = p.NombreProducto,
                 Descripcion = p.Descripcion,
-                Precio = p.Precio,
+                PrecioUnitario = p.PrecioUnitario,
                 Stock = p.Stock,
                 IdCategoria = p.IdCategoria,
                 NombreCategoria = p.Categoria!.NombreCategoria,
@@ -62,9 +61,9 @@ public class ProductoService : IProductoService
         return new ProductoDTO
         {
             Id = producto.Id,
-            Nombre = producto.Nombre,
+            NombreProducto = producto.NombreProducto,
             Descripcion = producto.Descripcion,
-            Precio = producto.Precio,
+            PrecioUnitario = producto.PrecioUnitario,
             Stock = producto.Stock,
             IdCategoria = producto.IdCategoria,
             NombreCategoria = producto.Categoria?.NombreCategoria,
@@ -75,11 +74,29 @@ public class ProductoService : IProductoService
 
     public async Task<ProductoDTO> CreateAsync(ProductoCreateDTO dto)
     {
+        // Verificar si ya existe un producto con el mismo nombre (case-insensitive)
+        var existe = await _context.Productos
+            .AnyAsync(p => p.NombreProducto.Equals(dto.NombreProducto, StringComparison.OrdinalIgnoreCase) && p.Activo);
+        
+        if (existe)
+        {
+            throw new InvalidOperationException("Ya existe un producto con ese nombre");
+        }
+
+        // Verificar que la categoría exista
+        var categoriaExiste = await _context.Categorias
+            .AnyAsync(c => c.Id == dto.IdCategoria);
+        
+        if (!categoriaExiste)
+        {
+            throw new InvalidOperationException("La categoría no existe");
+        }
+
         var producto = new Producto
         {
-            Nombre = dto.Nombre,
+            NombreProducto = dto.NombreProducto,
             Descripcion = dto.Descripcion,
-            Precio = dto.Precio,
+            PrecioUnitario = dto.PrecioUnitario,
             Stock = dto.Stock,
             IdCategoria = dto.IdCategoria,
             FechaCreacion = DateTime.Now,
@@ -89,46 +106,40 @@ public class ProductoService : IProductoService
         _context.Productos.Add(producto);
         await _context.SaveChangesAsync();
 
-        var categoria = await _context.Categorias.FindAsync(producto.IdCategoria);
-
         return new ProductoDTO
         {
             Id = producto.Id,
-            Nombre = producto.Nombre,
+            NombreProducto = producto.NombreProducto,
             Descripcion = producto.Descripcion,
-            Precio = producto.Precio,
+            PrecioUnitario = producto.PrecioUnitario,
             Stock = producto.Stock,
             IdCategoria = producto.IdCategoria,
-            NombreCategoria = categoria?.NombreCategoria,
             FechaCreacion = producto.FechaCreacion,
             Activo = producto.Activo
         };
     }
 
-    public async Task<ProductoDTO?> UpdateAsync(int id, ProductoCreateDTO dto)
+    public async Task<ProductoDTO?> UpdateAsync(int id, ProductoUpdateDTO dto)
     {
         var producto = await _context.Productos.FindAsync(id);
         if (producto == null) return null;
 
-        producto.Nombre = dto.Nombre;
+        producto.NombreProducto = dto.NombreProducto;
         producto.Descripcion = dto.Descripcion;
-        producto.Precio = dto.Precio;
+        producto.PrecioUnitario = dto.PrecioUnitario;
         producto.Stock = dto.Stock;
         producto.IdCategoria = dto.IdCategoria;
 
         await _context.SaveChangesAsync();
 
-        var categoria = await _context.Categorias.FindAsync(producto.IdCategoria);
-
         return new ProductoDTO
         {
             Id = producto.Id,
-            Nombre = producto.Nombre,
+            NombreProducto = producto.NombreProducto,
             Descripcion = producto.Descripcion,
-            Precio = producto.Precio,
+            PrecioUnitario = producto.PrecioUnitario,
             Stock = producto.Stock,
             IdCategoria = producto.IdCategoria,
-            NombreCategoria = categoria?.NombreCategoria,
             FechaCreacion = producto.FechaCreacion,
             Activo = producto.Activo
         };
@@ -139,9 +150,30 @@ public class ProductoService : IProductoService
         var producto = await _context.Productos.FindAsync(id);
         if (producto == null) return false;
 
-        // Soft delete
+        // Soft delete: marcar como inactivo en vez de borrar
         producto.Activo = false;
         await _context.SaveChangesAsync();
         return true;
+    }
+
+    public async Task<ProductoDTO?> ToggleActivoAsync(int id)
+    {
+        var producto = await _context.Productos.FindAsync(id);
+        if (producto == null) return null;
+
+        producto.Activo = !producto.Activo;
+        await _context.SaveChangesAsync();
+
+        return new ProductoDTO
+        {
+            Id = producto.Id,
+            NombreProducto = producto.NombreProducto,
+            Descripcion = producto.Descripcion,
+            PrecioUnitario = producto.PrecioUnitario,
+            Stock = producto.Stock,
+            IdCategoria = producto.IdCategoria,
+            FechaCreacion = producto.FechaCreacion,
+            Activo = producto.Activo
+        };
     }
 }

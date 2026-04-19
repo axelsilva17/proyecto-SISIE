@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro - SISIE</title>
+    
+    <!-- Speculation Rules - Preload de páginas para navegación más rápida -->
+    <script type="speculationrules">
+    {
+      "prefetch": [
+        { "urls": ["/index.html", "/login.html", "/productos.html"] }
+      ]
+    }
+    </script>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            orange: '#F25C05',
+                            orangeLight: '#FF7A1A',
+                            dark: '#052741',
+                            medium: '#1F4E79'
+                        },
+                        neutral: {
+                            light: '#F2F2F2',
+                            medium: '#D9D9D9',
+                            dark: '#555555'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        input:focus { transition: all 0.2s ease-in-out; }
+        .loader {
+            border: 2px solid transparent;
+            border-top: 2px solid white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        .shake { animation: shake 0.3s ease-in-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in { animation: fadeIn 0.3s ease-out; }
+    </style>
+</head>
+<body class="bg-neutral-light min-h-screen flex items-center justify-center p-4 relative">
+    
+    <!-- Logo de fondo -->
+    <div class="absolute inset-0 flex items-center justify-center pointer-events-none" style="opacity: 0.20;">
+        <img src="/img/Logo de SISIE GROUP.png" alt="" class="max-w-8xl w-full h-auto">
+    </div>
+
+    <div class="w-full max-w-md relative z-10">
+        
+        <!-- Logo arriba de la caja -->
+        <div class="flex justify-center mb-6">
+            <img src="/img/LogoCaja.png" alt="SISIE" class="h-32 w-auto">
+        </div>
+        
+        <!-- Card Registro -->
+        <div class="bg-white rounded-xl shadow-xl p-6 md:p-8 border-t-4 border-brand-orange">
+            
+            <form id="registerForm" class="space-y-4" novalidate>
+                <h2 class="text-xl md:text-2xl font-semibold text-brand-dark mb-6 text-center">
+                    Crear Cuenta
+                </h2>
+                
+                <!-- Nombre -->
+                <div>
+                    <label for="nombreUsuario" class="block text-sm font-medium text-brand-dark mb-1">Nombre</label>
+                    <div class="relative">
+                        <input 
+                            type="text" 
+                            id="nombreUsuario" 
+                            required
+                            minlength="3"
+                            placeholder="Tu nombre"
+                            class="w-full px-4 py-3 pl-11 text-base border border-neutral-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-orange"
+                        >
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-user text-neutral-dark text-sm"></i>
+                        </div>
+                    </div>
+                    <p id="nombreError" class="text-red-500 text-xs mt-1 hidden">Mínimo 3 caracteres</p>
+                </div>
+
+                <!-- Email -->
+                <div>
+                    <label for="email" class="block text-sm font-medium text-brand-dark mb-1">Correo</label>
+                    <div class="relative">
+                        <input 
+                            type="email" 
+                            id="email" 
+                            required
+                            placeholder="tu@email.com"
+                            class="w-full px-4 py-3 pl-11 text-base border border-neutral-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-orange"
+                        >
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-envelope text-neutral-dark text-sm"></i>
+                        </div>
+                    </div>
+                    <p id="emailError" class="text-red-500 text-xs mt-1 hidden">Email inválido</p>
+                </div>
+
+                <!-- Password -->
+                <div>
+                    <label for="password" class="block text-sm font-medium text-brand-dark mb-1">Contraseña</label>
+                    <div class="relative">
+                        <input 
+                            type="password" 
+                            id="password" 
+                            required
+                            minlength="6"
+                            placeholder="••••••••"
+                            class="w-full px-4 py-3 pl-11 pr-11 text-base border border-neutral-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-orange"
+                        >
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-lock text-neutral-dark text-sm"></i>
+                        </div>
+                        <button type="button" id="togglePassword" class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                            <i id="eyeIcon" class="fas fa-eye text-neutral-dark hover:text-brand-dark text-sm"></i>
+                        </button>
+                    </div>
+                    <p class="text-xs text-neutral-dark mt-1">Mínimo 6 caracteres</p>
+                </div>
+
+                <!-- Confirmar -->
+                <div>
+                    <label for="confirmPassword" class="block text-sm font-medium text-brand-dark mb-1">Confirmar</label>
+                    <div class="relative">
+                        <input 
+                            type="password" 
+                            id="confirmPassword" 
+                            required
+                            placeholder="••••••••"
+                            class="w-full px-4 py-3 pl-11 text-base border border-neutral-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-orange"
+                        >
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-lock text-neutral-dark text-sm"></i>
+                        </div>
+                        <div id="matchIcon" class="absolute inset-y-0 right-0 pr-3 flex items-center hidden">
+                            <i class="fas fa-check text-green-500 text-sm"></i>
+                        </div>
+                    </div>
+                    <p id="confirmError" class="text-red-500 text-xs mt-1 hidden">No coincide</p>
+                </div>
+
+                <!-- Términos -->
+                <div class="flex items-start">
+                    <input type="checkbox" id="terminos" required class="w-4 h-4 mt-1 text-brand-orange rounded">
+                    <label for="terminos" class="ml-2 text-xs text-neutral-dark">
+                        Acepto <a href="#" class="text-brand-orange">términos</a>
+                    </label>
+                </div>
+
+                <!-- Botón -->
+                <button 
+                    type="submit"
+                    id="submitBtn"
+                    class="w-full bg-brand-orange text-white py-3 rounded-lg font-semibold hover:bg-orange-600 transition-colors text-base flex items-center justify-center gap-2 disabled:opacity-75"
+                >
+                    <span id="btnText">Crear Cuenta</span>
+                    <div id="btnLoader" class="loader hidden"></div>
+                </button>
+            </form>
+
+            <!-- Login link -->
+            <p class="mt-6 text-center text-neutral-dark text-sm">
+                ¿Ya tienes cuenta? <a href="/login.html" class="text-brand-orange font-medium">Inicia sesión</a>
+            </p>
+
+            <!-- Mensaje -->
+            <div id="message" class="mt-4 p-4 rounded-lg hidden text-sm fade-in"></div>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (token) window.location.href = '/index.html';
+
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('password');
+        const eyeIcon = document.getElementById('eyeIcon');
+
+        togglePassword.addEventListener('click', () => {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            eyeIcon.classList.toggle('fa-eye');
+            eyeIcon.classList.toggle('fa-eye-slash');
+        });
+
+        const nombreInput = document.getElementById('nombreUsuario');
+        const nombreError = document.getElementById('nombreError');
+        const emailInput = document.getElementById('email');
+        const emailError = document.getElementById('emailError');
+        const confirmInput = document.getElementById('confirmPassword');
+        const confirmError = document.getElementById('confirmError');
+        const matchIcon = document.getElementById('matchIcon');
+
+        nombreInput.addEventListener('blur', () => {
+            if (nombreInput.value.trim().length < 3) {
+                nombreError.classList.remove('hidden');
+                nombreInput.classList.add('border-red-500', 'shake');
+                setTimeout(() => nombreInput.classList.remove('shake'), 300);
+            }
+        });
+
+        emailInput.addEventListener('blur', () => {
+            if (!emailInput.value.includes('@')) {
+                emailError.classList.remove('hidden');
+                emailInput.classList.add('border-red-500', 'shake');
+                setTimeout(() => emailInput.classList.remove('shake'), 300);
+            }
+        });
+        
+        // Limpiar error cuando el usuario corrige el email
+        emailInput.addEventListener('input', () => {
+            if (emailInput.value.includes('@')) {
+                emailError.classList.add('hidden');
+                emailInput.classList.remove('border-red-500');
+            }
+        });
+
+        confirmInput.addEventListener('input', () => {
+            if (confirmInput.value === passwordInput.value && confirmInput.value.length > 0) {
+                confirmInput.classList.remove('border-red-500');
+                confirmInput.classList.add('border-green-500');
+                matchIcon.classList.remove('hidden');
+            } else {
+                confirmInput.classList.remove('border-green-500');
+                matchIcon.classList.add('hidden');
+            }
+        });
+
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const nombreUsuario = nombreInput.value.trim();
+            const email = emailInput.value.trim();
+            const password = passwordInput.value;
+            const confirmPassword = confirmInput.value;
+            const submitBtn = document.getElementById('submitBtn');
+            const btnText = document.getElementById('btnText');
+
+            let hasError = false;
+            if (nombreUsuario.length < 3) {
+                nombreError.classList.remove('hidden');
+                nombreInput.classList.add('border-red-500', 'shake');
+                setTimeout(() => nombreInput.classList.remove('shake'), 300);
+                hasError = true;
+            }
+            if (!email.includes('@')) {
+                emailError.classList.remove('hidden');
+                emailInput.classList.add('border-red-500', 'shake');
+                setTimeout(() => emailInput.classList.remove('shake'), 300);
+                hasError = true;
+            }
+            if (password.length < 6) {
+                passwordInput.classList.add('border-red-500');
+                hasError = true;
+            }
+            if (password !== confirmPassword) {
+                confirmError.classList.remove('hidden');
+                confirmInput.classList.add('border-red-500', 'shake');
+                setTimeout(() => confirmInput.classList.remove('shake'), 300);
+                hasError = true;
+            }
+            if (hasError) return;
+
+            btnText.innerHTML = '<span class="loader mr-2"></span> Creando...';
+            submitBtn.disabled = true;
+
+            try {
+                console.log('Enviando petición...');
+                const response = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nombreUsuario, email, password })
+                });
+                console.log('Response status:', response.status);
+                
+                const text = await response.text();
+                console.log('Response text:', text);
+                
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch (e) {
+                    showMessage('Error del servidor. Intentá de nuevo.', 'error');
+                    btnText.textContent = 'Crear Cuenta';
+                    submitBtn.disabled = false;
+                    return;
+                }
+                
+                // Mostrar errores amigables según el tipo de error
+                if (!data.success) {
+                    let mensajeAmigable = data.message;
+                    
+                    // Traducir errores técnicos a mensajes amigables
+                    if (data.message && data.message.includes('already taken')) {
+                        if (data.message.includes('Username')) {
+                            mensajeAmigable = 'El nombre de usuario ya está en uso. Elegí otro.';
+                        } else if (data.message.includes('email') || data.message.includes('Email')) {
+                            mensajeAmigable = 'El email ya está registrado. ¿Ya tenés cuenta?';
+                        }
+                    }
+                    
+                    showMessage(mensajeAmigable, 'error');
+                    btnText.textContent = 'Crear Cuenta';
+                    submitBtn.disabled = false;
+                    return;
+                } else {
+                    // Registro exitoso
+                    localStorage.setItem('token', data.token);
+                    showMessage('¡Cuenta creada!', 'success');
+                    setTimeout(() => window.location.href = '/index.html', 1500);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                // Mostrar error más detallado
+                const errorText = error.message || error.statusText || 'Error de conexión';
+                showMessage('Error: ' + errorText + ' (revisa la consola para más info)', 'error');
+                btnText.textContent = 'Crear Cuenta';
+                submitBtn.disabled = false;
+            }
+        });
+
+        function showMessage(text, type) {
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = text;
+            messageEl.className = type === 'success' 
+                ? 'mt-4 p-4 rounded-lg bg-green-100 text-green-700 text-sm fade-in'
+                : 'mt-4 p-4 rounded-lg bg-red-100 text-red-700 text-sm fade-in';
+            messageEl.classList.remove('hidden');
+        }
+        
+        // Atajos de teclado
+        document.addEventListener('keydown', (e) => {
+            // Ctrl+Enter - Enviar formulario de registro
+            if (e.ctrlKey && e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('registerForm').dispatchEvent(new Event('submit'));
+            }
+            // Escape - Ir al login
+            if (e.key === 'Escape') {
+                window.location.href = '/login.html';
+            }
+        });
+    </script>
+</body>
+</html>

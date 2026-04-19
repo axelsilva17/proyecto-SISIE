@@ -37,18 +37,49 @@ public class CategoriasController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<CategoriaDTO>> Create([FromBody] CategoriaCreateDTO categoria)
     {
-        if (string.IsNullOrWhiteSpace(categoria.NombreCategoria))
-            return BadRequest(new { message = "El nombre es requerido" });
+        // Validar con DataAnnotations
+        if (!ModelState.IsValid)
+        {
+            var errores = ModelState
+                .Where(x => x.Value?.Errors.Count > 0)
+                .Select(x => x.Value?.Errors.First().ErrorMessage)
+                .ToList();
+            
+            return BadRequest(new { 
+                success = false, 
+                message = "Error de validación",
+                errors = errores 
+            });
+        }
 
-        var created = await _categoriaService.CreateAsync(categoria);
-        return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+        try
+        {
+            var created = await _categoriaService.CreateAsync(categoria);
+            return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { success = false, message = ex.Message });
+        }
     }
 
     [HttpPut("{id}")]
     public async Task<ActionResult<CategoriaDTO>> Update(int id, [FromBody] CategoriaCreateDTO categoria)
     {
-        if (string.IsNullOrWhiteSpace(categoria.NombreCategoria))
-            return BadRequest(new { message = "El nombre es requerido" });
+        // Validar con DataAnnotations
+        if (!ModelState.IsValid)
+        {
+            var errores = ModelState
+                .Where(x => x.Value?.Errors.Count > 0)
+                .Select(x => x.Value?.Errors.First().ErrorMessage)
+                .ToList();
+            
+            return BadRequest(new { 
+                success = false, 
+                message = "Error de validación",
+                errors = errores 
+            });
+        }
 
         var updated = await _categoriaService.UpdateAsync(id, categoria);
         if (updated == null)

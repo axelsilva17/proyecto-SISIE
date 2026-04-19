@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Categorías - SISIE</title>
+    
+    <!-- Speculation Rules - Preload de páginas para navegación más rápida -->
+    <script type="speculationrules">
+    {
+      "prefetch": [
+        { "urls": ["/index.html", "/productos.html", "/ventas.html"] }
+      ]
+    }
+    </script>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            orange: '#F25C05',
+                            orangeLight: '#FF7A1A',
+                            dark: '#052741',
+                            medium: '#1F4E79'
+                        },
+                        neutral: {
+                            light: '#F2F2F2',
+                            medium: '#D9D9D9',
+                            dark: '#555555'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in-up { animation: fadeInUp 0.4s ease-out forwards; }
+        
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #F25C05;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #F25C05;
+        }
+    </style>
+</head>
+<body class="bg-neutral-light min-h-screen">
+    
+    <!-- Navbar -->
+    <nav class="bg-brand-dark text-white p-4 shadow-lg">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <a href="/index.html" class="flex items-center gap-2 hover:opacity-80 transition -ml-2">
+                <img src="/img/LogoCaja.png" alt="SISIE" class="h-14">
+                <span class="font-bold text-lg">SISIE</span>
+            </a>
+            <div class="flex items-center gap-4">
+                <a href="/index.html" class="text-sm hover:text-brand-orange transition">
+                    <i class="fas fa-home mr-1"></i> Inicio
+                </a>
+                <a href="/productos.html" class="text-sm hover:text-brand-orange transition">
+                    <i class="fas fa-box mr-1"></i> Productos
+                </a>
+                <button onclick="logout()" class="text-red-400 hover:text-red-300 text-sm">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-6xl mx-auto p-4 md:p-6">
+        
+        <!-- Título -->
+        <div class="mb-6 fade-in-up">
+            <a href="/index.html" class="inline-flex items-center text-brand-orange hover:text-orange-700 text-sm mb-2">
+                <i class="fas fa-arrow-left mr-1"></i> Volver
+            </a>
+            <h1 class="text-2xl md:text-3xl font-bold text-brand-dark flex items-center gap-3">
+                <i class="fas fa-tags text-brand-orange"></i>
+                Gestión de Categorías
+            </h1>
+            <p class="text-neutral-dark text-sm mt-1">Organizá las categorías para clasificar tus productos</p>
+        </div>
+
+        <!-- Formulario para cargar categoría -->
+        <div class="bg-white rounded-xl shadow-md p-6 mb-6 fade-in-up">
+            <h2 class="text-lg font-semibold text-brand-dark mb-4 flex items-center gap-2">
+                <i class="fas fa-plus-circle text-brand-orange"></i>
+                Nueva Categoría
+            </h2>
+            
+            <form id="categoriaForm" class="flex gap-4 items-end">
+                <!-- Nombre -->
+                <div class="flex-1">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nombre de Categoría *</label>
+                    <input type="text" id="nombreCategoria" required
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-orange focus:border-transparent"
+                        placeholder="Ej: Herramientas Eléctricas">
+                </div>
+                
+                <!-- Botón guardar -->
+                <div class="flex gap-2">
+                    <button type="submit" id="btnGuardar"
+                        class="bg-brand-orange text-white py-2 px-6 rounded-lg hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-brand-orange transition font-medium">
+                        <i class="fas fa-save mr-2"></i>Guardar
+                    </button>
+                    <button type="button" id="btnCancelar" onclick="cancelarEdicion()"
+                        class="hidden bg-gray-500 text-white py-2 px-6 rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 transition font-medium">
+                        <i class="fas fa-times mr-2"></i>Cancelar
+                    </button>
+                </div>
+            </form>
+            
+            <!-- Mensaje -->
+            <div id="message" class="mt-4 p-3 rounded-lg hidden"></div>
+        </div>
+
+        <!-- Listado de categorías -->
+        <div class="bg-white rounded-xl shadow-md p-6 fade-in-up">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-semibold text-brand-dark flex items-center gap-2">
+                    <i class="fas fa-list text-brand-orange"></i>
+                    Lista de Categorías
+                </h2>
+                <span id="totalCategorias" class="text-sm text-gray-500">0 categorías</span>
+            </div>
+            
+            <!-- Grid de categorías -->
+            <div id="categoriasGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="col-span-full text-center py-8 text-gray-500">
+                    <i class="fas fa-spinner fa-spin mr-2"></i>Cargando...
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = '/login.html';
+
+        let editingId = null;
+        let categorias = [];
+
+        // Cargar categorías
+        async function loadCategorias() {
+            try {
+                const response = await fetch('/api/categorias', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                // API devuelve array directo, no { success, categorias }
+                const data = await response.json();
+                if (Array.isArray(data)) {
+                    categorias = data;
+                    renderCategorias(data);
+                    document.getElementById('totalCategorias').textContent = `${data.length} categorías`;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('Error al cargar categorías', 'error');
+            }
+        }
+
+        // Renderizar grid de categorías
+        function renderCategorias(items) {
+            const grid = document.getElementById('categoriasGrid');
+            if (items.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-8 text-gray-500">No hay categorías registradas</div>`;
+                return;
+            }
+            grid.innerHTML = items.map(cat => `
+                <div class="bg-neutral-light rounded-lg p-4 border hover:shadow-md transition">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <h3 class="font-semibold text-brand-dark">${cat.nombreCategoria}</h3>
+                            <p class="text-xs text-gray-500 mt-1">
+                                <span id="count-${cat.id}">0</span> productos
+                            </p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="editarCategoria(${cat.id})" class="text-brand-orange hover:text-orange-700" title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="eliminarCategoria(${cat.id})" class="text-red-500 hover:text-red-700" title="Eliminar">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Cargar conteo de productos por categoría
+            items.forEach(cat => {
+                loadProductoCount(cat.id);
+            });
+        }
+
+        // Cargar conteo de productos
+        async function loadProductoCount(idCategoria) {
+            try {
+                const response = await fetch(`/api/productos?idCategoria=${idCategoria}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                // API devuelve { items, total, page, pageSize } no { success, productos }
+                if (data.items) {
+                    const countEl = document.getElementById(`count-${idCategoria}`);
+                    if (countEl) countEl.textContent = data.items.length;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Guardar categoría (crear o editar)
+        document.getElementById('categoriaForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btnGuardar');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Guardando...';
+
+            const data = {
+                nombreCategoria: document.getElementById('nombreCategoria').value
+            };
+
+            try {
+                const url = editingId ? `/api/categorias/${editingId}` : '/api/categorias';
+                const method = editingId ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    showMessage(editingId ? 'Categoría actualizada' : 'Categoría guardada', 'success');
+                    document.getElementById('categoriaForm').reset();
+                    editingId = null;
+                    document.getElementById('btnGuardar').innerHTML = '<i class="fas fa-save mr-2"></i>Guardar';
+                    loadCategorias();
+                } else {
+                    const error = await response.json();
+                    showMessage(error.message || 'Error al guardar', 'error');
+                }
+            } catch (error) {
+                showMessage('Error de conexión', 'error');
+            }
+            
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-save mr-2"></i>Guardar';
+        });
+
+        // Editar categoría
+        async function editarCategoria(id) {
+            const cat = categorias.find(c => c.id === id);
+            if (!cat) return;
+            
+            document.getElementById('nombreCategoria').value = cat.nombreCategoria;
+            editingId = id;
+            document.getElementById('btnGuardar').innerHTML = '<i class="fas fa-save mr-2"></i>Actualizar';
+            document.getElementById('btnCancelar').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Cancelar edición
+        function cancelarEdicion() {
+            editingId = null;
+            document.getElementById('categoriaForm').reset();
+            document.getElementById('btnGuardar').innerHTML = '<i class="fas fa-save mr-2"></i>Guardar';
+            document.getElementById('btnCancelar').classList.add('hidden');
+        }
+
+        // Eliminar categoría
+        async function eliminarCategoria(id) {
+            const cat = categorias.find(c => c.id === id);
+            if (!cat) return;
+            
+            // Verificar si tiene productos
+            const countEl = document.getElementById(`count-${id}`);
+            const count = countEl ? parseInt(countEl.textContent) : 0;
+            
+            if (count > 0) {
+                showMessage(`No se puede eliminar. Hay ${count} productos en esta categoría.`, 'error');
+                return;
+            }
+            
+            if (!confirm(`¿Eliminar categoría "${cat.nombreCategoria}"?`)) return;
+            
+            try {
+                const response = await fetch(`/api/categorias/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.ok) {
+                    showMessage('Categoría eliminada', 'success');
+                    loadCategorias();
+                } else {
+                    const error = await response.json();
+                    showMessage(error.message || 'Error al eliminar', 'error');
+                }
+            } catch (error) {
+                showMessage('Error de conexión', 'error');
+            }
+        }
+
+        // Mostrar mensaje
+        function showMessage(msg, type) {
+            const el = document.getElementById('message');
+            el.textContent = msg;
+            el.className = `mt-4 p-3 rounded-lg ${type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`;
+            el.classList.remove('hidden');
+            setTimeout(() => el.classList.add('hidden'), 3000);
+        }
+
+        // Logout
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = '/login.html';
+        }
+        
+        // Atajos de teclado
+        document.addEventListener('keydown', (e) => {
+            // Ctrl+N - Nueva categoría
+            if (e.ctrlKey && e.key === 'n') {
+                e.preventDefault();
+                document.getElementById('btnNuevo').click();
+            }
+            // Ctrl+I - Dashboard
+            if (e.ctrlKey && e.key === 'i') {
+                e.preventDefault();
+                window.location.href = '/index.html';
+            }
+            // Ctrl+P - Productos
+            if (e.ctrlKey && e.key === 'p') {
+                e.preventDefault();
+                window.location.href = '/productos.html';
+            }
+            // Ctrl+V - Ventas
+            if (e.ctrlKey && e.key === 'v') {
+                e.preventDefault();
+                window.location.href = '/ventas.html';
+            }
+            // Escape - Cerrar modal
+            if (e.key === 'Escape') {
+                cerrarModal();
+            }
+            // Ctrl+L - Logout
+            if (e.ctrlKey && e.key === 'l') {
+                e.preventDefault();
+                logout();
+            }
+        });
+
+        // Iniciar
+        loadCategorias();
+    </script>
+</body>
+</html>

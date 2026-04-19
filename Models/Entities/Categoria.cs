@@ -7,7 +7,7 @@ public class Categoria
     public int Id { get; set; }
     
     [Required]
-    [StringLength(100)]
+    [StringLength(20)]
     public string NombreCategoria { get; set; } = string.Empty;
     
     public ICollection<Producto> Productos { get; set; } = new List<Producto>();
