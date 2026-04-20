@@ -18,7 +18,7 @@ public class ProductosController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<ProductoPagedResult>> GetAll(
+    public async Task<ActionResult<ProductoPagedResult>> GetAllProductos(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10,
         [FromQuery] int? idCategoria = null,
@@ -40,7 +40,7 @@ public class ProductosController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<ProductoDTO>> GetById(int id)
+    public async Task<ActionResult<ProductoDTO>> GetProductoById(int id)
     {
         var producto = await _productoService.GetByIdAsync(id);
         if (producto == null)
@@ -50,7 +50,7 @@ public class ProductosController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<ProductoDTO>> Create([FromBody] ProductoCreateDTO producto)
+    public async Task<ActionResult<ProductoDTO>> CreateProducto([FromBody] ProductoCreateDTO producto)
     {
         // Validar con DataAnnotations
         if (!ModelState.IsValid)
@@ -70,7 +70,7 @@ public class ProductosController : ControllerBase
         try
         {
             var created = await _productoService.CreateAsync(producto);
-            return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+            return CreatedAtAction(nameof(GetProductoById), new { id = created.Id }, created);
         }
         catch (InvalidOperationException ex)
         {
@@ -79,7 +79,7 @@ public class ProductosController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult<ProductoDTO>> Update(int id, [FromBody] ProductoUpdateDTO producto)
+    public async Task<ActionResult<ProductoDTO>> UpdateProducto(int id, [FromBody] ProductoUpdateDTO producto)
     {
         // Validar con DataAnnotations
         if (!ModelState.IsValid)
@@ -104,7 +104,7 @@ public class ProductosController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    public async Task<ActionResult> Delete(int id)
+    public async Task<ActionResult> DeleteProducto(int id)
     {
         var result = await _productoService.DeleteAsync(id);
         if (!result)
