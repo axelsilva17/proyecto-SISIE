@@ -42,8 +42,9 @@ public class CategoriaService : ICategoriaService
     public async Task<CategoriaDTO> CreateAsync(CategoriaCreateDTO dto)
     {
         // Verificar si ya existe una categoría con el mismo nombre (case-insensitive)
+        var nombreLower = dto.NombreCategoria.ToLower();
         var existe = await _context.Categorias
-            .AnyAsync(c => c.NombreCategoria.Equals(dto.NombreCategoria, StringComparison.OrdinalIgnoreCase));
+            .AnyAsync(c => c.NombreCategoria.ToLower() == nombreLower);
         
         if (existe)
         {
