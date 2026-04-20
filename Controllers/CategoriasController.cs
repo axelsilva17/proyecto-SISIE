@@ -18,14 +18,14 @@ public class CategoriasController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<CategoriaDTO>>> GetAll()
+    public async Task<ActionResult<IEnumerable<CategoriaDTO>>> GetAllCategorias()
     {
         var categorias = await _categoriaService.GetAllAsync();
         return Ok(categorias);
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<CategoriaDTO>> GetById(int id)
+    public async Task<ActionResult<CategoriaDTO>> GetCategoriaById(int id)
     {
         var categoria = await _categoriaService.GetByIdAsync(id);
         if (categoria == null)
@@ -35,7 +35,7 @@ public class CategoriasController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<CategoriaDTO>> Create([FromBody] CategoriaCreateDTO categoria)
+    public async Task<ActionResult<CategoriaDTO>> CreateCategoria([FromBody] CategoriaCreateDTO categoria)
     {
         // Validar con DataAnnotations
         if (!ModelState.IsValid)
@@ -55,7 +55,7 @@ public class CategoriasController : ControllerBase
         try
         {
             var created = await _categoriaService.CreateAsync(categoria);
-            return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+            return CreatedAtAction(nameof(GetCategoriaById), new { id = created.Id }, created);
         }
         catch (InvalidOperationException ex)
         {
@@ -64,7 +64,7 @@ public class CategoriasController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult<CategoriaDTO>> Update(int id, [FromBody] CategoriaCreateDTO categoria)
+    public async Task<ActionResult<CategoriaDTO>> UpdateCategoria(int id, [FromBody] CategoriaCreateDTO categoria)
     {
         // Validar con DataAnnotations
         if (!ModelState.IsValid)
@@ -89,7 +89,7 @@ public class CategoriasController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    public async Task<ActionResult> Delete(int id)
+    public async Task<ActionResult> DeleteCategoria(int id)
     {
         // Verificar si tiene productos activos
         var canDelete = await _categoriaService.CanDeleteAsync(id);

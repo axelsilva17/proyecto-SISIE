@@ -8,10 +8,10 @@ public class ProductoDTO
     public int Id { get; set; }
     
     [Required(ErrorMessage = "El nombre es requerido")]
-    [StringLength(20, MinimumLength = 3, ErrorMessage = "El nombre debe tener entre 3 y 20 caracteres")]
+    [StringLength(100, MinimumLength = 3, ErrorMessage = "El nombre debe tener entre 3 y 100 caracteres")]
     public string NombreProducto { get; set; } = string.Empty;
     
-    [StringLength(20, ErrorMessage = "La descripción no puede exceder 20 caracteres")]
+    [StringLength(500, ErrorMessage = "La descripción no puede exceder 500 caracteres")]
     public string? Descripcion { get; set; }
     
     [Required(ErrorMessage = "El precio es requerido")]
@@ -64,10 +64,10 @@ public class ProductoListDTO
 public class ProductoCreateDTO
 {
     [Required(ErrorMessage = "El nombre es requerido")]
-    [StringLength(20, MinimumLength = 3, ErrorMessage = "El nombre debe tener entre 3 y 20 caracteres")]
+    [StringLength(100, MinimumLength = 3, ErrorMessage = "El nombre debe tener entre 3 y 100 caracteres")]
     public string NombreProducto { get; set; } = string.Empty;
     
-    [StringLength(20, ErrorMessage = "La descripción no puede exceder 20 caracteres")]
+    [StringLength(500, ErrorMessage = "La descripción no puede exceder 500 caracteres")]
     public string? Descripcion { get; set; }
     
     [Required(ErrorMessage = "El precio es requerido")]
@@ -90,10 +90,10 @@ public class ProductoUpdateDTO
     public int Id { get; set; }
     
     [Required(ErrorMessage = "El nombre es requerido")]
-    [StringLength(20, MinimumLength = 3, ErrorMessage = "El nombre debe tener entre 3 y 20 caracteres")]
+    [StringLength(100, MinimumLength = 3, ErrorMessage = "El nombre debe tener entre 3 y 100 caracteres")]
     public string NombreProducto { get; set; } = string.Empty;
     
-    [StringLength(20, ErrorMessage = "La descripción no puede exceder 20 caracteres")]
+    [StringLength(500, ErrorMessage = "La descripción no puede exceder 500 caracteres")]
     public string? Descripcion { get; set; }
     
     [Required(ErrorMessage = "El precio es requerido")]

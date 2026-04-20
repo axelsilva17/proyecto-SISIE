@@ -253,7 +253,9 @@
                     loadCategorias();
                 } else {
                     const error = await response.json();
-                    showMessage(error.message || 'Error al guardar', 'error');
+                    console.error('Error response:', error);
+                    const msg = error.message || error.msg || JSON.stringify(error);
+                    showMessage(msg, 'error');
                 }
             } catch (error) {
                 showMessage('Error de conexión', 'error');

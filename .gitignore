@@ -19,3 +19,9 @@ obj/
 
 # Logs
 *.log
+
+# Engram persistent memory
+.engram/
+
+# Agent configuration (tracked separately in skills)
+.atl/

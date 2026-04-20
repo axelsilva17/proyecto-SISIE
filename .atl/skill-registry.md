@@ -172,6 +172,13 @@
 - Resolver conflictos si los hay antes de continuar
 - Después de hacer git push, INDICAR al usuario qué debe hacer su compañero
 - Ejemplos: "tu compañero debe hacer git pull origin main", "hacé git pull para descargar los cambios", etc.
+
+### release
+- Verificar que la rama destino (Principal/main) tenga los últimos cambios
+- Crear tag con versión semántica (vX.Y.Z)
+- Generar changelog desde último tag
+- Crear release en GitHub con gh release create
+- Incluir binarios/zip si corresponde
 - Esto aplica para: git push, git commit, merge de PR, o cualquier cambio que requiera acción del compañero
 
 ## Project Conventions
