@@ -388,6 +388,9 @@
 
         // Cancelar edición
         function cancelarEdicion() {
+            if (!confirm('¿Está seguro que desea cancelar? Los datos ingresados se perderán.')) {
+                return;
+            }
             editingId = null;
             document.getElementById('productoForm').reset();
             document.getElementById('btnGuardar').innerHTML = '<i class="fas fa-save mr-2"></i>Guardar Producto';

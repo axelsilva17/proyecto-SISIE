@@ -15,7 +15,7 @@ public class ProductoDTO
     public string? Descripcion { get; set; }
     
     [Required(ErrorMessage = "El precio es requerido")]
-    [Range(0.01, 999999.99, ErrorMessage = "El precio debe ser mayor a 0")]
+    [Range(0.01, 999999.99, ErrorMessage = "El precio debe estar entre 0.01 y 999,999.99")]
     [Column(TypeName = "decimal(18,2)")]
     public decimal PrecioUnitario { get; set; }
     
@@ -71,7 +71,7 @@ public class ProductoCreateDTO
     public string? Descripcion { get; set; }
     
     [Required(ErrorMessage = "El precio es requerido")]
-    [Range(0.01, 999999.99, ErrorMessage = "El precio debe ser mayor a 0")]
+    [Range(0.01, 999999.99, ErrorMessage = "El precio debe estar entre 0.01 y 999,999.99")]
     [Column(TypeName = "decimal(18,2)")]
     public decimal PrecioUnitario { get; set; }
     
@@ -97,7 +97,7 @@ public class ProductoUpdateDTO
     public string? Descripcion { get; set; }
     
     [Required(ErrorMessage = "El precio es requerido")]
-    [Range(0.01, 999999.99, ErrorMessage = "El precio debe ser mayor a 0")]
+    [Range(0.01, 999999.99, ErrorMessage = "El precio debe estar entre 0.01 y 999,999.99")]
     [Column(TypeName = "decimal(18,2)")]
     public decimal PrecioUnitario { get; set; }
     
