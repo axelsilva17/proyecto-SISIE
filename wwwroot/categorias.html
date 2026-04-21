@@ -113,7 +113,7 @@
                         <i class="fas fa-save mr-2"></i>Guardar
                     </button>
                     <button type="button" id="btnCancelar" onclick="cancelarEdicion()"
-                        class="hidden bg-gray-500 text-white py-2 px-6 rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 transition font-medium">
+                        class="bg-gray-500 text-white py-2 px-6 rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 transition font-medium">
                         <i class="fas fa-times mr-2"></i>Cancelar
                     </button>
                 </div>
@@ -121,6 +121,18 @@
             
             <!-- Mensaje -->
             <div id="message" class="mt-4 p-3 rounded-lg hidden"></div>
+        </div>
+
+        <!-- Modal de confirmación (fuera del formulario para cobertura completa) -->
+        <div id="confirmModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 transition-opacity duration-200 opacity-0">
+            <div class="bg-white rounded-xl shadow-xl p-6 max-w-sm mx-4 transform scale-95 transition-transform duration-200" id="confirmModalContent">
+                <h3 class="text-lg font-semibold text-brand-dark mb-2">Confirmar acción</h3>
+                <p id="confirmMessage" class="text-gray-600 mb-6">¿Está seguro que desea cancelar? Los datos ingresados se perderán.</p>
+                <div class="flex gap-3 justify-end">
+                    <button onclick="closeConfirmModal()" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">No, continuar</button>
+                    <button onclick="confirmCancel()" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition">Sí, cancelar</button>
+                </div>
+            </div>
         </div>
 
         <!-- Listado de categorías -->
@@ -277,12 +289,9 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // Cancelar edición
+        // Cancelar edición o registro
         function cancelarEdicion() {
-            editingId = null;
-            document.getElementById('categoriaForm').reset();
-            document.getElementById('btnGuardar').innerHTML = '<i class="fas fa-save mr-2"></i>Guardar';
-            document.getElementById('btnCancelar').classList.add('hidden');
+            showConfirmModal('¿Está seguro que desea cancelar? Los datos ingresados se perderán.');
         }
 
         // Eliminar categoría
@@ -326,6 +335,45 @@
             el.className = `mt-4 p-3 rounded-lg ${type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`;
             el.classList.remove('hidden');
             setTimeout(() => el.classList.add('hidden'), 3000);
+        }
+
+        // Modal de confirmación
+        function showConfirmModal(message) {
+            const modal = document.getElementById('confirmModal');
+            const content = document.getElementById('confirmModalContent');
+            document.getElementById('confirmMessage').textContent = message;
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            
+            // Animación de entrada
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+                content.classList.add('scale-100');
+            }, 10);
+        }
+
+        function closeConfirmModal() {
+            const modal = document.getElementById('confirmModal');
+            const content = document.getElementById('confirmModalContent');
+            
+            // Animación de salida
+            modal.classList.add('opacity-0');
+            content.classList.remove('scale-100');
+            content.classList.add('scale-95');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 200);
+        }
+
+        function confirmCancel() {
+            closeConfirmModal();
+            editingId = null;
+            document.getElementById('categoriaForm').reset();
+            document.getElementById('btnGuardar').innerHTML = '<i class="fas fa-save mr-2"></i>Guardar';
         }
 
         // Logout
