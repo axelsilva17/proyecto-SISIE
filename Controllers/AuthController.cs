@@ -17,10 +17,11 @@ public class AuthController : ControllerBase
         _authService = authService;
     }
 
+    // Registra un nuevo usuario en el sistema
     [HttpPost("register")]
-    public async Task<ActionResult<AuthResult>> Register([FromBody] RegisterRequest request)
+    public async Task<ActionResult<AuthResult>> Registrar([FromBody] RegisterRequest request)
     {
-        // Validar con DataAnnotations
+        // Valida los datos del request
         if (!ModelState.IsValid)
         {
             var errores = ModelState
@@ -35,18 +36,21 @@ public class AuthController : ControllerBase
             });
         }
 
+        // Registra el usuario
         var result = await _authService.RegisterAsync(request);
         
+        // Si falla (email duplicado, etc), retorna error
         if (!result.Success)
             return BadRequest(result);
 
         return Ok(result);
     }
 
+    // Inicia sesión y retorna JWT token
     [HttpPost("login")]
-    public async Task<ActionResult<AuthResult>> Login([FromBody] LoginRequest request)
+    public async Task<ActionResult<AuthResult>> IniciarSesion([FromBody] LoginRequest request)
     {
-        // Validar con DataAnnotations
+        // Valida los datos
         if (!ModelState.IsValid)
         {
             var errores = ModelState
@@ -61,30 +65,38 @@ public class AuthController : ControllerBase
             });
         }
 
+        // Verifica credenciales
         var result = await _authService.LoginAsync(request);
 
+        // Si son incorrectas, retorna 401
         if (!result.Success)
             return Unauthorized(result);
 
         return Ok(result);
     }
 
+    // Cierra la sesión del usuario (JWT es stateless, solo responde OK)
     [HttpPost("logout")]
     [Authorize]
-    public IActionResult Logout()
+    public IActionResult CerrarSesion()
     {
-        return Ok(new { message = "Logout exitoso" });
+        return Ok(new { message = "Sesión cerrada" });
     }
 
+    // Obtiene los datos del usuario actualmente logueado
     [HttpGet("me")]
     [Authorize]
-    public async Task<ActionResult<UserDTO>> GetCurrentUser()
+    public async Task<ActionResult<UserDTO>> ObtenerUsuarioActual()
     {
+        // Extrae el ID del usuario del token JWT
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        
         if (string.IsNullOrEmpty(userId))
             return Unauthorized();
 
+        // Obtiene los datos del usuario
         var user = await _authService.GetCurrentUserAsync(userId);
+        
         if (user == null)
             return NotFound();
 

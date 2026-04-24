@@ -17,27 +17,34 @@ public class CategoriasController : ControllerBase
         _categoriaService = categoriaService;
     }
 
+    // Lista todas las categorías
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<CategoriaDTO>>> GetAllCategorias()
+    public async Task<ActionResult<IEnumerable<CategoriaDTO>>> ObtenerTodasCategorias()
     {
-        var categorias = await _categoriaService.GetAllAsync();
+        // Obtiene todas las categorías del service
+        var categorias = await _categoriaService.ObtenerTodosAsync();
         return Ok(categorias);
     }
 
+    // Obtiene una categoría por su ID
     [HttpGet("{id}")]
-    public async Task<ActionResult<CategoriaDTO>> GetCategoriaById(int id)
+    public async Task<ActionResult<CategoriaDTO>> ObtenerCategoriaPorId(int id)
     {
-        var categoria = await _categoriaService.GetByIdAsync(id);
+        // Busca la categoría
+        var categoria = await _categoriaService.ObtenerPorIdAsync(id);
+        
+        // Si no existe, retorna 404
         if (categoria == null)
             return NotFound(new { message = "Categoría no encontrada" });
 
         return Ok(categoria);
     }
 
+    // Crea una nueva categoría
     [HttpPost]
-    public async Task<ActionResult<CategoriaDTO>> CreateCategoria([FromBody] CategoriaCreateDTO categoria)
+    public async Task<ActionResult<CategoriaDTO>> CrearCategoria([FromBody] CategoriaCreateDTO categoria)
     {
-        // Validar con DataAnnotations
+        // Valida los datos
         if (!ModelState.IsValid)
         {
             var errores = ModelState
@@ -54,19 +61,24 @@ public class CategoriasController : ControllerBase
 
         try
         {
-            var created = await _categoriaService.CreateAsync(categoria);
-            return CreatedAtAction(nameof(GetCategoriaById), new { id = created.Id }, created);
+            // Intenta crear la categoría
+            var created = await _categoriaService.CrearAsync(categoria);
+            
+            // Retorna 201 con la ubicación del recurso
+            return CreatedAtAction(nameof(ObtenerCategoriaPorId), new { id = created.Id }, created);
         }
         catch (InvalidOperationException ex)
         {
+            // Captura error de nombre duplicado
             return BadRequest(new { success = false, message = ex.Message });
         }
     }
 
+    // Actualiza una categoría existente
     [HttpPut("{id}")]
-    public async Task<ActionResult<CategoriaDTO>> UpdateCategoria(int id, [FromBody] CategoriaCreateDTO categoria)
+    public async Task<ActionResult<CategoriaDTO>> ActualizarCategoria(int id, [FromBody] CategoriaCreateDTO categoria)
     {
-        // Validar con DataAnnotations
+        // Valida los datos
         if (!ModelState.IsValid)
         {
             var errores = ModelState
@@ -81,22 +93,31 @@ public class CategoriasController : ControllerBase
             });
         }
 
-        var updated = await _categoriaService.UpdateAsync(id, categoria);
+        // Actualiza la categoría
+        var updated = await _categoriaService.ActualizarAsync(id, categoria);
+        
+        // Si no existe, retorna 404
         if (updated == null)
             return NotFound(new { message = "Categoría no encontrada" });
 
         return Ok(updated);
     }
 
+    // Elimina una categoría
     [HttpDelete("{id}")]
-    public async Task<ActionResult> DeleteCategoria(int id)
+    public async Task<ActionResult> EliminarCategoria(int id)
     {
-        // Verificar si tiene productos activos
-        var canDelete = await _categoriaService.CanDeleteAsync(id);
-        if (!canDelete)
+        // Verifica si tiene productos activos
+        var puedeEliminar = await _categoriaService.PuedeEliminarAsync(id);
+        
+        // Si tiene productos, no permite eliminar
+        if (!puedeEliminar)
             return BadRequest(new { message = "No se puede eliminar, tiene productos vinculados" });
 
-        var result = await _categoriaService.DeleteAsync(id);
+        // Intenta eliminar
+        var result = await _categoriaService.EliminarAsync(id);
+        
+        // Si no existía, retorna 404
         if (!result)
             return NotFound(new { message = "Categoría no encontrada" });
 
