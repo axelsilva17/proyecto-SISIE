@@ -3,22 +3,232 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema SISIE</title>
+    <title>Dashboard - SISIE</title>
+    
+    <!-- Speculation Rules - Preload de páginas para navegación más rápida -->
+    <script type="speculationrules">
+    {
+      "prefetch": [
+        { "urls": ["/productos.html", "/ventas.html", "/categorias.html", "/login.html"] }
+      ]
+    }
+    </script>
+    
     <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-100">
-    <div class="container mx-auto p-4">
-        <h1 class="text-3xl font-bold text-center mb-8">Sistema de Venta - SISIE</h1>
-        <div class="text-center">
-            <p class="text-gray-600">Cargando...</p>
-        </div>
-    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <script>
-        // Verificar si hay token
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            orange: '#F25C05',
+                            orangeLight: '#FF7A1A',
+                            dark: '#052741',
+                            medium: '#1F4E79'
+                        },
+                        neutral: {
+                            light: '#F2F2F2',
+                            medium: '#D9D9D9',
+                            dark: '#555555'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Patrón de fondo sutil con colores de marca */
+        .bg-pattern {
+            background-color: #F5F5F5;
+            background-image: 
+                radial-gradient(circle at 20% 20%, rgba(242, 92, 5, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(5, 39, 65, 0.08) 0%, transparent 40%),
+                linear-gradient(135deg, transparent 40%, rgba(242, 92, 5, 0.05) 45%, transparent 50%),
+                linear-gradient(45deg, transparent 40%, rgba(5, 39, 65, 0.03) 45%, transparent 50%);
+            background-size: 100% 100%, 100% 100%, 80px 80px, 80px 80px;
+        }
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in-up { animation: fadeInUp 0.5s ease-out forwards; }
+        .delay-100 { animation-delay: 0.1s; }
+        .delay-200 { animation-delay: 0.2s; }
+        .delay-300 { animation-delay: 0.3s; }
+        .delay-400 { animation-delay: 0.4s; }
+        
+        .card-menu {
+            transition: all 0.3s ease;
+        }
+        .card-menu:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(5, 39, 65, 0.15);
+        }
+        
+        .card-menu:active {
+            transform: translateY(-2px);
+        }
+        
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(242, 92, 5, 0); }
+            50% { box-shadow: 0 0 20px 4px rgba(242, 92, 5, 0.3); }
+        }
+    </style>
+</head>
+<body class="bg-neutral-light min-h-screen">
+    
+    <!-- Main Container -->
+    <div class="max-w-4xl mx-auto p-4 md:p-8">
+        
+        <!-- Header -->
+        <div class="text-center mb-8 fade-in-up">
+            <!-- Logo -->
+            <img src="/img/Logo de SISIE GROUP.png" alt="SISIE GROUP" class="h-40 md:h-48 mx-auto mb-4">
+            
+            <!-- Bienvenida -->
+            <h1 class="text-2xl md:text-3xl font-bold text-brand-dark">
+                Bienvenido, <span id="userName">Usuario</span>
+            </h1>
+            <p class="text-neutral-dark mt-1 text-sm md:text-base">¿Qué querés hacer hoy?</p>
+        </div>
+        
+        <!-- Menu Grid -->
+        <div class="grid grid-cols-3 gap-4 md:gap-6 mb-8">
+            
+            <!-- Productos -->
+            <a href="/productos.html" class="card-menu bg-white rounded-xl p-6 text-center border-b-4 border-brand-orange shadow-md fade-in-up delay-100">
+                <div class="w-14 h-14 mx-auto mb-3 bg-orange-50 rounded-full flex items-center justify-center">
+                    <i class="fas fa-box text-brand-orange text-2xl"></i>
+                </div>
+                <h3 class="font-semibold text-brand-dark text-base">Productos</h3>
+                <p class="text-xs text-neutral-dark mt-1">Gestionar inventario</p>
+            </a>
+            
+            <!-- Categorías -->
+            <a href="/categorias.html" class="card-menu bg-white rounded-xl p-6 text-center border-b-4 border-brand-dark shadow-md fade-in-up delay-200">
+                <div class="w-14 h-14 mx-auto mb-3 bg-slate-50 rounded-full flex items-center justify-center">
+                    <i class="fas fa-tags text-brand-dark text-2xl"></i>
+                </div>
+                <h3 class="font-semibold text-brand-dark text-base">Categorías</h3>
+                <p class="text-xs text-neutral-dark mt-1">Organizar productos</p>
+            </a>
+            
+            <!-- Ventas -->
+            <a href="/ventas.html" class="card-menu bg-white rounded-xl p-6 text-center border-b-4 border-green-500 shadow-md fade-in-up delay-300">
+                <div class="w-14 h-14 mx-auto mb-3 bg-green-50 rounded-full flex items-center justify-center">
+                    <i class="fas fa-cash-register text-green-500 text-2xl"></i>
+                </div>
+                <h3 class="font-semibold text-brand-dark text-base">Nueva Venta</h3>
+                <p class="text-xs text-neutral-dark mt-1">Registrar venta</p>
+            </a>
+            
+        </div>
+        
+        <!-- Resumen Hoy -->
+        <div class="bg-white rounded-xl shadow-md p-6 fade-in-up delay-400">
+            <h2 class="text-lg font-semibold text-brand-dark mb-4 flex items-center gap-2">
+                <i class="fas fa-chart-pie text-brand-orange"></i>
+                Resumen del Sistema
+            </h2>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="text-center p-3 bg-neutral-light rounded-lg">
+                    <p class="text-2xl font-bold text-brand-dark" id="totalProductos">0</p>
+                    <p class="text-xs text-neutral-dark">Total Productos</p>
+                </div>
+                <div class="text-center p-3 bg-neutral-light rounded-lg">
+                    <p class="text-2xl font-bold text-brand-dark" id="stockBajo">0</p>
+                    <p class="text-xs text-neutral-dark">Stock Bajo</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="text-center mt-8 text-neutral-dark text-sm">
+            <button onclick="logout()" class="text-red-500 hover:text-red-700 font-medium">
+                <i class="fas fa-sign-out-alt mr-1"></i> Cerrar Sesión
+            </button>
+        </div>
+        
+    </div>
+    
+    <script>
+        // Verificar auth
         const token = localStorage.getItem('token');
         if (!token) {
             window.location.href = '/login.html';
         }
+        
+        // Obtener datos del usuario
+        async function loadUserData() {
+            try {
+                const response = await fetch('/api/auth/me', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById('userName').textContent = data.usuario.nombreUsuario;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+        
+        // Cargar stats
+        async function loadStats() {
+            try {
+                // Cargar productos - sin paginación para obtener todos
+                const prodsResponse = await fetch('/api/productos?pageSize=1000', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const prodsData = await prodsResponse.json();
+                // API devuelve { items, total, page, pageSize }
+                if (prodsData.items) {
+                    const total = prodsData.total;
+                    const bajoStock = prodsData.items.filter(p => p.stock <= 5).length;
+                    document.getElementById('totalProductos').textContent = total;
+                    document.getElementById('stockBajo').textContent = bajoStock;
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+        
+        // Logout
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = '/login.html';
+        }
+        
+        // Atajos de teclado
+        document.addEventListener('keydown', (e) => {
+            // Ctrl+P - Productos
+            if (e.ctrlKey && e.key === 'p') {
+                e.preventDefault();
+                window.location.href = '/productos.html';
+            }
+            // Ctrl+V - Ventas
+            if (e.ctrlKey && e.key === 'v') {
+                e.preventDefault();
+                window.location.href = '/ventas.html';
+            }
+            // Ctrl+K - Categorías
+            if (e.ctrlKey && e.key === 'k') {
+                e.preventDefault();
+                window.location.href = '/categorias.html';
+            }
+            // Ctrl+L - Logout
+            if (e.ctrlKey && e.key === 'l') {
+                e.preventDefault();
+                logout();
+            }
+        });
+        
+        // Iniciar
+        loadUserData();
+        loadStats();
     </script>
 </body>
 </html>

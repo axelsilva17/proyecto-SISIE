@@ -17,55 +17,107 @@ public class CategoriasController : ControllerBase
         _categoriaService = categoriaService;
     }
 
+    // Lista todas las categorías
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<CategoriaDTO>>> GetAll()
+    public async Task<ActionResult<IEnumerable<CategoriaDTO>>> ObtenerTodasCategorias()
     {
-        var categorias = await _categoriaService.GetAllAsync();
+        // Obtiene todas las categorías del service
+        var categorias = await _categoriaService.ObtenerTodosAsync();
         return Ok(categorias);
     }
 
+    // Obtiene una categoría por su ID
     [HttpGet("{id}")]
-    public async Task<ActionResult<CategoriaDTO>> GetById(int id)
+    public async Task<ActionResult<CategoriaDTO>> ObtenerCategoriaPorId(int id)
     {
-        var categoria = await _categoriaService.GetByIdAsync(id);
+        // Busca la categoría
+        var categoria = await _categoriaService.ObtenerPorIdAsync(id);
+        
+        // Si no existe, retorna 404
         if (categoria == null)
             return NotFound(new { message = "Categoría no encontrada" });
 
         return Ok(categoria);
     }
 
+    // Crea una nueva categoría
     [HttpPost]
-    public async Task<ActionResult<CategoriaDTO>> Create([FromBody] CategoriaCreateDTO categoria)
+    public async Task<ActionResult<CategoriaDTO>> CrearCategoria([FromBody] CategoriaCreateDTO categoria)
     {
-        if (string.IsNullOrWhiteSpace(categoria.NombreCategoria))
-            return BadRequest(new { message = "El nombre es requerido" });
+        // Valida los datos
+        if (!ModelState.IsValid)
+        {
+            var errores = ModelState
+                .Where(x => x.Value?.Errors.Count > 0)
+                .Select(x => x.Value?.Errors.First().ErrorMessage)
+                .ToList();
+            
+            return BadRequest(new { 
+                success = false, 
+                message = "Error de validación",
+                errors = errores 
+            });
+        }
 
-        var created = await _categoriaService.CreateAsync(categoria);
-        return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+        try
+        {
+            // Intenta crear la categoría
+            var created = await _categoriaService.CrearAsync(categoria);
+            
+            // Retorna 201 con la ubicación del recurso
+            return CreatedAtAction(nameof(ObtenerCategoriaPorId), new { id = created.Id }, created);
+        }
+        catch (InvalidOperationException ex)
+        {
+            // Captura error de nombre duplicado
+            return BadRequest(new { success = false, message = ex.Message });
+        }
     }
 
+    // Actualiza una categoría existente
     [HttpPut("{id}")]
-    public async Task<ActionResult<CategoriaDTO>> Update(int id, [FromBody] CategoriaCreateDTO categoria)
+    public async Task<ActionResult<CategoriaDTO>> ActualizarCategoria(int id, [FromBody] CategoriaCreateDTO categoria)
     {
-        if (string.IsNullOrWhiteSpace(categoria.NombreCategoria))
-            return BadRequest(new { message = "El nombre es requerido" });
+        // Valida los datos
+        if (!ModelState.IsValid)
+        {
+            var errores = ModelState
+                .Where(x => x.Value?.Errors.Count > 0)
+                .Select(x => x.Value?.Errors.First().ErrorMessage)
+                .ToList();
+            
+            return BadRequest(new { 
+                success = false, 
+                message = "Error de validación",
+                errors = errores 
+            });
+        }
 
-        var updated = await _categoriaService.UpdateAsync(id, categoria);
+        // Actualiza la categoría
+        var updated = await _categoriaService.ActualizarAsync(id, categoria);
+        
+        // Si no existe, retorna 404
         if (updated == null)
             return NotFound(new { message = "Categoría no encontrada" });
 
         return Ok(updated);
     }
 
+    // Elimina una categoría
     [HttpDelete("{id}")]
-    public async Task<ActionResult> Delete(int id)
+    public async Task<ActionResult> EliminarCategoria(int id)
     {
-        // Verificar si tiene productos activos
-        var canDelete = await _categoriaService.CanDeleteAsync(id);
-        if (!canDelete)
+        // Verifica si tiene productos activos
+        var puedeEliminar = await _categoriaService.PuedeEliminarAsync(id);
+        
+        // Si tiene productos, no permite eliminar
+        if (!puedeEliminar)
             return BadRequest(new { message = "No se puede eliminar, tiene productos vinculados" });
 
-        var result = await _categoriaService.DeleteAsync(id);
+        // Intenta eliminar
+        var result = await _categoriaService.EliminarAsync(id);
+        
+        // Si no existía, retorna 404
         if (!result)
             return NotFound(new { message = "Categoría no encontrada" });
 

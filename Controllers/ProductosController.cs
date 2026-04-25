@@ -17,19 +17,23 @@ public class ProductosController : ControllerBase
         _productoService = productoService;
     }
 
+    // Lista productos con paginación
     [HttpGet]
-    public async Task<ActionResult<ProductoPagedResult>> GetAll(
+    public async Task<ActionResult<ProductoPagedResult>> ObtenerTodosProductos(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10,
         [FromQuery] int? idCategoria = null,
         [FromQuery] bool? activo = null)
     {
+        // Normaliza los parámetros de paginación
         if (page < 1) page = 1;
         if (pageSize < 1) pageSize = 10;
         if (pageSize > 100) pageSize = 100;
 
-        var (items, total) = await _productoService.GetAllAsync(page, pageSize, idCategoria, activo);
+        // Llama al service para obtener productos
+        var (items, total) = await _productoService.ObtenerTodosAsync(page, pageSize, idCategoria, activo);
 
+        // Retorna con metadatos de paginación
         return Ok(new ProductoPagedResult
         {
             Items = items,
@@ -39,58 +43,115 @@ public class ProductosController : ControllerBase
         });
     }
 
+    // Obtiene un producto por su ID
     [HttpGet("{id}")]
-    public async Task<ActionResult<ProductoDTO>> GetById(int id)
+    public async Task<ActionResult<ProductoDTO>> ObtenerProductoPorId(int id)
     {
-        var producto = await _productoService.GetByIdAsync(id);
+        // Busca el producto
+        var producto = await _productoService.ObtenerPorIdAsync(id);
+        
+        // Si no existe, retorna 404
         if (producto == null)
             return NotFound(new { message = "Producto no encontrado" });
 
         return Ok(producto);
     }
 
+    // Crea un nuevo producto
     [HttpPost]
-    public async Task<ActionResult<ProductoDTO>> Create([FromBody] ProductoCreateDTO producto)
+    public async Task<ActionResult<ProductoDTO>> CrearProducto([FromBody] ProductoCreateDTO producto)
     {
-        if (string.IsNullOrWhiteSpace(producto.Nombre))
-            return BadRequest(new { message = "El nombre es requerido" });
-        
-        if (producto.Precio < 0)
-            return BadRequest(new { message = "El precio no puede ser negativo" });
-        
-        if (producto.Stock < 0)
-            return BadRequest(new { message = "El stock no puede ser negativo" });
+        // Valida los datos con DataAnnotations
+        if (!ModelState.IsValid)
+        {
+            var errores = ModelState
+                .Where(x => x.Value?.Errors.Count > 0)
+                .Select(x => x.Value?.Errors.First().ErrorMessage)
+                .ToList();
+            
+            return BadRequest(new { 
+                success = false, 
+                message = "Error de validación",
+                errors = errores 
+            });
+        }
 
-        var created = await _productoService.CreateAsync(producto);
-        return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+        try
+        {
+            // Intenta crear el producto
+            var created = await _productoService.CrearAsync(producto);
+            
+            // Retorna 201 con la ubicación del recurso
+            return CreatedAtAction(nameof(ObtenerProductoPorId), new { id = created.Id }, created);
+        }
+        catch (InvalidOperationException ex)
+        {
+            // Captura errores de negocio (duplicado, etc)
+            return BadRequest(new { success = false, message = ex.Message });
+        }
     }
 
+    // Actualiza un producto existente
     [HttpPut("{id}")]
-    public async Task<ActionResult<ProductoDTO>> Update(int id, [FromBody] ProductoCreateDTO producto)
+    public async Task<ActionResult<ProductoDTO>> ActualizarProducto(int id, [FromBody] ProductoUpdateDTO producto)
     {
-        if (string.IsNullOrWhiteSpace(producto.Nombre))
-            return BadRequest(new { message = "El nombre es requerido" });
-        
-        if (producto.Precio < 0)
-            return BadRequest(new { message = "El precio no puede ser negativo" });
-        
-        if (producto.Stock < 0)
-            return BadRequest(new { message = "El stock no puede ser negativo" });
+        // Valida los datos
+        if (!ModelState.IsValid)
+        {
+            var errores = ModelState
+                .Where(x => x.Value?.Errors.Count > 0)
+                .Select(x => x.Value?.Errors.First().ErrorMessage)
+                .ToList();
+            
+            return BadRequest(new { 
+                success = false, 
+                message = "Error de validación",
+                errors = errores 
+            });
+        }
 
-        var updated = await _productoService.UpdateAsync(id, producto);
+        // Actualiza el producto
+        var updated = await _productoService.ActualizarAsync(id, producto);
+        
+        // Si no existe, retorna 404
         if (updated == null)
             return NotFound(new { message = "Producto no encontrado" });
 
         return Ok(updated);
     }
 
+    // Elimina un producto (soft delete)
     [HttpDelete("{id}")]
-    public async Task<ActionResult> Delete(int id)
+    public async Task<ActionResult> EliminarProducto(int id)
     {
-        var result = await _productoService.DeleteAsync(id);
+        // Intenta eliminar (marca como inactivo)
+        var result = await _productoService.EliminarAsync(id);
+        
+        // Si no existía, retorna 404
         if (!result)
             return NotFound(new { message = "Producto no encontrado" });
 
         return Ok(new { message = "Producto eliminado" });
+    }
+
+    // Activa o desactiva un producto
+    [HttpPatch("{id}/toggle")]
+    public async Task<ActionResult> ToggleActivoProducto(int id)
+    {
+        // Verifica que el producto exista
+        var producto = await _productoService.ObtenerPorIdAsync(id);
+        if (producto == null)
+            return NotFound(new { message = "Producto no encontrado" });
+
+        // Toggle el estado
+        var updated = await _productoService.ToggleActivoAsync(id);
+        if (updated == null)
+            return NotFound(new { message = "Producto no encontrado" });
+
+        // Retorna el nuevo estado
+        return Ok(new { 
+            activo = updated.Activo, 
+            message = updated.Activo ? "Producto activado" : "Producto desactivado" 
+        });
     }
 }

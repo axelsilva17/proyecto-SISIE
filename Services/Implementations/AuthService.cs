@@ -117,8 +117,12 @@ public class AuthService : IAuthService
 
     private string GenerateJwtToken(ApplicationUser user)
     {
+        var jwtKey = _configuration["Jwt:Key"] 
+            ?? throw new InvalidOperationException(
+                "JWT Key no configurada en appsettings.json. Agregar Jwt:Key");
+        
         var key = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? "SisieSecretKey2026!@#$%"));
+            Encoding.UTF8.GetBytes(jwtKey));
         
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 

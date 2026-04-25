@@ -11,36 +11,149 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
     }
 
+    // Nuevas entidades del modelo de datos
+    public DbSet<Contacto> Contactos { get; set; } = null!;
+    public DbSet<Usuario> Usuarios { get; set; } = null!;
+    public DbSet<Provincia> Provincias { get; set; } = null!;
+    public DbSet<Ciudad> Ciudades { get; set; } = null!;
+    public DbSet<Direccion> Direcciones { get; set; } = null!;
+    public DbSet<Venta> Ventas { get; set; } = null!;
     public DbSet<Categoria> Categorias { get; set; } = null!;
     public DbSet<Producto> Productos { get; set; } = null!;
+    public DbSet<DetalleVenta> DetallesVenta { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
-        // Relationships
+        // ==== CONFIGURACIÓN DE CATEGORÍA ====
+        modelBuilder.Entity<Categoria>(entity =>
+        {
+            entity.HasKey(c => c.Id);
+            entity.Property(c => c.NombreCategoria).IsRequired().HasMaxLength(20);
+        });
+
+        // ==== CONFIGURACIÓN DE PRODUCTO ====
         modelBuilder.Entity<Producto>(entity =>
         {
+            entity.HasKey(p => p.Id);
+            entity.Property(p => p.NombreProducto).IsRequired().HasMaxLength(20);
+            entity.Property(p => p.Descripcion).HasMaxLength(20);
+            entity.Property(p => p.PrecioUnitario).HasPrecision(18, 2);
+            
+            // Relación con Categoría
             entity.HasOne(p => p.Categoria)
                 .WithMany(c => c.Productos)
                 .HasForeignKey(p => p.IdCategoria)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
-        // Configuración de Categoria
-        modelBuilder.Entity<Categoria>(entity =>
+        // ==== CONFIGURACIÓN DE CONTACTO ====
+        modelBuilder.Entity<Contacto>(entity =>
         {
             entity.HasKey(c => c.Id);
-            entity.Property(c => c.NombreCategoria).IsRequired().HasMaxLength(100);
+            entity.Property(c => c.Email).IsRequired().HasMaxLength(40);
+            entity.Property(c => c.Telefono).IsRequired();
         });
 
-        // Configuración de Producto
-        modelBuilder.Entity<Producto>(entity =>
+        // ==== CONFIGURACIÓN DE USUARIO ====
+        modelBuilder.Entity<Usuario>(entity =>
+        {
+            entity.HasKey(u => u.Id);
+            entity.Property(u => u.NombreUsuario).IsRequired().HasMaxLength(20);
+            entity.Property(u => u.PasswordHash).IsRequired().HasMaxLength(30);
+            entity.Property(u => u.FechaCreacion).IsRequired();
+            entity.Property(u => u.Activo).IsRequired();
+            
+            // Relación con Contacto
+            entity.HasOne(u => u.Contacto)
+                .WithMany()
+                .HasForeignKey(u => u.IdContacto)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // ==== CONFIGURACIÓN DE PROVINCIA ====
+        modelBuilder.Entity<Provincia>(entity =>
         {
             entity.HasKey(p => p.Id);
-            entity.Property(p => p.Nombre).IsRequired().HasMaxLength(200);
-            entity.Property(p => p.Descripcion).HasMaxLength(1000);
-            entity.Property(p => p.Precio).HasPrecision(18, 2);
+            entity.Property(p => p.NombreProvincia).IsRequired().HasMaxLength(20);
+        });
+
+        // ==== CONFIGURACIÓN DE CIUDAD ====
+        modelBuilder.Entity<Ciudad>(entity =>
+        {
+            entity.HasKey(ci => ci.Id);
+            entity.Property(ci => ci.NombreCiudad).IsRequired().HasMaxLength(20);
+            entity.Property(ci => ci.Cp).IsRequired();
+            
+            // Relación con Provincia
+            entity.HasOne(ci => ci.Provincia)
+                .WithMany(p => p.Ciudades)
+                .HasForeignKey(ci => ci.IdProvincia)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // ==== CONFIGURACIÓN DE DIRECCIÓN ====
+        modelBuilder.Entity<Direccion>(entity =>
+        {
+            entity.HasKey(d => d.Id);
+            entity.Property(d => d.Calle).IsRequired().HasMaxLength(15);
+            entity.Property(d => d.Numero).IsRequired();
+            
+            // Relación con Ciudad
+            entity.HasOne(d => d.Ciudad)
+                .WithMany(ci => ci.Direcciones)
+                .HasForeignKey(d => d.IdCiudad)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // ==== CONFIGURACIÓN DE VENTA ====
+        modelBuilder.Entity<Venta>(entity =>
+        {
+            entity.HasKey(v => v.Id);
+            entity.Property(v => v.NumeroVenta).IsRequired();
+            entity.Property(v => v.Descuento);
+            entity.Property(v => v.Total).IsRequired().HasPrecision(18, 2);
+            entity.Property(v => v.MetodoPago).IsRequired().HasMaxLength(20);
+            entity.Property(v => v.TipoEntrega).IsRequired().HasMaxLength(20);
+            entity.Property(v => v.Notas).HasMaxLength(50);
+            entity.Property(v => v.Estado).IsRequired().HasMaxLength(20);
+            entity.Property(v => v.FechaCreacion).IsRequired();
+            
+            // Relación con Usuario
+            entity.HasOne(v => v.Usuario)
+                .WithMany(u => u.Ventas)
+                .HasForeignKey(v => v.IdUsuario)
+                .OnDelete(DeleteBehavior.Restrict);
+            
+            // Relación con Dirección (nullable para ventas por mostrador)
+            entity.HasOne(v => v.Direccion)
+                .WithMany(d => d.Ventas)
+                .HasForeignKey(v => v.IdDireccion)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // ==== CONFIGURACIÓN DE DETALLE VENTA (FK Compuesta) ====
+        modelBuilder.Entity<DetalleVenta>(entity =>
+        {
+            entity.Property(d => d.SubTotal).IsRequired().HasPrecision(18, 2);
+            entity.Property(d => d.Cantidad).IsRequired();
+            entity.Property(d => d.PrecioUnitario).IsRequired().HasPrecision(18, 2);
+            
+            // FK Compuesta - Primary Key separado
+            entity.HasKey(d => new { d.IdVenta, d.IdProducto });
+            
+            // Relación con Venta
+            entity.HasOne(d => d.Venta)
+                .WithMany(v => v.Detalles)
+                .HasForeignKey(d => d.IdVenta)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            // Relación con Producto
+            entity.HasOne(d => d.Producto)
+                .WithMany(p => p.Detalles)
+                .HasForeignKey(d => d.IdProducto)
+                .OnDelete(DeleteBehavior.Restrict);
         });
     }
 }
