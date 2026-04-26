@@ -31,7 +31,7 @@ public class ProductosController : ControllerBase
         if (pageSize > 100) pageSize = 100;
 
         // Llama al service para obtener productos
-        var (items, total) = await _productoService.ObtenerTodosAsync(page, pageSize, idCategoria, activo);
+        var (items, total) = await _productoService.ObtenerTodosAsyncProducto(page, pageSize, idCategoria, activo);
 
         // Retorna con metadatos de paginación
         return Ok(new ProductoPagedResult
@@ -48,7 +48,7 @@ public class ProductosController : ControllerBase
     public async Task<ActionResult<ProductoDTO>> ObtenerProductoPorId(int id)
     {
         // Busca el producto
-        var producto = await _productoService.ObtenerPorIdAsync(id);
+        var producto = await _productoService.ObtenerPorIdAsyncProducto(id);
         
         // Si no existe, retorna 404
         if (producto == null)
@@ -79,7 +79,7 @@ public class ProductosController : ControllerBase
         try
         {
             // Intenta crear el producto
-            var created = await _productoService.CrearAsync(producto);
+            var created = await _productoService.CrearAsyncProducto(producto);
             
             // Retorna 201 con la ubicación del recurso
             return CreatedAtAction(nameof(ObtenerProductoPorId), new { id = created.Id }, created);
@@ -111,7 +111,7 @@ public class ProductosController : ControllerBase
         }
 
         // Actualiza el producto
-        var updated = await _productoService.ActualizarAsync(id, producto);
+        var updated = await _productoService.ActualizarAsyncProducto(id, producto);
         
         // Si no existe, retorna 404
         if (updated == null)
@@ -125,7 +125,7 @@ public class ProductosController : ControllerBase
     public async Task<ActionResult> EliminarProducto(int id)
     {
         // Intenta eliminar (marca como inactivo)
-        var result = await _productoService.EliminarAsync(id);
+        var result = await _productoService.EliminarAsyncProducto(id);
         
         // Si no existía, retorna 404
         if (!result)
@@ -139,12 +139,12 @@ public class ProductosController : ControllerBase
     public async Task<ActionResult> ToggleActivoProducto(int id)
     {
         // Verifica que el producto exista
-        var producto = await _productoService.ObtenerPorIdAsync(id);
+        var producto = await _productoService.ObtenerPorIdAsyncProducto(id);
         if (producto == null)
             return NotFound(new { message = "Producto no encontrado" });
 
         // Toggle el estado
-        var updated = await _productoService.ToggleActivoAsync(id);
+        var updated = await _productoService.ToggleActivoAsyncProducto(id);
         if (updated == null)
             return NotFound(new { message = "Producto no encontrado" });
 

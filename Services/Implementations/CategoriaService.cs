@@ -16,7 +16,7 @@ public class CategoriaService : ICategoriaService
     }
 
     // Lista todas las categorías ordenadas alfabéticamente
-    public async Task<IEnumerable<CategoriaDTO>> ObtenerTodosAsync()
+    public async Task<IEnumerable<CategoriaDTO>> ObtenerTodosAsyncCategoria()
     {
         return await _context.Categorias
             .OrderBy(c => c.NombreCategoria)
@@ -29,7 +29,7 @@ public class CategoriaService : ICategoriaService
     }
 
     // Obtiene una categoría por su ID
-    public async Task<CategoriaDTO?> ObtenerPorIdAsync(int id)
+    public async Task<CategoriaDTO?> ObtenerPorIdAsyncCategoria(int id)
     {
         // Busca la categoría por ID
         var categoria = await _context.Categorias.FindAsync(id);
@@ -46,7 +46,7 @@ public class CategoriaService : ICategoriaService
     }
 
     // Crea una nueva categoría
-    public async Task<CategoriaDTO> CrearAsync(CategoriaCreateDTO dto)
+    public async Task<CategoriaDTO> CrearAsyncCategoria(CategoriaCreateDTO dto)
     {
         // Convierte nombre a minúsculas para comparar
         var nombreLower = dto.NombreCategoria.ToLower();
@@ -78,7 +78,7 @@ public class CategoriaService : ICategoriaService
     }
 
     // Actualiza una categoría existente
-    public async Task<CategoriaDTO?> ActualizarAsync(int id, CategoriaCreateDTO dto)
+    public async Task<CategoriaDTO?> ActualizarAsyncCategoria(int id, CategoriaCreateDTO dto)
     {
         // Busca la categoría por ID
         var categoria = await _context.Categorias.FindAsync(id);
@@ -101,7 +101,7 @@ public class CategoriaService : ICategoriaService
     }
 
     // Elimina una categoría de la base de datos
-    public async Task<bool> EliminarAsync(int id)
+    public async Task<bool> EliminarAsyncCategoria(int id)
     {
         // Busca la categoría por ID
         var categoria = await _context.Categorias.FindAsync(id);

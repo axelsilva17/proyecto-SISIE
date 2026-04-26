@@ -16,7 +16,7 @@ public class ProductoService : IProductoService
     }
 
     // Lista productos con paginación y filtros opcionales
-    public async Task<(IEnumerable<ProductoListDTO> Items, int Total)> ObtenerTodosAsync(int pagina, int tamanioPagina, int? idCategoria, bool? activo)
+    public async Task<(IEnumerable<ProductoListDTO> Items, int Total)> ObtenerTodosAsyncProducto(int pagina, int tamanioPagina, int? idCategoria, bool? activo)
     {
         // Inicia query incluyendo la categoría relacionada
         var query = _context.Productos
@@ -57,7 +57,7 @@ public class ProductoService : IProductoService
     }
 
     // Obtiene un producto por su ID
-    public async Task<ProductoDTO?> ObtenerPorIdAsync(int id)
+    public async Task<ProductoDTO?> ObtenerPorIdAsyncProducto(int id)
     {
         // Busca el producto incluyendo su categoría
         var producto = await _context.Productos
@@ -83,7 +83,7 @@ public class ProductoService : IProductoService
     }
 
     // Crea un nuevo producto en la base de datos
-    public async Task<ProductoDTO> CrearAsync(ProductoCreateDTO dto)
+    public async Task<ProductoDTO> CrearAsyncProducto(ProductoCreateDTO dto)
     {
         // Convierte nombre a minúsculas para comparar
         var nombreLower = dto.NombreProducto.ToLower();
@@ -134,7 +134,7 @@ public class ProductoService : IProductoService
     }
 
     // Actualiza los datos de un producto existente
-    public async Task<ProductoDTO?> ActualizarAsync(int id, ProductoUpdateDTO dto)
+    public async Task<ProductoDTO?> ActualizarAsyncProducto(int id, ProductoUpdateDTO dto)
     {
         // Busca el producto por ID
         var producto = await _context.Productos.FindAsync(id);
@@ -167,7 +167,7 @@ public class ProductoService : IProductoService
     }
 
     // Elimina un producto (soft delete - solo lo marca como inactivo)
-    public async Task<bool> EliminarAsync(int id)
+    public async Task<bool> EliminarAsyncProducto(int id)
     {
         // Busca el producto por ID
         var producto = await _context.Productos.FindAsync(id);
@@ -183,7 +183,7 @@ public class ProductoService : IProductoService
     }
 
     // Activa o desactiva un producto (toggle)
-    public async Task<ProductoDTO?> ToggleActivoAsync(int id)
+    public async Task<ProductoDTO?> ToggleActivoAsyncProducto(int id)
     {
         // Busca el producto por ID
         var producto = await _context.Productos.FindAsync(id);

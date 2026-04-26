@@ -5,20 +5,20 @@ namespace proyecto_SISIE.Services.Interfaces;
 public interface IProductoService
 {
     // Lista productos con paginación y filtros opcionales
-    Task<(IEnumerable<ProductoListDTO> Items, int Total)> ObtenerTodosAsync(int pagina, int tamanioPagina, int? idCategoria, bool? activo);
+    Task<(IEnumerable<ProductoListDTO> Items, int Total)> ObtenerTodosAsyncProducto(int pagina, int tamanioPagina, int? idCategoria, bool? activo);
     
     // Obtiene un producto por su ID
-    Task<ProductoDTO?> ObtenerPorIdAsync(int id);
+    Task<ProductoDTO?> ObtenerPorIdAsyncProducto(int id);
     
     // Crea un nuevo producto
-    Task<ProductoDTO> CrearAsync(ProductoCreateDTO producto);
+    Task<ProductoDTO> CrearAsyncProducto(ProductoCreateDTO producto);
     
     // Actualiza un producto existente
-    Task<ProductoDTO?> ActualizarAsync(int id, ProductoUpdateDTO producto);
+    Task<ProductoDTO?> ActualizarAsyncProducto(int id, ProductoUpdateDTO producto);
     
     // Elimina un producto (soft delete)
-    Task<bool> EliminarAsync(int id);
+    Task<bool> EliminarAsyncProducto(int id);
     
     // Activa o desactiva un producto
-    Task<ProductoDTO?> ToggleActivoAsync(int id);
+    Task<ProductoDTO?> ToggleActivoAsyncProducto(int id);
 }

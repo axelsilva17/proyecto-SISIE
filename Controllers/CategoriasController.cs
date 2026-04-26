@@ -22,7 +22,7 @@ public class CategoriasController : ControllerBase
     public async Task<ActionResult<IEnumerable<CategoriaDTO>>> ObtenerTodasCategorias()
     {
         // Obtiene todas las categorías del service
-        var categorias = await _categoriaService.ObtenerTodosAsync();
+        var categorias = await _categoriaService.ObtenerTodosAsyncCategoria();
         return Ok(categorias);
     }
 
@@ -31,7 +31,7 @@ public class CategoriasController : ControllerBase
     public async Task<ActionResult<CategoriaDTO>> ObtenerCategoriaPorId(int id)
     {
         // Busca la categoría
-        var categoria = await _categoriaService.ObtenerPorIdAsync(id);
+        var categoria = await _categoriaService.ObtenerPorIdAsyncCategoria(id);
         
         // Si no existe, retorna 404
         if (categoria == null)
@@ -62,7 +62,7 @@ public class CategoriasController : ControllerBase
         try
         {
             // Intenta crear la categoría
-            var created = await _categoriaService.CrearAsync(categoria);
+            var created = await _categoriaService.CrearAsyncCategoria(categoria);
             
             // Retorna 201 con la ubicación del recurso
             return CreatedAtAction(nameof(ObtenerCategoriaPorId), new { id = created.Id }, created);
@@ -94,7 +94,7 @@ public class CategoriasController : ControllerBase
         }
 
         // Actualiza la categoría
-        var updated = await _categoriaService.ActualizarAsync(id, categoria);
+        var updated = await _categoriaService.ActualizarAsyncCategoria(id, categoria);
         
         // Si no existe, retorna 404
         if (updated == null)
@@ -115,7 +115,7 @@ public class CategoriasController : ControllerBase
             return BadRequest(new { message = "No se puede eliminar, tiene productos vinculados" });
 
         // Intenta eliminar
-        var result = await _categoriaService.EliminarAsync(id);
+        var result = await _categoriaService.EliminarAsyncCategoria(id);
         
         // Si no existía, retorna 404
         if (!result)
