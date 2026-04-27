@@ -6,6 +6,9 @@ namespace proyecto_SISIE.Models.Entities;
 // Tabla: DetalleVenta (FK Compuesta)
 public class DetalleVenta
 {
+    [Key]
+    public int Id { get; set; }
+    
     [Required]
     [Column(TypeName = "decimal(18,2)")]
     public decimal SubTotal { get; set; }

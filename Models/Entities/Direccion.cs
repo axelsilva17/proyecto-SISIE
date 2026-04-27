@@ -15,6 +15,14 @@ public class Direccion
     [Required]
     public int Numero { get; set; }
     
+    // Departamento (opcional) para edificios o complejos
+    [StringLength(20)]
+    public string? Departamento { get; set; }
+    
+    // FK a Usuario (para saber qué usuario creó esta dirección)
+    public int IdUsuario { get; set; }
+    public Usuario? Usuario { get; set; }
+    
     // FK a Ciudad
     public int IdCiudad { get; set; }
     public Ciudad? Ciudad { get; set; }

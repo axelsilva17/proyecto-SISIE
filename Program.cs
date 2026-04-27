@@ -114,6 +114,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<ICategoriaService, CategoriaService>();
 builder.Services.AddScoped<IProductoService, ProductoService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IVentaService, VentaService>();
 
 var app = builder.Build();
 
