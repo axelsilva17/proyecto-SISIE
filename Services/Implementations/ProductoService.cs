@@ -15,6 +15,29 @@ public class ProductoService : IProductoService
         _context = context;
     }
 
+    // Valida las reglas de negocio para crear/actualizar producto
+    public async Task<List<string>> ValidaProducto(ProductoCreateDTO dto, int? idProducto = null)
+    {
+        var errores = new List<string>();
+
+        // Verifica si el nombre ya existe (duplicado)
+        var nombreLower = dto.NombreProducto.ToLower();
+        var existeNombre = await _context.Productos
+            .AnyAsync(p => p.NombreProducto.ToLower() == nombreLower && p.Activo && (idProducto == null || p.Id != idProducto));
+        
+        if (existeNombre)
+            errores.Add("Ya existe un producto con ese nombre");
+
+        // Verifica que la categoría exista
+        var categoriaExiste = await _context.Categorias
+            .AnyAsync(c => c.Id == dto.IdCategoria);
+        
+        if (!categoriaExiste)
+            errores.Add("La categoría no existe");
+
+        return errores;
+    }
+
     // Lista productos con paginación y filtros opcionales
     public async Task<(IEnumerable<ProductoListDTO> Items, int Total)> ObtenerTodosAsyncProducto(int pagina, int tamanioPagina, int? idCategoria, bool? activo)
     {
@@ -85,23 +108,10 @@ public class ProductoService : IProductoService
     // Crea un nuevo producto en la base de datos
     public async Task<ProductoDTO> CrearAsyncProducto(ProductoCreateDTO dto)
     {
-        // Convierte nombre a minúsculas para comparar
-        var nombreLower = dto.NombreProducto.ToLower();
-        
-        // Busca si ya existe un producto con el mismo nombre (activo)
-        var existe = await _context.Productos
-            .AnyAsync(p => p.NombreProducto.ToLower() == nombreLower && p.Activo);
-        
-        // Si existe, lanza excepción
-        if (existe)
-            throw new InvalidOperationException("Ya existe un producto con ese nombre");
-
-        // Verifica que la categoría asociada exista
-        var categoriaExiste = await _context.Categorias
-            .AnyAsync(c => c.Id == dto.IdCategoria);
-        
-        if (!categoriaExiste)
-            throw new InvalidOperationException("La categoría no existe");
+        // Valida reglas de negocio
+        var erroresNegocio = await ValidaProducto(dto);
+        if (erroresNegocio.Any())
+            throw new InvalidOperationException(string.Join(", ", erroresNegocio));
 
         // Crea la entidad con los datos del DTO
         var producto = new Producto
@@ -133,7 +143,7 @@ public class ProductoService : IProductoService
         };
     }
 
-    // Actualiza los datos de un producto existente
+// Actualiza los datos de un producto existente
     public async Task<ProductoDTO?> ActualizarAsyncProducto(int id, ProductoUpdateDTO dto)
     {
         // Busca el producto por ID
@@ -141,6 +151,19 @@ public class ProductoService : IProductoService
         
         // Si no existe, retorna null
         if (producto == null) return null;
+
+        // Valida reglas de negocio
+        var erroresNegocio = await ValidaProducto(new ProductoCreateDTO 
+        { 
+            NombreProducto = dto.NombreProducto,
+            Descripcion = dto.Descripcion,
+            PrecioUnitario = dto.PrecioUnitario,
+            Stock = dto.Stock,
+            IdCategoria = dto.IdCategoria
+        }, id);
+        
+        if (erroresNegocio.Any())
+            throw new InvalidOperationException(string.Join(", ", erroresNegocio));
 
         // Actualiza cada campo
         producto.NombreProducto = dto.NombreProducto;

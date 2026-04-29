@@ -17,6 +17,19 @@ public class CategoriasController : ControllerBase
         _categoriaService = categoriaService;
     }
 
+    // Valida los datos de la categoría
+    private List<string> ValidarDatosCategoria()
+    {
+        if (!ModelState.IsValid)
+        {
+            return ModelState
+                .Where(x => x.Value?.Errors.Count > 0)
+                .Select(x => x.Value!.Errors.First().ErrorMessage)
+                .ToList();
+        }
+        return new List<string>();
+    }
+
     // Lista todas las categorías
     [HttpGet]
     public async Task<ActionResult<IEnumerable<CategoriaDTO>>> ObtenerTodasCategorias()
@@ -45,13 +58,9 @@ public class CategoriasController : ControllerBase
     public async Task<ActionResult<CategoriaDTO>> CrearCategoria([FromBody] CategoriaCreateDTO categoria)
     {
         // Valida los datos
-        if (!ModelState.IsValid)
+        var errores = ValidarDatosCategoria();
+        if (errores.Count > 0)
         {
-            var errores = ModelState
-                .Where(x => x.Value?.Errors.Count > 0)
-                .Select(x => x.Value?.Errors.First().ErrorMessage)
-                .ToList();
-            
             return BadRequest(new { 
                 success = false, 
                 message = "Error de validación",
@@ -79,13 +88,9 @@ public class CategoriasController : ControllerBase
     public async Task<ActionResult<CategoriaDTO>> ActualizarCategoria(int id, [FromBody] CategoriaCreateDTO categoria)
     {
         // Valida los datos
-        if (!ModelState.IsValid)
+        var errores = ValidarDatosCategoria();
+        if (errores.Count > 0)
         {
-            var errores = ModelState
-                .Where(x => x.Value?.Errors.Count > 0)
-                .Select(x => x.Value?.Errors.First().ErrorMessage)
-                .ToList();
-            
             return BadRequest(new { 
                 success = false, 
                 message = "Error de validación",

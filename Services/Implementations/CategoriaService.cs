@@ -15,6 +15,22 @@ public class CategoriaService : ICategoriaService
         _context = context;
     }
 
+    // Valida las reglas de negocio para crear/actualizar categoría
+    public async Task<List<string>> ValidaCategoria(CategoriaCreateDTO dto, int? idCategoria = null)
+    {
+        var errores = new List<string>();
+
+        // Verifica si el nombre ya existe (duplicado)
+        var nombreLower = dto.NombreCategoria.ToLower();
+        var existeNombre = await _context.Categorias
+            .AnyAsync(c => c.NombreCategoria.ToLower() == nombreLower && (idCategoria == null || c.Id != idCategoria));
+        
+        if (existeNombre)
+            errores.Add("Ya existe una categoría con ese nombre");
+
+        return errores;
+    }
+
     // Lista todas las categorías ordenadas alfabéticamente
     public async Task<IEnumerable<CategoriaDTO>> ObtenerTodosAsyncCategoria()
     {
@@ -48,16 +64,10 @@ public class CategoriaService : ICategoriaService
     // Crea una nueva categoría
     public async Task<CategoriaDTO> CrearAsyncCategoria(CategoriaCreateDTO dto)
     {
-        // Convierte nombre a minúsculas para comparar
-        var nombreLower = dto.NombreCategoria.ToLower();
-        
-        // Busca si ya existe una categoría con el mismo nombre
-        var existe = await _context.Categorias
-            .AnyAsync(c => c.NombreCategoria.ToLower() == nombreLower);
-        
-        // Si existe, lanza excepción
-        if (existe)
-            throw new InvalidOperationException("Ya existe una categoría con ese nombre");
+        // Valida reglas de negocio
+        var erroresNegocio = await ValidaCategoria(dto);
+        if (erroresNegocio.Any())
+            throw new InvalidOperationException(string.Join(", ", erroresNegocio));
 
         // Crea la entidad
         var categoria = new Categoria
@@ -85,6 +95,11 @@ public class CategoriaService : ICategoriaService
         
         // Si no existe, retorna null
         if (categoria == null) return null;
+
+        // Valida reglas de negocio
+        var erroresNegocio = await ValidaCategoria(dto, id);
+        if (erroresNegocio.Any())
+            throw new InvalidOperationException(string.Join(", ", erroresNegocio));
 
         // Actualiza el nombre
         categoria.NombreCategoria = dto.NombreCategoria;

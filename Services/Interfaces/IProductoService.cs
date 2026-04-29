@@ -4,6 +4,9 @@ namespace proyecto_SISIE.Services.Interfaces;
 
 public interface IProductoService
 {
+    // Valida las reglas de negocio para crear/actualizar producto
+    Task<List<string>> ValidaProducto(ProductoCreateDTO dto, int? idProducto = null);
+
     // Lista productos con paginación y filtros opcionales
     Task<(IEnumerable<ProductoListDTO> Items, int Total)> ObtenerTodosAsyncProducto(int pagina, int tamanioPagina, int? idCategoria, bool? activo);
     
