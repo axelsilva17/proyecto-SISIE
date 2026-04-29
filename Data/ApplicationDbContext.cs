@@ -21,6 +21,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Categoria> Categorias { get; set; } = null!;
     public DbSet<Producto> Productos { get; set; } = null!;
     public DbSet<DetalleVenta> DetallesVenta { get; set; } = null!;
+    public DbSet<Cliente> Clientes { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -154,6 +155,26 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                 .WithMany(p => p.Detalles)
                 .HasForeignKey(d => d.IdProducto)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // ==== CONFIGURACIÓN DE CLIENTE ====
+        modelBuilder.Entity<Cliente>(entity =>
+        {
+            entity.HasKey(c => c.Id);
+            entity.Property(c => c.Dni).IsRequired().HasMaxLength(15);
+            entity.Property(c => c.Nombre).IsRequired().HasMaxLength(100);
+            entity.Property(c => c.Telefono).IsRequired().HasMaxLength(20);
+            entity.Property(c => c.Email).HasMaxLength(40);
+            entity.Property(c => c.DireccionDefault).HasMaxLength(100);
+            entity.Property(c => c.DepartamentoDefault).HasMaxLength(20);
+            entity.Property(c => c.FechaCreacion).IsRequired();
+            entity.Property(c => c.Activo).IsRequired();
+            
+            // Relación con Ciudad (nullable)
+            entity.HasOne(c => c.Ciudad)
+                .WithMany(ci => ci.Clientes)
+                .HasForeignKey(c => c.IdCiudad)
+                .OnDelete(DeleteBehavior.SetNull);
         });
     }
 }

@@ -21,4 +21,5 @@ public class Ciudad
     
     // Navegación
     public ICollection<Direccion> Direcciones { get; set; } = new List<Direccion>();
+    public ICollection<Cliente> Clientes { get; set; } = new List<Cliente>();
 }

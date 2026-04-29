@@ -38,6 +38,12 @@ public class VentaCreateDTO
     [Required(ErrorMessage = "La dirección o tipo de entrega debe ser indicado")]
     public bool EsEnvio { get; set; }
 
+    // Datos del cliente (opcional)
+    public string? DniCliente { get; set; }
+    public string? NombreCliente { get; set; }
+    public string? TelefonoCliente { get; set; }
+    public string? EmailCliente { get; set; }
+
     // Lista de productos a vender
     [Required(ErrorMessage = "Debe incluir al menos un producto")]
     [MinLength(1, ErrorMessage = "Debe incluir al menos un producto")]

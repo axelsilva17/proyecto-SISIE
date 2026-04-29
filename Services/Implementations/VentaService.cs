@@ -10,19 +10,19 @@ namespace proyecto_SISIE.Services.Implementations;
 public class VentaService : IVentaService
 {
     private readonly ApplicationDbContext _context;
+    private readonly IClienteService _clienteService;
 
-    public VentaService(ApplicationDbContext context)
+    public VentaService(ApplicationDbContext context, IClienteService clienteService)
     {
         _context = context;
+        _clienteService = clienteService;
     }
 
     // Registra una nueva venta con sus detalles, descuenta stock y calcula el total
     public async Task<VentaDTO> RegistrarVentaAsync(int idUsuario, VentaCreateDTO dto)
     {
-// Valida que el usuario exista
-        var usuario = await _context.Usuarios.FindAsync(idUsuario);
-        if (usuario == null)
-            throw new InvalidOperationException("El usuario no existe");
+        // Valida los datos de la venta primero
+        await ValidarDatosVentaAsync(idUsuario, dto);
 
         // Variable para guardar el ID de dirección
         int? idDireccionFinal = dto.IdDireccion;
@@ -30,48 +30,19 @@ public class VentaService : IVentaService
         // Si es envío a domicilio sin dirección previa, crea una nueva
         if (dto.EsEnvio && !dto.IdDireccion.HasValue)
         {
-            // Valida que tenga ciudad
-            if (!dto.IdCiudad.HasValue || dto.IdCiudad.Value <= 0)
-                throw new InvalidOperationException("Debe seleccionar una ciudad para envío a domicilio");
-
-            // Valida que tenga dirección
-            if (string.IsNullOrWhiteSpace(dto.DireccionEnvio))
-                throw new InvalidOperationException("Debe indicar la dirección para envío a domicilio");
-
             // Crea la nueva dirección
             var nuevaDireccion = new Direccion
             {
                 Calle = dto.DireccionEnvio,
                 Numero = 1,
                 Departamento = dto.Departamento,
-                IdCiudad = dto.IdCiudad.Value,
+                IdCiudad = dto.IdCiudad!.Value,
                 IdUsuario = idUsuario
             };
 
             _context.Direcciones.Add(nuevaDireccion);
             await _context.SaveChangesAsync();
             idDireccionFinal = nuevaDireccion.Id;
-        }
-
-        // Valida que si es envío con ID de dirección, la dirección sea válida
-        if (dto.EsEnvio && dto.IdDireccion.HasValue)
-        {
-            var direccionValida = await _context.Direcciones
-                .AnyAsync(d => d.Id == dto.IdDireccion.Value);
-            if (!direccionValida)
-                throw new InvalidOperationException("La dirección no es válida");
-        }
-
-        // Verifica stock disponible de todos los productos antes de procesar
-        foreach (var detalle in dto.Detalles)
-        {
-            var producto = await _context.Productos.FindAsync(detalle.IdProducto);
-            if (producto == null)
-                throw new InvalidOperationException($"El producto con ID {detalle.IdProducto} no existe");
-            if (!producto.Activo)
-                throw new InvalidOperationException($"El producto '{producto.NombreProducto}' está inactivo");
-            if (producto.Stock < detalle.Cantidad)
-                throw new InvalidOperationException($"Stock insuficiente para '{producto.NombreProducto}'. Disponible: {producto.Stock}");
         }
 
         // Genera el número de venta (timestamp + random para evitar duplicados)
@@ -408,5 +379,69 @@ public class VentaService : IVentaService
                 SubTotal = d.SubTotal
             }).ToList()
         };
+    }
+    
+    // ============================================================
+    // MÉTODOS DE VALIDACIÓN (separados)
+    // ============================================================
+
+    // Valida los datos de una venta antes de procesarla
+    private async Task ValidarDatosVentaAsync(int idUsuario, VentaCreateDTO dto)
+    {
+        // Valida que el usuario exista
+        var usuario = await _context.Usuarios.FindAsync(idUsuario);
+        if (usuario == null)
+            throw new InvalidOperationException("El usuario no existe");
+
+        // Valida que haya productos
+        if (dto.Detalles == null || !dto.Detalles.Any())
+            throw new InvalidOperationException("Debe incluir al menos un producto");
+
+        // Valida datos del cliente si se proporcionan
+        if (!string.IsNullOrWhiteSpace(dto.DniCliente) || 
+            !string.IsNullOrWhiteSpace(dto.NombreCliente) || 
+            !string.IsNullOrWhiteSpace(dto.TelefonoCliente))
+        {
+            await _clienteService.ValidarDatosClienteAsync(
+                dto.DniCliente!,
+                dto.NombreCliente!,
+                dto.TelefonoCliente!,
+                dto.EmailCliente,
+                dto.IdCiudad
+            );
+        }
+
+        // Si es envío a domicilio
+        if (dto.EsEnvio)
+        {
+            // Valida que tenga ciudad
+            if (!dto.IdCiudad.HasValue || dto.IdCiudad.Value <= 0)
+                throw new InvalidOperationException("Debe seleccionar una ciudad para envío a domicilio");
+
+            // Valida que tenga dirección (si no hay ID de dirección existente)
+            if (!dto.IdDireccion.HasValue && string.IsNullOrWhiteSpace(dto.DireccionEnvio))
+                throw new InvalidOperationException("Debe indicar la dirección para envío a domicilio");
+        }
+
+        // Si proporciona ID de dirección, valida que sea válida
+        if (dto.IdDireccion.HasValue)
+        {
+            var direccionValida = await _context.Direcciones
+                .AnyAsync(d => d.Id == dto.IdDireccion.Value);
+            if (!direccionValida)
+                throw new InvalidOperationException("La dirección no es válida");
+        }
+
+        // Valida cada producto del detalle
+        foreach (var detalle in dto.Detalles)
+        {
+            var producto = await _context.Productos.FindAsync(detalle.IdProducto);
+            if (producto == null)
+                throw new InvalidOperationException($"El producto con ID {detalle.IdProducto} no existe");
+            if (!producto.Activo)
+                throw new InvalidOperationException($"El producto '{producto.NombreProducto}' está inactivo");
+            if (producto.Stock < detalle.Cantidad)
+                throw new InvalidOperationException($"Stock insuficiente para '{producto.NombreProducto}'. Disponible: {producto.Stock}");
+        }
     }
 }

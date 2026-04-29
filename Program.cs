@@ -115,6 +115,7 @@ builder.Services.AddScoped<ICategoriaService, CategoriaService>();
 builder.Services.AddScoped<IProductoService, ProductoService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IVentaService, VentaService>();
+builder.Services.AddScoped<IClienteService, ClienteService>();
 
 var app = builder.Build();
 
@@ -167,6 +168,18 @@ var app = builder.Build();
             };
             db.Productos.AddRange(productos);
         }
+    }
+
+    // Seed de clientes de prueba
+    if (!db.Clientes.Any())
+    {
+        var clientes = new List<proyecto_SISIE.Models.Entities.Cliente>
+        {
+            new() { Dni = "12345678", Nombre = "Juan Perez", Telefono = "0981123456", Email = "juan@test.com", FechaCreacion = DateTime.Now, Activo = true },
+            new() { Dni = "87654321", Nombre = "Maria Gonzalez", Telefono = "0985987654", Email = "maria@test.com", FechaCreacion = DateTime.Now, Activo = true },
+            new() { Dni = "11223344", Nombre = "Pedro Rodriguez", Telefono = "0971122334", Email = "pedro@test.com", FechaCreacion = DateTime.Now, Activo = true }
+        };
+        db.Clientes.AddRange(clientes);
     }
     db.SaveChanges();
 }

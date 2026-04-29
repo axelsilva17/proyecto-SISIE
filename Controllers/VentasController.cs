@@ -1,3 +1,4 @@
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using proyecto_SISIE.Models.DTOs;
@@ -13,10 +14,12 @@ namespace proyecto_SISIE.Controllers;
 public class VentasController : ControllerBase
 {
     private readonly IVentaService _ventaService;
+    private readonly IClienteService _clienteService;
 
-    public VentasController(IVentaService ventaService)
+    public VentasController(IVentaService ventaService, IClienteService clienteService)
     {
         _ventaService = ventaService;
+        _clienteService = clienteService;
     }
 
     // Obtiene el ID del usuario autenticado desde el token JWT
@@ -246,6 +249,25 @@ public class VentasController : ControllerBase
         {
             var estadisticas = await _ventaService.ObtenerEstadisticasVentasAsync(fechaDesde, fechaHasta);
             return Ok(estadisticas);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { success = false, message = ex.Message });
+        }
+    }
+
+// Busca un cliente por DNI (para autocompletar en el formulario de ventas)
+    [HttpGet("buscar-cliente/{dni}")]
+    public async Task<ActionResult<ClienteDTO>> BuscarClientePorDni(string dni)
+    {
+        try
+        {
+            var cliente = await _clienteService.BuscarPorDniAsync(dni);
+            
+            if (cliente == null)
+                return NotFound(new { message = "Cliente no encontrado" });
+
+            return Ok(cliente);
         }
         catch (Exception ex)
         {
