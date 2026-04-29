@@ -84,6 +84,11 @@ public class ClienteService : IClienteService
     // Agrega un nuevo cliente
     public async Task<ClienteDTO> AgregarAsyncCliente(ClienteCreateDTO dto)
     {
+        // Primero verificar si ya existe
+        var existente = await BuscarPorDniAsync(dto.Dni);
+        if (existente != null)
+            return existente;
+
         // Valida los datos del cliente
         await ValidarDatosClienteAsync(dto.Dni, dto.Nombre, dto.Telefono, dto.Email, dto.IdCiudad);
 

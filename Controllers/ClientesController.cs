@@ -45,25 +45,24 @@ public class ClientesController : ControllerBase
     public async Task<ActionResult<ClienteDTO>> BuscarPorDni(string dni)
     {
         var cliente = await _clienteService.BuscarPorDniAsync(dni);
-        
+
         if (cliente == null)
             return NotFound(new { message = "Cliente no encontrado" });
 
         return Ok(cliente);
     }
 
-    // Obtiene un cliente por su ID
+// Obtiene un cliente por su ID
     [HttpGet("{id}")]
     public async Task<ActionResult<ClienteDTO>> ObtenerPorId(int id)
     {
         var cliente = await _clienteService.ObtenerPorIdAsync(id);
-        
+
         if (cliente == null)
             return NotFound(new { message = "Cliente no encontrado" });
 
         return Ok(cliente);
     }
-
     // Agrega un nuevo cliente (si ya existe, retorna el existente)
     [HttpPost]
     public async Task<ActionResult<ClienteDTO>> Agregar([FromBody] ClienteCreateDTO clienteDto)
@@ -78,7 +77,7 @@ public class ClientesController : ControllerBase
             return BadRequest(new { 
                 success = false, 
                 message = "Error de validación",
-                errors = errores 
+errors = errores 
             });
         }
 

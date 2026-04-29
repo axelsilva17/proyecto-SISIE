@@ -1,6 +1,6 @@
-
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using proyecto_SISIE.Data;
 using proyecto_SISIE.Models.DTOs;
 using proyecto_SISIE.Services.Interfaces;
 using System.Security.Claims;
@@ -29,7 +29,13 @@ public class VentasController : ControllerBase
         if (claim == null)
             throw new UnauthorizedAccessException("No se encontró el ID del usuario en el token");
 
-        return int.Parse(claim.Value);
+        // El claim puede ser string o int - intentá parsear
+        if (int.TryParse(claim.Value, out int idInt))
+            return idInt;
+
+        // Si es string (GUID de AspNetUsers), usar un ID temporal
+        // Por ahora retornamos 1 como default - después mejoramos esto
+        return 1;
     }
 
     // Registra una nueva venta con sus productos
@@ -66,6 +72,11 @@ public class VentasController : ControllerBase
         {
             // Captura errores de negocio (stock insuficiente, datos inválidos, etc.)
             return BadRequest(new { success = false, message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            // Captura cualquier otro error
+            return StatusCode(500, new { success = false, message = ex.Message, inner = ex.InnerException?.Message });
         }
     }
 

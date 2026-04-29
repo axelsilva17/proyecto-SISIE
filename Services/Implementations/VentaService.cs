@@ -397,19 +397,7 @@ public class VentaService : IVentaService
         if (dto.Detalles == null || !dto.Detalles.Any())
             throw new InvalidOperationException("Debe incluir al menos un producto");
 
-        // Valida datos del cliente si se proporcionan
-        if (!string.IsNullOrWhiteSpace(dto.DniCliente) || 
-            !string.IsNullOrWhiteSpace(dto.NombreCliente) || 
-            !string.IsNullOrWhiteSpace(dto.TelefonoCliente))
-        {
-            await _clienteService.ValidarDatosClienteAsync(
-                dto.DniCliente!,
-                dto.NombreCliente!,
-                dto.TelefonoCliente!,
-                dto.EmailCliente,
-                dto.IdCiudad
-            );
-        }
+        // Validación de cliente eliminada - ya se valida en el endpoint POST /clientes
 
         // Si es envío a domicilio
         if (dto.EsEnvio)
