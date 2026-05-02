@@ -4,6 +4,9 @@ namespace proyecto_SISIE.Services.Interfaces;
 
 public interface ICategoriaService
 {
+    // Valida las reglas de negocio para crear/actualizar categoría
+    Task<List<string>> ValidaCategoria(CategoriaCreateDTO dto, int? idCategoria = null);
+
     // Lista todas las categorías
     Task<IEnumerable<CategoriaDTO>> ObtenerTodosAsyncCategoria();
     

@@ -17,6 +17,19 @@ public class ProductosController : ControllerBase
         _productoService = productoService;
     }
 
+    // Valida los datos del producto
+    private List<string> ValidarDatosProductos()
+    {
+        if (!ModelState.IsValid)
+        {
+            return ModelState
+                .Where(x => x.Value?.Errors.Count > 0)
+                .Select(x => x.Value!.Errors.First().ErrorMessage)
+                .ToList();
+        }
+        return new List<string>();
+    }
+
     // Lista productos con paginación
     [HttpGet]
     public async Task<ActionResult<ProductoPagedResult>> ObtenerTodosProductos(
@@ -61,14 +74,10 @@ public class ProductosController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<ProductoDTO>> CrearProducto([FromBody] ProductoCreateDTO producto)
     {
-        // Valida los datos con DataAnnotations
-        if (!ModelState.IsValid)
+        // Valida los datos
+        var errores = ValidarDatosProductos();
+        if (errores.Count > 0)
         {
-            var errores = ModelState
-                .Where(x => x.Value?.Errors.Count > 0)
-                .Select(x => x.Value?.Errors.First().ErrorMessage)
-                .ToList();
-            
             return BadRequest(new { 
                 success = false, 
                 message = "Error de validación",
@@ -96,13 +105,9 @@ public class ProductosController : ControllerBase
     public async Task<ActionResult<ProductoDTO>> ActualizarProducto(int id, [FromBody] ProductoUpdateDTO producto)
     {
         // Valida los datos
-        if (!ModelState.IsValid)
+        var errores = ValidarDatosProductos();
+        if (errores.Count > 0)
         {
-            var errores = ModelState
-                .Where(x => x.Value?.Errors.Count > 0)
-                .Select(x => x.Value?.Errors.First().ErrorMessage)
-                .ToList();
-            
             return BadRequest(new { 
                 success = false, 
                 message = "Error de validación",
