@@ -1,0 +1,225 @@
+<mxfile host="Electron" modified="2026-04-26T06:00:00.000Z" version="26.0.0">
+  <diagram id="secuencia" name="Secuencia">
+    <mxGraphModel dx="900" dy="600" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="900" pageHeight="650" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- TITLE -->
+        <mxCell id="title" value="MODULO PRODUCTOS Y CATEGORIAS" style="text;strokeColor=none;fillColor=none;fontSize=20;fontStyle=1;fontColor=#333333;align=center;" vertex="1" parent="1">
+          <mxGeometry x="250" y="10" width="350" height="28" as="geometry" />
+        </mxCell>
+
+        <!-- ACTORES (1 vez arriba) ==================== -->
+        <mxCell id="admin" value="Administrador" style="shape=uml.actor;pointerEvents=1;whiteSpace=wrap;html=1;aspect=fixed;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="55" y="55" width="40" height="55" as="geometry" />
+        </mxCell>
+
+        <mxCell id="sistema" value="Sistema" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="220" y="60" width="95" height="38" as="geometry" />
+        </mxCell>
+
+        <mxCell id="productos" value="Productos" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="440" y="60" width="100" height="38" as="geometry" />
+        </mxCell>
+
+        <mxCell id="categorias" value="Categorias" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="680" y="60" width="100" height="38" as="geometry" />
+        </mxCell>
+
+        <!-- LINEAS DE VIDA ==================== -->
+        <mxCell id="ll-admin" value="" style="endArrow=none;dashed=1;strokeColor=#666666;strokeWidth=2;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="75" y="110" as="sourcePoint" />
+            <mxPoint x="75" y="580" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="ll-sistema" value="" style="endArrow=none;dashed=1;strokeColor=#666666;strokeWidth=2;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="267" y="110" as="sourcePoint" />
+            <mxPoint x="267" y="580" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="ll-productos" value="" style="endArrow=none;dashed=1;strokeColor=#666666;strokeWidth=2;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="490" y="110" as="sourcePoint" />
+            <mxPoint x="490" y="580" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="ll-categorias" value="" style="endArrow=none;dashed=1;strokeColor=#666666;strokeWidth=2;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="730" y="110" as="sourcePoint" />
+            <mxPoint x="730" y="580" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- ==================== 1. OBTENER PRODUCTOS ==================== -->
+        <mxCell id="n1" value="1" style="text;strokeColor=#6c8ebf;fillColor=#6c8ebf;fontSize=9;fontStyle=1;fontColor=#fff;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="15" y="145" width="18" height="18" as="geometry" />
+        </mxCell>
+
+        <mxCell id="t1" value="Obtener Productos" style="text;strokeColor=none;fillColor=none;fontSize=10;fontColor=#333333;" vertex="1" parent="1">
+          <mxGeometry x="38" y="145" width="95" height="18" as="geometry" />
+        </mxCell>
+
+        <!-- 1. Admin -> Sistema (desde lifeline a siguiente columna) -->
+        <mxCell id="msg1-1" value="Solicita lista" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;strokeColor=#333333;fontSize=9;strokeWidth=2;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="100" y="175" as="sourcePoint" />
+            <mxPoint x="267" y="175" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Activacion EN la linea de vida del SISTEMA -->
+        <mxCell id="act1-sys" value="ObtenerTodosProductos" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=8;" vertex="1" parent="1">
+          <mxGeometry x="220" y="180" width="95" height="16" as="geometry" />
+        </mxCell>
+
+        <!-- 2. Desde activacion del SISTEMA -> PRODUCTOS (siguiente columna) -->
+        <mxCell id="msg1-2" value="ObtenerTodos" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;strokeColor=#333333;fontSize=9;strokeWidth=2;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="315" y="215" as="sourcePoint" />
+            <mxPoint x="490" y="215" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Activacion EN la linea de vida de PRODUCTOS -->
+        <mxCell id="act1-prod" value="ObtenerTodosAsync" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=8;" vertex="1" parent="1">
+          <mxGeometry x="440" y="220" width="100" height="16" as="geometry" />
+        </mxCell>
+
+        <!-- Validacion como CIRCULO en la linea de vida de PRODUCTOS (no cruza columna) -->
+        <mxCell id="val1" value="Filtrar" style="shape=ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=7;" vertex="1" parent="1">
+          <mxGeometry x="510" y="245" width="50" height="14" as="geometry" />
+        </mxCell>
+
+        <!-- 3. Return dashed desde PRODUCTOS -> SISTEMA (desde lifeline a lifeline) -->
+        <mxCell id="ret1-1" value="Lista" style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;endArrow=open;endFill=0;strokeColor=#666666;fontSize=9;strokeWidth=2;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="490" y="285" as="sourcePoint" />
+            <mxPoint x="295" y="285" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- 4. Return dashed SISTEMA -> ADMIN (desde lifeline a lifeline) -->
+        <mxCell id="ret1-2" value="Muestra" style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;endArrow=open;endFill=0;strokeColor=#666666;fontSize=9;strokeWidth=2;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="267" y="325" as="sourcePoint" />
+            <mxPoint x="100" y="325" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- ==================== 2. CREAR PRODUCTO ==================== -->
+        <mxCell id="n2" value="2" style="text;strokeColor=#82b366;fillColor=#82b366;fontSize=9;fontStyle=1;fontColor=#fff;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="15" y="380" width="18" height="18" as="geometry" />
+        </mxCell>
+
+        <mxCell id="t2" value="Crear Producto" style="text;strokeColor=none;fillColor=none;fontSize=10;fontColor=#333333;" vertex="1" parent="1">
+          <mxGeometry x="38" y="380" width="80" height="18" as="geometry" />
+        </mxCell>
+
+        <!-- 1. Admin -> Sistema -->
+        <mxCell id="msg2-1" value="Guardar" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;strokeColor=#333333;fontSize=9;strokeWidth=2;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="100" y="410" as="sourcePoint" />
+            <mxPoint x="267" y="410" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Activacion en SISTEMA -->
+        <mxCell id="act2-sys" value="CrearProducto" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=8;" vertex="1" parent="1">
+          <mxGeometry x="220" y="415" width="95" height="16" as="geometry" />
+        </mxCell>
+
+        <!-- 2. Desde activacion -> PRODUCTOS -->
+        <mxCell id="msg2-2" value="CrearAsync" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;strokeColor=#333333;fontSize=9;strokeWidth=2;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="315" y="450" as="sourcePoint" />
+            <mxPoint x="490" y="450" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Activacion en PRODUCTOS -->
+        <mxCell id="act2-prod" value="CrearAsync" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=8;" vertex="1" parent="1">
+          <mxGeometry x="440" y="455" width="100" height="16" as="geometry" />
+        </mxCell>
+
+        <!-- Validaciones en LINEA DE VIDA de PRODUCTOS -->
+        <mxCell id="val2-1" value="Valida nombre" style="shape=ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=7;" vertex="1" parent="1">
+          <mxGeometry x="510" y="480" width="65" height="14" as="geometry" />
+        </mxCell>
+
+        <mxCell id="val2-2" value="Verifica cat" style="shape=ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=7;" vertex="1" parent="1">
+          <mxGeometry x="510" y="500" width="65" height="14" as="geometry" />
+        </mxCell>
+
+        <!-- Return -->
+        <mxCell id="ret2-1" value="OK" style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;endArrow=open;endFill=0;strokeColor=#666666;fontSize=9;strokeWidth=2;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="490" y="540" as="sourcePoint" />
+            <mxPoint x="295" y="540" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="ret2-2" value="Confirmado" style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;endArrow=open;endFill=0;strokeColor=#666666;fontSize=9;strokeWidth=2;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="267" y="575" as="sourcePoint" />
+            <mxPoint x="100" y="575" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- ==================== 3. CREAR CATEGORIA ==================== -->
+        <mxCell id="n3" value="3" style="text;strokeColor=#9673a6;fillColor=#9673a6;fontSize=9;fontStyle=1;fontColor=#fff;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="15" y="630" width="18" height="18" as="geometry" />
+        </mxCell>
+
+        <mxCell id="t3" value="Crear Categoria" style="text;strokeColor=none;fillColor=none;fontSize=10;fontColor=#333333;" vertex="1" parent="1">
+          <mxGeometry x="38" y="630" width="90" height="18" as="geometry" />
+        </mxCell>
+
+        <!-- 1. Admin -> Sistema -->
+        <mxCell id="msg3-1" value="Guardar" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;strokeColor=#333333;fontSize=9;strokeWidth=2;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="100" y="660" as="sourcePoint" />
+            <mxPoint x="267" y="660" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Activacion en SISTEMA -->
+        <mxCell id="act3-sys" value="CrearCategoria" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=8;" vertex="1" parent="1">
+          <mxGeometry x="220" y="665" width="95" height="16" as="geometry" />
+        </mxCell>
+
+        <!-- 2. -> CATEGORIAS -->
+        <mxCell id="msg3-2" value="Crear" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;strokeColor=#333333;fontSize=9;strokeWidth=2;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="315" y="700" as="sourcePoint" />
+            <mxPoint x="730" y="700" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Activacion en CATEGORIAS -->
+        <mxCell id="act3-cat" value="CrearAsync" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=8;" vertex="1" parent="1">
+          <mxGeometry x="680" y="705" width="100" height="16" as="geometry" />
+        </mxCell>
+
+        <!-- Validacion en linea de CATEGORIAS -->
+        <mxCell id="val3" value="Valida" style="shape=ellipse;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=7;" vertex="1" parent="1">
+          <mxGeometry x="750" y="730" width="50" height="14" as="geometry" />
+        </mxCell>
+
+        <!-- Return -->
+        <mxCell id="ret3" value="OK" style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;endArrow=open;endFill=0;strokeColor=#666666;fontSize=9;strokeWidth=2;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="730" y="770" as="sourcePoint" />
+            <mxPoint x="295" y="770" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

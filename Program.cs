@@ -117,6 +117,13 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IVentaService, VentaService>();
 builder.Services.AddScoped<IClienteService, ClienteService>();
 
+// Validadores (desacoplados)
+builder.Services.AddScoped<IValidadorProducto, ValidadorProducto>();
+builder.Services.AddScoped<IValidadorCategoria, ValidadorCategoria>();
+builder.Services.AddScoped<IValidadorVenta, ValidadorVenta>();
+builder.Services.AddScoped<IValidadorCliente, ValidadorCliente>();
+builder.Services.AddScoped<IValidadorAuth, ValidadorAuth>();
+
 var app = builder.Build();
 
 // ============================================
