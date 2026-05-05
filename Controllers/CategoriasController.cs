@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using proyecto_SISIE.Models.DTOs;
+using proyecto_SISIE.Services;
 using proyecto_SISIE.Services.Interfaces;
 
 namespace proyecto_SISIE.Controllers;
@@ -11,64 +12,71 @@ namespace proyecto_SISIE.Controllers;
 public class CategoriasController : ControllerBase
 {
     private readonly ICategoriaService _categoriaService;
+    private readonly IValidadorCategoria _validador;
 
-    public CategoriasController(ICategoriaService categoriaService)
+    public CategoriasController(ICategoriaService categoriaService, IValidadorCategoria validador)
     {
         _categoriaService = categoriaService;
+        _validador = validador;
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<CategoriaDTO>>> GetAll()
+    public async Task<ActionResult<IEnumerable<CategoriaDTO>>> ObtenerTodasCategorias()
     {
-        var categorias = await _categoriaService.GetAllAsync();
+        var categorias = await _categoriaService.ObtenerTodosAsyncCategoria();
         return Ok(categorias);
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<CategoriaDTO>> GetById(int id)
+    public async Task<ActionResult<CategoriaDTO>> ObtenerCategoriaPorId(int id)
     {
-        var categoria = await _categoriaService.GetByIdAsync(id);
+        var categoria = await _categoriaService.ObtenerPorIdAsyncCategoria(id);
         if (categoria == null)
             return NotFound(new { message = "Categoría no encontrada" });
-
         return Ok(categoria);
     }
 
     [HttpPost]
-    public async Task<ActionResult<CategoriaDTO>> Create([FromBody] CategoriaCreateDTO categoria)
+    public async Task<ActionResult<CategoriaDTO>> CrearCategoria([FromBody] CategoriaCreateDTO categoria)
     {
-        if (string.IsNullOrWhiteSpace(categoria.NombreCategoria))
-            return BadRequest(new { message = "El nombre es requerido" });
+        var errores = await _validador.ValidarDatosCategoria(categoria);
+        if (errores.Count > 0)
+            return BadRequest(new { success = false, message = "Error de validación", errors = errores });
 
-        var created = await _categoriaService.CreateAsync(categoria);
-        return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+        try
+        {
+            var created = await _categoriaService.CrearAsyncCategoria(categoria);
+            return CreatedAtAction(nameof(ObtenerCategoriaPorId), new { id = created.Id }, created);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { success = false, message = ex.Message });
+        }
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult<CategoriaDTO>> Update(int id, [FromBody] CategoriaCreateDTO categoria)
+    public async Task<ActionResult<CategoriaDTO>> ActualizarCategoria(int id, [FromBody] CategoriaCreateDTO categoria)
     {
-        if (string.IsNullOrWhiteSpace(categoria.NombreCategoria))
-            return BadRequest(new { message = "El nombre es requerido" });
+        var errores = await _validador.ValidaCategoria(categoria, id);
+        if (errores.Count > 0)
+            return BadRequest(new { success = false, message = "Error de validación", errors = errores });
 
-        var updated = await _categoriaService.UpdateAsync(id, categoria);
+        var updated = await _categoriaService.ActualizarAsyncCategoria(id, categoria);
         if (updated == null)
             return NotFound(new { message = "Categoría no encontrada" });
-
         return Ok(updated);
     }
 
     [HttpDelete("{id}")]
-    public async Task<ActionResult> Delete(int id)
+    public async Task<ActionResult> EliminarCategoria(int id)
     {
-        // Verificar si tiene productos activos
-        var canDelete = await _categoriaService.CanDeleteAsync(id);
-        if (!canDelete)
+        var puedeEliminar = await _categoriaService.PuedeEliminarAsync(id);
+        if (!puedeEliminar)
             return BadRequest(new { message = "No se puede eliminar, tiene productos vinculados" });
 
-        var result = await _categoriaService.DeleteAsync(id);
+        var result = await _categoriaService.EliminarAsyncCategoria(id);
         if (!result)
             return NotFound(new { message = "Categoría no encontrada" });
-
         return Ok(new { message = "Categoría eliminada" });
     }
 }

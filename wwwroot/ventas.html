@@ -1,0 +1,1181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nueva Venta - SISIE</title>
+    
+    <!-- Speculation Rules - Preload de páginas para navegación más rápida -->
+    <script type="speculationrules">
+    {
+      "prefetch": [
+        { "urls": ["/index.html", "/productos.html", "/categorias.html"] }
+      ]
+    }
+    </script>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            orange: '#F25C05',
+                            orangeLight: '#FF7A1A',
+                            dark: '#052741',
+                            medium: '#1F4E79'
+                        },
+                        neutral: {
+                            light: '#F2F2F2',
+                            medium: '#D9D9D9',
+                            dark: '#555555'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in-up { animation: fadeInUp 0.4s ease-out forwards; }
+    </style>
+</head>
+<body class="bg-neutral-light min-h-screen">
+    
+    <!-- Navbar -->
+    <nav class="bg-brand-dark text-white p-4 shadow-lg">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <a href="/index.html" class="flex items-center gap-2 hover:opacity-80 transition -ml-2">
+                <img src="/img/LogoCaja.png" alt="SISIE" class="h-14">
+                <span class="font-bold text-lg">SISIE</span>
+            </a>
+            <div class="flex items-center gap-4">
+                <a href="/index.html" class="text-sm hover:text-brand-orange transition">
+                    <i class="fas fa-home mr-1"></i> Inicio
+                </a>
+                <a href="/productos.html" class="text-sm hover:text-brand-orange transition">
+                    <i class="fas fa-box mr-1"></i> Productos
+                </a>
+                <a href="/categorias.html" class="text-sm hover:text-brand-orange transition">
+                    <i class="fas fa-tags mr-1"></i> Categorías
+                </a>
+                <button onclick="logout()" class="text-red-400 hover:text-red-300 text-sm">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-6xl mx-auto p-4 md:p-6">
+        
+        <!-- Título -->
+        <div class="mb-6 fade-in-up">
+            <a href="/index.html" class="inline-flex items-center text-brand-orange hover:text-orange-700 text-sm mb-2">
+                <i class="fas fa-arrow-left mr-1"></i> Volver
+            </a>
+            <h1 class="text-2xl md:text-3xl font-bold text-brand-dark flex items-center gap-3">
+                <i class="fas fa-cash-register text-brand-orange"></i>
+                Nueva Venta
+            </h1>
+            <p class="text-neutral-dark text-sm mt-1">Registrá una nueva venta del sistema</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Columna Izquierda: Datos de la venta -->
+            <div class="lg:col-span-2 space-y-6">
+                
+                <!-- Selección de Usuario -->
+                <div class="bg-white rounded-xl shadow-md p-6 fade-in-up">
+                    <h2 class="text-lg font-semibold text-brand-dark mb-4 flex items-center gap-2">
+                        <i class="fas fa-user text-brand-orange"></i>
+                        Datos del Cliente
+                        <button type="button" onclick="limpiarCliente()" 
+                            class="ml-auto text-xs bg-gray-200 hover:bg-red-500 hover:text-white px-2 py-1 rounded transition"
+                            title="Limpiar todos los datos del cliente">
+                            <i class="fas fa-times mr-1"></i>Limpiar
+                        </button>
+                    </h2>
+
+                    <!-- Buscador de Cliente -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Buscar Cliente existente</label>
+                        <div class="relative">
+                            <input type="text" id="buscadorCliente" 
+                                onkeyup="buscarClientes(this.value)"
+                                onblur="setTimeout(() => document.getElementById('resultadosClientes').classList.add('hidden'), 200)"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-orange focus:border-transparent"
+                                placeholder="Escribí el DNI o nombre del cliente...">
+                            <div id="resultadosClientes" class="hidden absolute z-50 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto mt-1">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Cliente *</label>
+                            <div class="relative">
+                                <input type="text" id="cliente" required
+                                    class="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-orange focus:border-transparent"
+                                    placeholder="Nombre del cliente">
+                                <button type="button" onclick="limpiarCliente()" 
+                                    class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500"
+                                    title="Limpiar cliente">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">DNI / CUIT</label>
+                            <input type="text" id="documento"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-orange focus:border-transparent"
+                                placeholder="XX-XXXXXXXX-X">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                            <input type="tel" id="telefono"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-orange focus:border-transparent"
+                                placeholder="11-XXXX-XXXX">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                            <input type="email" id="email"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-orange focus:border-transparent"
+                                placeholder="email@ejemplo.com">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Agregar Productos -->
+                <div class="bg-white rounded-xl shadow-md p-6 fade-in-up">
+                    <h2 class="text-lg font-semibold text-brand-dark mb-4 flex items-center gap-2">
+                        <i class="fas fa-shopping-cart text-brand-orange"></i>
+                        Productos
+                    </h2>
+                    
+                    <!-- Buscador sin dropdown -->
+                    <div class="mb-4 relative">
+                        <input type="text" id="buscadorProducto" placeholder="Buscar producto..." 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-orange"
+                            onkeyup="buscarProductos(this.value)"
+                            onblur="setTimeout(() => document.getElementById('resultadosBusqueda').classList.add('hidden'), 200)">
+                        <div id="resultadosBusqueda" class="hidden absolute z-50 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto mt-1">
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-2 mb-4">
+                        <input type="number" id="cantidad" min="1" value="1" 
+                            class="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-orange text-center"
+                            title="Cantidad">
+                        <button onclick="agregarProducto()" class="bg-brand-orange text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition flex-1">
+                            <i class="fas fa-plus mr-2"></i>Agregar
+                        </button>
+                    </div>
+
+                    <!-- Tabla de productos agregados -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead class="bg-neutral-light text-gray-700">
+                                <tr>
+                                    <th class="px-3 py-2 text-left font-semibold">Producto</th>
+                                    <th class="px-3 py-2 text-center font-semibold">Precio</th>
+                                    <th class="px-3 py-2 text-center font-semibold">Cant</th>
+                                    <th class="px-3 py-2 text-right font-semibold">Subtotal</th>
+                                    <th class="px-3 py-2"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="productosVenta">
+                                <tr>
+                                    <td colspan="5" class="px-3 py-4 text-center text-gray-500">
+                                        Escribí el nombre del producto en el buscador
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Métodos de Pago y Envío -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Pago -->
+                    <div class="bg-white rounded-xl shadow-md p-6 fade-in-up">
+                        <h2 class="text-lg font-semibold text-brand-dark mb-4 flex items-center gap-2">
+                            <i class="fas fa-credit-card text-brand-orange"></i>
+                            Método de Pago
+                        </h2>
+                        
+                        <div class="space-y-2">
+                            <label class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                                <input type="radio" name="pago" value="efectivo" checked class="text-brand-orange">
+                                <i class="fas fa-money-bill-wave text-green-600 w-5"></i>
+                                <span>Efectivo</span>
+                            </label>
+                            <label class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                                <input type="radio" name="pago" value="debito" class="text-brand-orange">
+                                <i class="fas fa-credit-card text-blue-600 w-5"></i>
+                                <span>Tarjeta Débito</span>
+                            </label>
+                            <label class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                                <input type="radio" name="pago" value="credito" class="text-brand-orange">
+                                <i class="fas fa-credit-card text-purple-600 w-5"></i>
+                                <span>Tarjeta Crédito</span>
+                            </label>
+                            <label class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                                <input type="radio" name="pago" value="transferencia" class="text-brand-orange">
+                                <i class="fas fa-university text-gray-600 w-5"></i>
+                                <span>Transferencia</span>
+                            </label>
+                        </div>
+
+                        <!-- Datos tarjeta si aplica -->
+                        <div id="datosTarjeta" class="mt-4 hidden">
+                            <input type="text" placeholder="Últimos 4 dígitos" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                        </div>
+                    </div>
+
+                    <!-- Envío -->
+                    <div class="bg-white rounded-xl shadow-md p-6 fade-in-up">
+                        <h2 class="text-lg font-semibold text-brand-dark mb-4 flex items-center gap-2">
+                            <i class="fas fa-shipping-fast text-brand-orange"></i>
+                            Tipo de Entrega
+                        </h2>
+                        
+                        <div class="space-y-2">
+                            <label class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                                <input type="radio" name="envio" value="mostrador" checked class="text-brand-orange" onchange="toggleDomicilio()">
+                                <i class="fas fa-store text-green-600 w-5"></i>
+                                <span>Venta por Mostrador</span>
+                            </label>
+                            <label class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                                <input type="radio" name="envio" value="retiro" class="text-brand-orange" onchange="toggleDomicilio()">
+                                <i class="fas fa-box text-blue-600 w-5"></i>
+                                <span>Retiro en Sucursal</span>
+                            </label>
+                            <label class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                                <input type="radio" name="envio" value="delivery" class="text-brand-orange" onchange="toggleDomicilio()">
+                                <i class="fas fa-truck text-brand-orange w-5"></i>
+                                <span>Envío a Domicilio</span>
+                            </label>
+                        </div>
+
+                        <!-- Dirección de envío -->
+                        <div id="domicilioEntrega" class="mt-4 hidden">
+                            <div class="grid grid-cols-2 gap-2 mb-2">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Provincia *</label>
+                                    <select id="provincia" required
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-orange"
+                                        onchange="cargarCiudades()">
+                                        <option value="">Seleccionar...</option>
+                                        <option value="CABA">CABA</option>
+                                        <option value="Buenos Aires">Buenos Aires</option>
+                                        <option value="Córdoba">Córdoba</option>
+                                        <option value="Santa Fe">Santa Fe</option>
+                                        <option value="Mendoza">Mendoza</option>
+                                        <option value="Tucumán">Tucumán</option>
+                                        <option value="Entre Ríos">Entre Ríos</option>
+                                        <option value="Corrientes">Corrientes</option>
+                                        <option value="Misiones">Misiones</option>
+                                        <option value="Chaco">Chaco</option>
+                                        <option value="Formosa">Formosa</option>
+                                        <option value="Jujuy">Jujuy</option>
+                                        <option value="Salta">Salta</option>
+                                        <option value="Santiago del Estero">Santiago del Estero</option>
+                                        <option value="La Rioja">La Rioja</option>
+                                        <option value="San Juan">San Juan</option>
+                                        <option value="San Luis">San Luis</option>
+                                        <option value="Catamarca">Catamarca</option>
+                                        <option value="La Pampa">La Pampa</option>
+                                        <option value="Neuquén">Neuquén</option>
+                                        <option value="Río Negro">Río Negro</option>
+                                        <option value="Chubut">Chubut</option>
+                                        <option value="Santa Cruz">Santa Cruz</option>
+                                        <option value="Tierra del Fuego">Tierra del Fuego</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Ciudad *</label>
+                                    <select id="ciudad" required
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-orange">
+                                        <option value="">Seleccionar provincia...</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Dirección *</label>
+                            <input type="text" id="direccion" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg mb-2"
+                                placeholder="Calle y número">
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Departamento (opcional)</label>
+                                    <input type="text" id="departamento" 
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                                        placeholder="Edif., Torre, Casa">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Código Postal</label>
+                                    <input type="text" id="cp" 
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                                        placeholder="CP">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notas -->
+                <div class="bg-white rounded-xl shadow-md p-6 fade-in-up">
+                    <h2 class="text-lg font-semibold text-brand-dark mb-4 flex items-center gap-2">
+                        <i class="fas fa-sticky-note text-brand-orange"></i>
+                        Notas / Observaciones
+                    </h2>
+                    <textarea id="notas" rows="3"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-orange focus:border-transparent"
+                        placeholder="Observaciones adicionales para esta venta..."></textarea>
+                </div>
+            </div>
+
+            <!-- Columna Derecha: Resumen -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-xl shadow-md p-6 fade-in-up sticky top-4">
+                    <h2 class="text-lg font-semibold text-brand-dark mb-4 flex items-center gap-2">
+                        <i class="fas fa-receipt text-brand-orange"></i>
+                        Resumen
+                    </h2>
+
+                    <div class="space-y-3 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Productos:</span>
+                            <span id="totalItems">0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Subtotal:</span>
+                            <span id="subtotal">$0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Descuento:</span>
+                            <div class="flex items-center gap-2">
+                                <input type="number" id="descuento" min="0" max="100" value="0" 
+                                    class="w-16 px-2 py-1 border rounded text-right" 
+                                    onchange="recalcular()">
+                                <span class="text-gray-600">%</span>
+                            </div>
+                        </div>
+                        <hr class="my-3">
+                        <div class="flex justify-between text-lg font-bold">
+                            <span class="text-brand-dark">Total:</span>
+                            <span id="total" class="text-brand-orange">$0</span>
+                        </div>
+                    </div>
+
+                    <!-- Botón guardar -->
+                    <button onclick="guardarVenta()" id="btnGuardar"
+                        class="w-full bg-brand-orange text-white py-3 px-4 rounded-lg hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-brand-orange transition font-semibold mt-6">
+                        <i class="fas fa-save mr-2"></i>Confirmar Venta
+                    </button>
+
+                    <!-- Mensaje -->
+                    <div id="message" class="mt-4 p-3 rounded-lg hidden text-sm"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Historial de Ventas -->
+        <div class="bg-white rounded-xl shadow-md p-6 mt-6 fade-in-up">
+            <h2 class="text-lg font-semibold text-brand-dark mb-4 flex items-center gap-2">
+                <i class="fas fa-history text-brand-orange"></i>
+                Historial de Ventas
+            </h2>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-neutral-light text-gray-700">
+                        <tr>
+                            <th class="px-4 py-3 text-left font-semibold">N° Venta</th>
+                            <th class="px-4 py-3 text-left font-semibold">Fecha</th>
+                            <th class="px-4 py-3 text-left font-semibold">Cliente</th>
+                            <th class="px-4 py-3 text-center font-semibold">Productos</th>
+                            <th class="px-4 py-3 text-right font-semibold">Total</th>
+                            <th class="px-4 py-3 text-center font-semibold">Tipo Entrega</th>
+                            <th class="px-4 py-3 text-center font-semibold">Estado</th>
+                            <th class="px-4 py-3 text-center font-semibold">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historialVentas">
+                        <tr>
+                            <td colspan="8" class="px-4 py-8 text-center text-gray-500">
+                                <i class="fas fa-spinner fa-spin mr-2"></i>Cargando historial...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = '/login.html';
+
+        let productosDisponibles = [];
+        let productosEnVenta = [];
+        let descuento = 0;
+        let clienteSeleccionado = null;
+
+        // Cargar productos al iniciar
+        async function loadProductos() {
+            try {
+                console.log('Cargando productos...');
+                const response = await fetch('/api/productos?pageSize=100', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                console.log('Response:', response.status);
+                const data = await response.json();
+                console.log('Data:', data);
+                
+                if (data.items && data.items.length > 0) {
+                    productosDisponibles = data.items.filter(p => p.activo && p.stock > 0);
+                    console.log('Productos disponibles:', productosDisponibles);
+                } else {
+                    console.log('No hay productos o no están activos');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+}
+        
+
+        // Limpiar datos del cliente
+        function limpiarCliente() {
+            document.getElementById('cliente').value = '';
+            document.getElementById('documento').value = '';
+            document.getElementById('telefono').value = '';
+            document.getElementById('email').value = '';
+        }
+
+        // Buscar clientes en tiempo real
+        function buscarClientes(texto) {
+            const resultados = document.getElementById('resultadosClientes');
+            
+            if (!texto || texto.trim() === '' || texto.length < 2) {
+                resultados.classList.add('hidden');
+                return;
+            }
+            
+            // Llamada directa al API
+            fetch(`/api/clientes?nombre=${encodeURIComponent(texto)}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(res => res.json())
+            .then(data => {
+                console.log('Clientes response:', data);
+                const items = Array.isArray(data) ? data : (data.items || []);
+                
+                if (!items || items.length === 0) {
+                    resultados.innerHTML = '<div class="px-3 py-2 text-gray-500">No se encontraron clientes</div>';
+                } else {
+                    resultados.innerHTML = items.map(c => `
+                        <div class="px-3 py-2 cursor-pointer hover:bg-gray-100 border-b" 
+                            onclick="seleccionarCliente('${c.dni}', '${c.nombre}', '${c.telefono}', '${c.email || ''}')">
+                            <div class="font-medium">${c.dni} - ${c.nombre}</div>
+                            <div class="text-sm text-gray-500">${c.telefono}</div>
+                        </div>
+                    `).join('');
+                }
+                
+                resultados.classList.remove('hidden');
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                resultados.classList.add('hidden');
+});
+        }
+
+        // Seleccionar cliente del autocomplete
+        function seleccionarCliente(dni, nombre, telefono, email) {
+            document.getElementById('documento').value = dni;
+            document.getElementById('cliente').value = nombre;
+            document.getElementById('telefono').value = telefono;
+            document.getElementById('email').value = email || '';
+            document.getElementById('resultadosClientes').classList.add('hidden');
+            showMessage('Cliente seleccionado', 'success');
+        }
+
+        // Buscar productos en tiempo real
+        let ultimoTerminoBusqueda = '';
+        let productoSeleccionado = null; // Producto seleccionado del buscador
+        
+        function buscarProductos(texto) {
+            const resultados = document.getElementById('resultadosBusqueda');
+            
+            if (!texto || texto.trim() === '') {
+                resultados.classList.add('hidden');
+                ultimoTerminoBusqueda = '';
+                productoSeleccionado = null;
+                return;
+            }
+            
+            ultimoTerminoBusqueda = texto.toLowerCase();
+            const filtrados = productosDisponibles.filter(p => {
+                const nombre = p.nombreProducto || p.nombre || '';
+                return nombre.toLowerCase().includes(ultimoTerminoBusqueda);
+            });
+            
+            if (filtrados.length === 0) {
+                resultados.innerHTML = '<div class="px-3 py-2 text-gray-500">No se encontraron productos</div>';
+            } else {
+                resultados.innerHTML = filtrados.map(p => {
+                    const nombre = p.nombreProducto || p.nombre || 'Sin nombre';
+                    const precio = p.precioUnitario || p.precio || 0;
+                    return `<div class="px-3 py-2 cursor-pointer hover:bg-gray-100 border-b" 
+                        onclick="seleccionarProducto(${p.id}, '${nombre.replace(/'/g, "\\'")}', ${precio}, ${p.stock})">
+                        <div class="font-medium">${nombre}</div>
+                        <div class="text-sm text-gray-500">$${precio.toFixed(2)} - Stock: ${p.stock}</div>
+                    </div>`;
+                }).join('');
+            }
+            
+            resultados.classList.remove('hidden');
+        }
+
+        // Seleccionar producto del buscador - solo guarda el producto, NO agrega
+        function seleccionarProducto(id, nombre, precio, stock) {
+            // Guardar el producto seleccionado
+            productoSeleccionado = { id, nombre, precio, stock };
+            
+            // Mostrar en el buscador
+            document.getElementById('buscadorProducto').value = nombre;
+            document.getElementById('resultadosBusqueda').classList.add('hidden');
+            
+            // Focus en cantidad para que el usuario ingrese la cantidad
+            document.getElementById('cantidad').focus();
+            
+            showMessage('Producto seleccionado. Elegí la cantidad y presioná Agregar', 'success');
+        }
+
+        // Agregar producto - usa el producto seleccionado del buscador
+        function agregarProducto() {
+            if (!productoSeleccionado) {
+                showMessage('Buscá y seleccioná un producto primero', 'error');
+                return;
+            }
+            
+            const cantidad = parseInt(document.getElementById('cantidad').value) || 1;
+            if (cantidad < 1) {
+                showMessage('Ingresá una cantidad válida', 'error');
+                return;
+            }
+            
+            const { id, nombre, precio, stock } = productoSeleccionado;
+            
+            // Verificar stock
+            const enVenta = productosEnVenta.find(p => p.id === id);
+            const cantidadActual = enVenta ? enVenta.cantidad : 0;
+            if (cantidadActual + cantidad > stock) {
+                showMessage(`Stock insuficiente. Disponible: ${stock}`, 'error');
+                return;
+            }
+            
+            // Agregar o incrementar
+            if (enVenta) {
+                enVenta.cantidad += cantidad;
+                showMessage(`Cantidad actualizada: ${enVenta.cantidad} unidades`, 'success');
+            } else {
+                productosEnVenta.push({
+                    id: id,
+                    nombre: nombre,
+                    precio: precio,
+                    cantidad: cantidad
+                });
+            }
+            
+            // Limpiar
+            document.getElementById('buscadorProducto').value = '';
+            document.getElementById('cantidad').value = 1;
+            ultimoTerminoBusqueda = '';
+            productoSeleccionado = null;
+            
+            renderProductosVenta();
+            showMessage('Producto agregado', 'success');
+        }
+
+        // Quitar producto de la venta
+        function quitarProducto(id) {
+            productosEnVenta = productosEnVenta.filter(p => p.id !== id);
+            renderProductosVenta();
+        }
+
+        // Render tabla de productos en venta
+        function renderProductosVenta() {
+            const tbody = document.getElementById('productosVenta');
+            if (productosEnVenta.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="px-3 py-4 text-center text-gray-500">Escribí el nombre del producto en el buscador</td></tr>`;
+            } else {
+                tbody.innerHTML = productosEnVenta.map(p => `
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="px-3 py-2">${p.nombre}</td>
+                        <td class="px-3 py-2 text-center">$${p.precio.toFixed(2)}</td>
+                        <td class="px-3 py-2 text-center">${p.cantidad}</td>
+                        <td class="px-3 py-2 text-right font-medium">$${(p.precio * p.cantidad).toFixed(2)}</td>
+                        <td class="px-3 py-2 text-right">
+                            <button onclick="quitarProducto(${p.id})" class="text-red-500 hover:text-red-700">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+            recalcular();
+        }
+
+        // Recalcular totales
+        function recalcular() {
+            descuento = parseFloat(document.getElementById('descuento').value) || 0;
+            const subtotal = productosEnVenta.reduce((sum, p) => sum + (p.precio * p.cantidad), 0);
+            const montoDescuento = subtotal * (descuento / 100);
+            const total = subtotal - montoDescuento;
+
+            document.getElementById('totalItems').textContent = productosEnVenta.reduce((sum, p) => sum + p.cantidad, 0);
+            document.getElementById('subtotal').textContent = `$${subtotal.toFixed(2)}`;
+            document.getElementById('total').textContent = `$${total.toFixed(2)}`;
+        }
+
+        // Toggle domicilio
+        function toggleDomicilio() {
+            const entrega = document.getElementById('domicilioEntrega');
+            const envio = document.querySelector('input[name="envio"]:checked').value;
+            entrega.classList.toggle('hidden', envio !== 'delivery');
+        }
+
+        // Cargar ciudades según provincia
+        const ciudadesPorProvincia = {
+            'CABA': ['Buenos Aires'],
+            'Buenos Aires': ['La Plata', 'Mar del Plata', 'Bahía Blanca', 'Tandil', 'Junín', 'Necochea', 'Pehuajó', 'Olavarría', 'Azul', 'Gral. Pueyrredón'],
+            'Córdoba': ['Córdoba Capital', 'Villa María', 'Río Cuarto', 'Carlos Paz', 'San Francisco', 'Alta Gracia', 'Jesús María'],
+            'Santa Fe': ['Rosario', 'Santa Fe Capital', 'Venado Tuerto', 'Rafaela', 'Reconquista', 'Santo Tomé', 'Sunchales'],
+            'Mendoza': ['Mendoza Capital', 'Godoy Cruz', 'Maipú', 'Luján de Cuyo', 'San Rafael', 'General Alvear'],
+            'Tucumán': ['San Miguel de Tucumán', 'Tafí Viejo', 'Bella Vista', 'Concepción', 'Aguilares'],
+            'Entre Ríos': ['Paraná', 'Concordia', 'Gualeguaychú', 'La Paz', 'Concepción del Uruguay', 'Villaguay'],
+            'Corrientes': ['Corrientes Capital', 'Goya', 'Mercedes', 'Santo Tomé', 'Paso de los Libres', 'Curuzú Cuatiá'],
+            'Misiones': ['Posadas', 'Oberá', 'Eldorado', 'Puerto Iguazú', 'San Vicente', 'Apóstoles'],
+            'Chaco': ['Resistencia', 'Sáenz Peña', 'Villa Ángela', 'Presidencia Roque Sáenz Peña', 'Charata'],
+            'Formosa': ['Formosa Capital', 'Clorinda', 'Ingeniero Juárez', 'Las Lomitas', 'Pirané'],
+            'Jujuy': ['San Salvador de Jujuy', 'San Pedro', 'La Quiaca', 'Perico', 'Palpalá', 'Humahuaca'],
+            'Salta': ['Salta Capital', 'San Ramón de la Nueva Orán', 'Tartagal', 'Cafayate', 'Metán', 'Rosario de la Frontera'],
+            'Santiago del Estero': ['Santiago del Estero Capital', 'La Banda', 'Termas de Río Hondo', 'Añatuya', 'Fray Mamerto Esquiú'],
+            'La Rioja': ['La Rioja Capital', 'Chilecito', 'Famatina', 'Aimogasta', 'San Blas de los Sauces'],
+            'San Juan': ['San Juan Capital', 'Rawson', 'Rivadavia', 'Pocito', 'San José de Jáchal', 'Calingasta'],
+            'San Luis': ['San Luis Capital', 'Villa Mercedes', 'Merlo', 'Juana Koslay', 'Potrero de los Funes'],
+            'Catamarca': ['San Fernando del Valle de Catamarca', 'Andalgalá', 'Belén', 'Tinogasta', 'Santa María'],
+            'La Pampa': ['Santa Rosa', 'General Pico', 'Toay', 'Eduardo Castex', 'Villa General Belgrano'],
+            'Neuquén': ['Neuquén Capital', 'Cutral Có', 'Plottier', 'San Martín de los Andes', 'Junín de los Andes'],
+            'Río Negro': ['Viedma', 'San Carlos de Bariloche', 'General Roca', 'Cipolletti', 'Río Colorado', 'El Bolsón'],
+            'Chubut': ['Rawson', 'Puerto Madryn', 'Trelew', 'Comodoro Rivadavia', 'Gaiman', 'Esquel'],
+            'Santa Cruz': ['Río Gallegos', 'El Calafate', 'San Julián', 'Puerto Deseado', 'Caleta Olivia'],
+            'Tierra del Fuego': ['Ushuaia', 'Río Grande', 'Tolhuin']
+        };
+
+        function cargarCiudades() {
+            const provincia = document.getElementById('provincia').value;
+            const ciudadSelect = document.getElementById('ciudad');
+            ciudadSelect.innerHTML = '<option value="">Seleccionar...</option>';
+            
+            if (provincia && ciudadesPorProvincia[provincia]) {
+                ciudadesPorProvincia[provincia].forEach(ciudad => {
+                    ciudadSelect.innerHTML += `<option value="${ciudad}">${ciudad}</option>`;
+                });
+            }
+        }
+
+        // Mostrar mensaje
+        function showMessage(msg, type) {
+            const el = document.getElementById('message');
+            el.textContent = msg;
+            el.className = `mt-4 p-3 rounded-lg ${type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`;
+            el.classList.remove('hidden');
+            setTimeout(() => el.classList.add('hidden'), 3000);
+        }
+
+        // Generar número de venta
+        function generarNumeroVenta() {
+            const fecha = new Date();
+            const año = fecha.getFullYear().toString().slice(-2);
+            const mes = (fecha.getMonth() + 1).toString().padStart(2, '0');
+            const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+            return `Venta-${año}${mes}-${random}`;
+        }
+
+        // Guardar venta y generar comprobante
+        async function guardarVenta() {
+            // Validaciones
+            if (productosEnVenta.length === 0) {
+                showMessage('Agregá al menos un producto', 'error');
+                return;
+            }
+
+            // Validación de datos del cliente
+            const cliente = document.getElementById('cliente').value;
+            const documento = document.getElementById('documento').value;
+            const telefono = document.getElementById('telefono').value;
+            const email = document.getElementById('email').value;
+
+            if (!cliente || cliente.trim() === '') {
+                showMessage('Ingresá el nombre del cliente', 'error');
+                return;
+            }
+            if (!documento || documento.trim() === '') {
+                showMessage('Ingresá el DNI/CUIT del cliente', 'error');
+                return;
+            }
+            if (!telefono || telefono.trim() === '') {
+                showMessage('Ingresá el teléfono del cliente', 'error');
+                return;
+            }
+            if (!email || email.trim() === '') {
+                showMessage('Ingresá el email del cliente', 'error');
+                return;
+            }
+
+            // Validación método de pago
+            const metodoPago = document.querySelector('input[name="pago"]:checked');
+            if (!metodoPago) {
+                showMessage('Seleccioná un método de pago', 'error');
+                return;
+            }
+
+            // Validación de método de entrega
+            const tipoEntrega = document.querySelector('input[name="envio"]:checked').value;
+            if (tipoEntrega === 'delivery') {
+                if (!document.getElementById('provincia').value) {
+                    showMessage('Seleccioná una provincia', 'error');
+                    return;
+                }
+                if (!document.getElementById('ciudad').value) {
+                    showMessage('Seleccioná una ciudad', 'error');
+                    return;
+                }
+                if (!document.getElementById('direccion').value) {
+                    showMessage('Ingresá la dirección de entrega', 'error');
+                    return;
+                }
+            }
+
+            const btn = document.getElementById('btnGuardar');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Procesando...';
+
+            try {
+                // Guardar el cliente (el backend maneja duplicados - retorna existente si ya existe)
+                const clienteData = {
+                    dni: documento,
+                    nombre: cliente,
+                    telefono: telefono,
+                    email: email || null
+                };
+
+                console.log('Intentando guardar cliente:', clienteData);
+                try {
+                    const clienteRes = await fetch('/api/clientes', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(clienteData)
+                    });
+                    console.log('Cliente response:', clienteRes.status, await clienteRes.text());
+                } catch(e) {
+                    console.log('Error cliente:', e);
+                }
+
+                // Estado: Pendiente para retiro en sucursal, Completado para los demás
+                const estado = (tipoEntrega === 'retiro') ? 'pendiente' : 'completado';
+                
+                // Construir datos para la API
+                const esEnvio = (tipoEntrega === 'delivery');
+                const detalles = productosEnVenta.map(p => ({
+                    idProducto: p.id,
+                    cantidad: p.cantidad,
+                    precioUnitario: p.precio,
+                    subTotal: p.precio * p.cantidad
+                }));
+                
+                const datosVentaAPI = {
+                    descuento: parseFloat(document.getElementById('descuento').value) || 0,
+                    metodoPago: document.querySelector('input[name="pago"]:checked').value,
+                    tipoEntrega: tipoEntrega,
+                    notas: document.getElementById('notas').value || null,
+                    esEnvio: esEnvio,
+                    direccionEnvio: esEnvio ? document.getElementById('direccion').value : null,
+                    departamento: esEnvio ? document.getElementById('departamento').value : null,
+                    idCiudad: esEnvio && document.getElementById('ciudad').value ? parseInt(document.getElementById('ciudad').value) : null,
+                    idDireccion: null,
+                    dniCliente: documento,
+                    nombreCliente: cliente,
+                    telefonoCliente: telefono,
+                    emailCliente: email,
+                    detalles: detalles
+                };
+
+                // Llamar al API para guardar la venta
+                const ventaRes = await fetch('/api/ventas/registrar', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(datosVentaAPI)
+                });
+
+                console.log('Venta response:', ventaRes.status);
+                if (!ventaRes.ok) {
+                    const errorData = await ventaRes.json();
+                    console.log('Venta error:', errorData);
+                    showMessage('Error: ' + (errorData.message || 'No se pudo guardar la venta'), 'error');
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-save mr-2"></i>Finalizar Venta';
+                    return;
+                }
+
+                const ventaGuardada = await ventaRes.json();
+                const numeroVenta = String(ventaGuardada.numeroVenta) || generarNumeroVenta();
+
+                // También guardar en localStorage para historial local
+                const datosVenta = {
+                    numero: numeroVenta,
+                    id: ventaGuardada.id,
+                    fecha: new Date().toLocaleString('es-AR'),
+                    estado: estado,
+                    cliente: {
+                        nombre: cliente,
+                        documento: documento,
+                        telefono: telefono,
+                        email: email
+                    },
+                    productos: productosEnVenta,
+                    subtotal: parseFloat(document.getElementById('subtotal').textContent.replace('$', '')),
+                    descuento: parseFloat(document.getElementById('descuento').value) || 0,
+                    total: parseFloat(document.getElementById('total').textContent.replace('$', '')),
+                    metodoPago: document.querySelector('input[name="pago"]:checked').value,
+                    tipoEntrega: tipoEntrega,
+                    provincia: document.getElementById('provincia').value || '',
+                    ciudad: document.getElementById('ciudad').value || '',
+                    direccion: document.getElementById('direccion').value || '',
+                    departamento: document.getElementById('departamento').value || '',
+                    cp: document.getElementById('cp').value || '',
+                    notas: document.getElementById('notas').value || ''
+                };
+
+                let historial = JSON.parse(localStorage.getItem('historialVentas') || '[]');
+                historial.unshift(datosVenta);
+                localStorage.setItem('historialVentas', JSON.stringify(historial));
+
+                // Generar comprobante
+                generarComprobante(datosVenta);
+
+                // Actualizar historial
+                renderHistorial();
+
+                showMessage('Venta guardada correctamente', 'success');
+                
+                // Limpiar formulario
+                productosEnVenta = [];
+                document.getElementById('descuento').value = 0;
+                renderProductosVenta();
+                document.getElementById('cliente').value = '';
+                document.getElementById('documento').value = '';
+                document.getElementById('telefono').value = '';
+                document.getElementById('email').value = '';
+                document.getElementById('notas').value = '';
+                document.getElementById('provincia').value = '';
+                document.getElementById('ciudad').value = '';
+                document.getElementById('direccion').value = '';
+                document.getElementById('departamento').value = '';
+                document.getElementById('cp').value = '';
+                toggleDomicilio();
+
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('Error al guardar la venta', 'error');
+            }
+
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-save mr-2"></i>Confirmar Venta';
+        }
+
+        // Renderizar historial de ventas
+        function renderHistorial() {
+            const historial = JSON.parse(localStorage.getItem('historialVentas') || '[]');
+            const tbody = document.getElementById('historialVentas');
+            
+            if (historial.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="px-4 py-8 text-center text-gray-500">No hay ventas registradas</td></tr>`;
+                return;
+            }
+            
+            tbody.innerHTML = historial.map(v => {
+                // Badge de estado
+                let estadoBadge = '';
+                let actions = '';
+                
+                if (v.estado === 'pendiente') {
+                    estadoBadge = '<span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs font-medium">⏳ Pendiente</span>';
+                    actions = `<button onclick="completarVenta(${v.id})" class="text-green-600 hover:text-green-800 mr-2" title="Completar"><i class="fas fa-check"></i></button>
+                               <button onclick="anularVenta(${v.id})" class="text-red-600 hover:text-red-800" title="Anular"><i class="fas fa-times"></i></button>`;
+                } else if (v.estado === 'anulado') {
+                    estadoBadge = '<span class="bg-red-100 text-red-800 px-2 py-1 rounded text-xs font-medium">❌ Anulado</span>';
+                    actions = `<button onclick="verComprobante(${v.id})" class="text-blue-600 hover:text-blue-800" title="Ver comprobante"><i class="fas fa-receipt"></i></button>`;
+                } else {
+                    // Completado o ventas sin estado (compatibilidad con ventas anteriores)
+                    estadoBadge = '<span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-medium">✅ Completado</span>';
+                    actions = `<button onclick="verComprobante(${v.id})" class="text-blue-600 hover:text-blue-800 mr-2" title="Ver comprobante"><i class="fas fa-receipt"></i></button>
+                               <button onclick="anularVenta(${v.id})" class="text-red-600 hover:text-red-800" title="Anular"><i class="fas fa-times"></i></button>`;
+                }
+                
+                // Tipo de entrega legible
+                let tipoEntrega = '';
+                if (v.tipoEntrega === 'mostrador') tipoEntrega = '📍 Mostrador';
+                else if (v.tipoEntrega === 'retiro') tipoEntrega = '🏪 Retiro';
+                else if (v.tipoEntrega === 'delivery') tipoEntrega = '🚚 Envío';
+                
+                return `<tr class="border-b hover:bg-gray-50">
+                    <td class="px-4 py-3 font-medium">${v.numero}</td>
+                    <td class="px-4 py-3 text-gray-600">${v.fecha}</td>
+                    <td class="px-4 py-3">${v.cliente?.nombre || 'Consumidor Final'}</td>
+                    <td class="px-4 py-3 text-center">${v.productos?.length || 0}</td>
+                    <td class="px-4 py-3 text-right font-medium">$${v.total?.toFixed(2) || '0.00'}</td>
+                    <td class="px-4 py-3 text-center text-sm">${tipoEntrega}</td>
+                    <td class="px-4 py-3 text-center">${estadoBadge}</td>
+                    <td class="px-4 py-3 text-center">${actions}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        // Completar venta (para pendientes)
+        function completarVenta(id) {
+            if (!confirm('¿Confirmar que el cliente retire el producto?')) return;
+            
+            const historial = JSON.parse(localStorage.getItem('historialVentas') || '[]');
+            const index = historial.findIndex(v => v.id === id);
+            if (index !== -1) {
+                historial[index].estado = 'completado';
+                historial[index].fechaCompletado = new Date().toLocaleString('es-AR');
+                localStorage.setItem('historialVentas', JSON.stringify(historial));
+                renderHistorial();
+                showMessage('Venta completada correctamente', 'success');
+            }
+        }
+
+        // Anular venta
+        function anularVenta(id) {
+            if (!confirm('¿Anular esta venta?')) return;
+            
+            const historial = JSON.parse(localStorage.getItem('historialVentas') || '[]');
+            const index = historial.findIndex(v => v.id === id);
+            if (index !== -1) {
+                historial[index].estado = 'anulado';
+                historial[index].fechaAnulacion = new Date().toLocaleString('es-AR');
+                localStorage.setItem('historialVentas', JSON.stringify(historial));
+                renderHistorial();
+                showMessage('Venta anulada', 'success');
+            }
+        }
+
+        // Ver comprobante de venta anterior
+        function verComprobante(id) {
+            const historial = JSON.parse(localStorage.getItem('historialVentas') || '[]');
+            const venta = historial.find(v => v.id === id);
+            if (venta) {
+                generarComprobante(venta);
+            }
+        }
+
+        // Generar comprobante
+        function generarComprobante(venta) {
+            // Crear el HTML del ticket
+            let html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Comprobante</title></head><body style="font-family: Courier New; width: 280px; margin: 0 auto; padding: 10px; font-size: 12px;">';
+            
+            // Header
+            html += '<div style="text-align: center; border-bottom: 1px dashed #000; padding-bottom: 10px; margin-bottom: 10px;">';
+            html += '<h1 style="font-size: 18px; margin: 0;">SISIE</h1>';
+            html += '<p style="margin: 2px 0; font-size: 10px;">Sistema de Venta de Hardware</p></div>';
+            
+            // Tipo de comprobante según estado y entrega
+            let tipo = '';
+            if (venta.estado === 'pendiente') {
+                tipo = 'VOUCHER RETIRO';
+                html += '<div style="text-align: center; border: 2px solid #000; padding: 8px; margin: 10px 0; background: #ffff00;"><strong>' + tipo + '</strong><br><span style="font-size:9px;">PENDIENTE DE RETIRO</span></div>';
+            } else if (venta.tipoEntrega === 'delivery') {
+                tipo = 'ENVÍO';
+                html += '<div style="text-align: center; border: 1px solid #000; padding: 5px; margin: 10px 0;"><strong>' + tipo + '</strong></div>';
+            } else {
+                tipo = 'TICKET';
+                html += '<div style="text-align: center; border: 1px solid #000; padding: 5px; margin: 10px 0;"><strong>' + tipo + '</strong></div>';
+            }
+            
+            // Si está anulado
+            if (venta.estado === 'anulado') {
+                html += '<div style="text-align: center; border: 2px solid red; padding: 10px; margin: 10px 0; background: #ffcccc;"><strong style="color:red;">ANULADO</strong></div>';
+            }
+            
+            // Número y fecha
+            html += '<div style="text-align: center; margin: 10px 0;"><strong>N°: ' + venta.numero + '</strong><br>' + venta.fecha + '</div>';
+            
+            // Si fue completado o anulado, mostrar fecha
+            if (venta.fechaCompletado) {
+                html += '<div style="text-align: center; font-size: 10px;">Completado: ' + venta.fechaCompletado + '</div>';
+            }
+            if (venta.fechaAnulacion) {
+                html += '<div style="text-align: center; font-size: 10px; color: red;">Anulado: ' + venta.fechaAnulacion + '</div>';
+            }
+            
+            // Cliente
+            html += '<div style="border-bottom: 1px dashed #000; padding-bottom: 5px; margin-bottom: 10px;">';
+            html += '<strong>Cliente:</strong> ' + (venta.cliente.nombre || 'Consumidor Final') + '</div>';
+            
+            // Productos
+            html += '<div style="border-bottom: 1px dashed #000; padding-bottom: 5px; margin-bottom: 10px;">';
+            for (let i = 0; i < venta.productos.length; i++) {
+                let p = venta.productos[i];
+                let nombre = p.nombre.substring(0, 15);
+                html += '<div style="display: flex; justify-content: space-between;"><span>' + nombre + '</span><span>' + p.cantidad + ' x $' + p.precio.toFixed(2) + '</span></div>';
+            }
+            html += '</div>';
+            
+            // Totales
+            html += '<div style="margin: 10px 0;">';
+            html += '<div><span>Subtotal:</span><span>$' + venta.subtotal.toFixed(2) + '</span></div>';
+            html += '<div><span>Desc (' + venta.descuento + '%):</span><span>-$' + (venta.subtotal - venta.total).toFixed(2) + '</span></div>';
+            html += '<div style="font-weight: bold; border-top: 1px dashed #000; padding-top: 5px;"><span>TOTAL:</span><span>$' + venta.total.toFixed(2) + '</span></div>';
+            html += '</div>';
+            
+            // Método de pago
+            html += '<div style="border-bottom: 1px dashed #000; padding: 5px 0; margin: 10px 0;"><strong>Pago:</strong> ' + venta.metodoPago.charAt(0).toUpperCase() + venta.metodoPago.slice(1) + '</div>';
+            
+            // Tipo de entrega
+            let entregaTexto = '';
+            if (venta.tipoEntrega === 'delivery') {
+                entregaTexto = 'ENVÍO - ' + venta.ciudad + ', ' + venta.provincia;
+                entregaTexto += '\n' + venta.direccion + (venta.departamento ? ', Dto: ' + venta.departamento : '');
+                entregaTexto += '\nCP: ' + venta.cp;
+            } else if (venta.tipoEntrega === 'retiro') {
+                entregaTexto = 'RETIRO EN SUCURSAL';
+            } else {
+                entregaTexto = 'VENTA POR MOSTRADOR';
+            }
+            html += '<div style="border: 1px dashed #333; padding: 5px; margin: 10px 0; font-size: 11px;">' + entregaTexto + '</div>';
+            
+            // Código de barras simulado
+            let codBarra = venta.numero.replace(/[^a-zA-Z0-9]/g, '').substring(0, 12);
+            html += '<div style="text-align: center; margin: 15px 0; padding: 10px; border: 1px solid #000;">';
+            html += '<div style="font-family: Courier New; font-size: 20px; letter-spacing: 3px;">' + codBarra + '</div>';
+            html += '<div style="font-size: 9px;">' + venta.numero + '</div></div>';
+            
+            // Pie
+            html += '<div style="text-align: center; font-size: 10px; margin-top: 15px; border-top: 1px dashed #000;">';
+            html += '<p>¡Gracias por su compra!</p><p>SISIE</p></div>';
+            
+            // Botones
+            html += '<div style="text-align: center; margin-top: 20px;">';
+            html += '<button onclick="window.print()" style="background: #F25C05; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 5px;">Imprimir</button>';
+            html += '<button onclick="window.close()" style="background: #666; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 5px; margin-left: 10px;">Cerrar</button>';
+            html += '</div></body></html>';
+            
+            // Abrir ventana
+            const ventana = window.open('', '_blank', 'width=350,height=500');
+            if (!ventana) {
+                showMessage('El popup fue bloqueado. Habilitá las ventanas emergentes en tu navegador.', 'error');
+                return;
+            }
+            ventana.document.write(html);
+            ventana.document.close();
+        }
+
+        // Logout
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = '/login.html';
+        }
+
+        // Buscar cliente por DNI cuando pierde el foco
+        document.getElementById('documento')?.addEventListener('blur', buscarClientePorDni);
+        document.getElementById('documento')?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') buscarClientePorDni();
+        });
+
+        // Función para buscar cliente por DNI
+        async function buscarClientePorDni() {
+            const documento = document.getElementById('documento')?.value?.trim();
+            if (!documento || documento.length < 7) return;
+
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`/api/ventas/buscar-cliente/${documento}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const cliente = await response.json();
+                    // Autocompletar datos del cliente
+                    document.getElementById('cliente').value = cliente.nombre || '';
+                    document.getElementById('telefono').value = cliente.telefono || '';
+                    document.getElementById('email').value = cliente.email || '';
+                    // Mostrar mensaje de que se encontró
+                    showMessage('Cliente encontrado: ' + cliente.nombre, 'success');
+                }
+                // Si no existe (404), no hace nada - es un cliente nuevo
+            } catch (error) {
+                console.log('Cliente nuevo o error:', error);
+            }
+        }
+        
+        // Atajos de teclado
+        document.addEventListener('keydown', (e) => {
+            // Ctrl+Enter - Guardar venta
+            if (e.ctrlKey && e.key === 'Enter') {
+                e.preventDefault();
+                guardarVenta();
+            }
+            // Ctrl+I - Dashboard
+            if (e.ctrlKey && e.key === 'i') {
+                e.preventDefault();
+                window.location.href = '/index.html';
+            }
+            // Ctrl+P - Productos
+            if (e.ctrlKey && e.key === 'p') {
+                e.preventDefault();
+                window.location.href = '/productos.html';
+            }
+            // Ctrl+K - Categorías
+            if (e.ctrlKey && e.key === 'k') {
+                e.preventDefault();
+                window.location.href = '/categorias.html';
+            }
+            // Escape - Limpiar buscador
+            if (e.key === 'Escape') {
+                document.getElementById('buscadorProducto').value = '';
+                document.getElementById('resultadosBusqueda').classList.add('hidden');
+            }
+            // Ctrl+L - Logout
+            if (e.ctrlKey && e.key === 'l') {
+                e.preventDefault();
+                logout();
+            }
+        });
+
+        // Iniciar
+        loadProductos();
+        renderHistorial();
+    </script>
+</body>
+</html>
