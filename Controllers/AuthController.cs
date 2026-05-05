@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using proyecto_SISIE.Models.DTOs;
+using proyecto_SISIE.Services;
 using proyecto_SISIE.Services.Interfaces;
 using System.Security.Claims;
 
@@ -11,24 +12,22 @@ namespace proyecto_SISIE.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
+    private readonly IValidadorAuth _validador;
 
-    public AuthController(IAuthService authService)
+    public AuthController(IAuthService authService, IValidadorAuth validador)
     {
         _authService = authService;
+        _validador = validador;
     }
 
     // Registra un nuevo usuario en el sistema
     [HttpPost("register")]
     public async Task<ActionResult<AuthResult>> Registrar([FromBody] RegisterRequest request)
     {
-        // Valida los datos del request
-        if (!ModelState.IsValid)
+        // Valida usando el validador desacoplado
+        var errores = await _validador.ValidarRegistroAsync(request);
+        if (errores.Count > 0)
         {
-            var errores = ModelState
-                .Where(x => x.Value?.Errors.Count > 0)
-                .Select(x => x.Value?.Errors.First().ErrorMessage)
-                .ToList();
-            
             return BadRequest(new { 
                 success = false, 
                 message = "Error de validación",
@@ -50,14 +49,10 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<ActionResult<AuthResult>> IniciarSesion([FromBody] LoginRequest request)
     {
-        // Valida los datos
-        if (!ModelState.IsValid)
+        // Valida usando el validador desacoplado
+        var errores = await _validador.ValidarLoginAsync(request);
+        if (errores.Count > 0)
         {
-            var errores = ModelState
-                .Where(x => x.Value?.Errors.Count > 0)
-                .Select(x => x.Value?.Errors.First().ErrorMessage)
-                .ToList();
-            
             return BadRequest(new { 
                 success = false, 
                 message = "Error de validación",

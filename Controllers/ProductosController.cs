@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using proyecto_SISIE.Models.DTOs;
+using proyecto_SISIE.Services;
 using proyecto_SISIE.Services.Interfaces;
 
 namespace proyecto_SISIE.Controllers;
@@ -11,23 +12,12 @@ namespace proyecto_SISIE.Controllers;
 public class ProductosController : ControllerBase
 {
     private readonly IProductoService _productoService;
+    private readonly IValidadorProducto _validador;
 
-    public ProductosController(IProductoService productoService)
+    public ProductosController(IProductoService productoService, IValidadorProducto validador)
     {
         _productoService = productoService;
-    }
-
-    // Valida los datos del producto
-    private List<string> ValidarDatosProductos()
-    {
-        if (!ModelState.IsValid)
-        {
-            return ModelState
-                .Where(x => x.Value?.Errors.Count > 0)
-                .Select(x => x.Value!.Errors.First().ErrorMessage)
-                .ToList();
-        }
-        return new List<string>();
+        _validador = validador;
     }
 
     // Lista productos con paginación
@@ -74,8 +64,8 @@ public class ProductosController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<ProductoDTO>> CrearProducto([FromBody] ProductoCreateDTO producto)
     {
-        // Valida los datos
-        var errores = ValidarDatosProductos();
+        // Valida usando el validador desacoplado
+        var errores = await _validador.ValidarAsync(producto);
         if (errores.Count > 0)
         {
             return BadRequest(new { 
@@ -104,8 +94,8 @@ public class ProductosController : ControllerBase
     [HttpPut("{id}")]
     public async Task<ActionResult<ProductoDTO>> ActualizarProducto(int id, [FromBody] ProductoUpdateDTO producto)
     {
-        // Valida los datos
-        var errores = ValidarDatosProductos();
+        // Valida usando el validador desacoplado
+        var errores = await _validador.ValidarAsync(producto);
         if (errores.Count > 0)
         {
             return BadRequest(new { 

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using proyecto_SISIE.Data;
 using proyecto_SISIE.Models.DTOs;
+using proyecto_SISIE.Services;
 using proyecto_SISIE.Services.Interfaces;
 using System.Security.Claims;
 
@@ -15,11 +16,13 @@ public class VentasController : ControllerBase
 {
     private readonly IVentaService _ventaService;
     private readonly IClienteService _clienteService;
+    private readonly IValidadorVenta _validador;
 
-    public VentasController(IVentaService ventaService, IClienteService clienteService)
+    public VentasController(IVentaService ventaService, IClienteService clienteService, IValidadorVenta validador)
     {
         _ventaService = ventaService;
         _clienteService = clienteService;
+        _validador = validador;
     }
 
     // Obtiene el ID del usuario autenticado desde el token JWT
@@ -42,14 +45,10 @@ public class VentasController : ControllerBase
     [HttpPost("registrar")]
     public async Task<ActionResult<VentaDTO>> RegistrarVenta([FromBody] VentaCreateDTO ventaDto)
     {
-        // Valida los datos con DataAnnotations
-        if (!ModelState.IsValid)
+        // Valida usando el validador desacoplado
+        var errores = await _validador.ValidarAsync(ventaDto);
+        if (errores.Count > 0)
         {
-            var errores = ModelState
-                .Where(x => x.Value?.Errors.Count > 0)
-                .Select(x => x.Value?.Errors.First().ErrorMessage)
-                .ToList();
-            
             return BadRequest(new { 
                 success = false, 
                 message = "Error de validación",
@@ -157,14 +156,10 @@ public class VentasController : ControllerBase
     [HttpPut("{id}/estado")]
     public async Task<ActionResult<VentaDTO>> ActualizarEstadoVenta(int id, [FromBody] VentaUpdateDTO updateDto)
     {
-        // Valida los datos
-        if (!ModelState.IsValid)
+        // Valida usando el validador desacoplado
+        var errores = await _validador.ValidarActualizacionAsync(updateDto);
+        if (errores.Count > 0)
         {
-            var errores = ModelState
-                .Where(x => x.Value?.Errors.Count > 0)
-                .Select(x => x.Value?.Errors.First().ErrorMessage)
-                .ToList();
-            
             return BadRequest(new { 
                 success = false, 
                 message = "Error de validación",

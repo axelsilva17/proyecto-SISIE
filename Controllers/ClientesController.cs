@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using proyecto_SISIE.Models.DTOs;
+using proyecto_SISIE.Services;
 using proyecto_SISIE.Services.Interfaces;
 
 namespace proyecto_SISIE.Controllers;
@@ -12,10 +13,12 @@ namespace proyecto_SISIE.Controllers;
 public class ClientesController : ControllerBase
 {
     private readonly IClienteService _clienteService;
+    private readonly IValidadorCliente _validador;
 
-    public ClientesController(IClienteService clienteService)
+    public ClientesController(IClienteService clienteService, IValidadorCliente validador)
     {
         _clienteService = clienteService;
+        _validador = validador;
     }
 
     // Busca clientes por nombre (para autocomplete)
@@ -63,21 +66,18 @@ public class ClientesController : ControllerBase
 
         return Ok(cliente);
     }
-    // Agrega un nuevo cliente (si ya existe, retorna el existente)
+// Agrega un nuevo cliente (si ya existe, retorna el existente)
     [HttpPost]
     public async Task<ActionResult<ClienteDTO>> Agregar([FromBody] ClienteCreateDTO clienteDto)
     {
-        if (!ModelState.IsValid)
+        // Valida usando el validador desacoplado
+        var errores = await _validador.ValidarAsync(clienteDto);
+        if (errores.Count > 0)
         {
-            var errores = ModelState
-                .Where(x => x.Value?.Errors.Count > 0)
-                .Select(x => x.Value?.Errors.First().ErrorMessage)
-                .ToList();
-            
             return BadRequest(new { 
                 success = false, 
                 message = "Error de validación",
-errors = errores 
+                errors = errores 
             });
         }
 

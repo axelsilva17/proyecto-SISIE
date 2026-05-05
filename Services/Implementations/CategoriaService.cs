@@ -9,26 +9,19 @@ namespace proyecto_SISIE.Services.Implementations;
 public class CategoriaService : ICategoriaService
 {
     private readonly ApplicationDbContext _context;
+    private readonly IValidadorCategoria _validador;
 
-    public CategoriaService(ApplicationDbContext context)
+    public CategoriaService(ApplicationDbContext context, IValidadorCategoria validador)
     {
         _context = context;
+        _validador = validador;
     }
 
-    // Valida las reglas de negocio para crear/actualizar categoría
+    // Valida las reglas de negocio para crear/actualizar categoría (método del Service)
     public async Task<List<string>> ValidaCategoria(CategoriaCreateDTO dto, int? idCategoria = null)
     {
-        var errores = new List<string>();
-
-        // Verifica si el nombre ya existe (duplicado)
-        var nombreLower = dto.NombreCategoria.ToLower();
-        var existeNombre = await _context.Categorias
-            .AnyAsync(c => c.NombreCategoria.ToLower() == nombreLower && (idCategoria == null || c.Id != idCategoria));
-        
-        if (existeNombre)
-            errores.Add("Ya existe una categoría con ese nombre");
-
-        return errores;
+        // Usa el validador para reutilización
+        return await _validador.ValidaCategoria(dto, idCategoria);
     }
 
     // Lista todas las categorías ordenadas alfabéticamente
@@ -64,8 +57,8 @@ public class CategoriaService : ICategoriaService
     // Crea una nueva categoría
     public async Task<CategoriaDTO> CrearAsyncCategoria(CategoriaCreateDTO dto)
     {
-        // Valida reglas de negocio
-        var erroresNegocio = await ValidaCategoria(dto);
+        // Valida reglas de negocio usando el validador
+        var erroresNegocio = await _validador.ValidaCategoria(dto);
         if (erroresNegocio.Any())
             throw new InvalidOperationException(string.Join(", ", erroresNegocio));
 
@@ -96,8 +89,8 @@ public class CategoriaService : ICategoriaService
         // Si no existe, retorna null
         if (categoria == null) return null;
 
-        // Valida reglas de negocio
-        var erroresNegocio = await ValidaCategoria(dto, id);
+        // Valida reglas de negocio usando el validador
+        var erroresNegocio = await _validador.ValidaCategoria(dto, id);
         if (erroresNegocio.Any())
             throw new InvalidOperationException(string.Join(", ", erroresNegocio));
 

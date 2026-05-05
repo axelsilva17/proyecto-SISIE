@@ -9,33 +9,19 @@ namespace proyecto_SISIE.Services.Implementations;
 public class ProductoService : IProductoService
 {
     private readonly ApplicationDbContext _context;
+    private readonly IValidadorProducto _validador;
 
-    public ProductoService(ApplicationDbContext context)
+    public ProductoService(ApplicationDbContext context, IValidadorProducto validador)
     {
         _context = context;
+        _validador = validador;
     }
 
-    // Valida las reglas de negocio para crear/actualizar producto
+    // Valida las reglas de negocio para crear/actualizar producto (método del Service)
     public async Task<List<string>> ValidaProducto(ProductoCreateDTO dto, int? idProducto = null)
     {
-        var errores = new List<string>();
-
-        // Verifica si el nombre ya existe (duplicado)
-        var nombreLower = dto.NombreProducto.ToLower();
-        var existeNombre = await _context.Productos
-            .AnyAsync(p => p.NombreProducto.ToLower() == nombreLower && p.Activo && (idProducto == null || p.Id != idProducto));
-        
-        if (existeNombre)
-            errores.Add("Ya existe un producto con ese nombre");
-
-        // Verifica que la categoría exista
-        var categoriaExiste = await _context.Categorias
-            .AnyAsync(c => c.Id == dto.IdCategoria);
-        
-        if (!categoriaExiste)
-            errores.Add("La categoría no existe");
-
-        return errores;
+        // Usa el validador para reutilización
+        return await _validador.ValidaProducto(dto, idProducto);
     }
 
     // Lista productos con paginación y filtros opcionales
@@ -108,8 +94,8 @@ public class ProductoService : IProductoService
     // Crea un nuevo producto en la base de datos
     public async Task<ProductoDTO> CrearAsyncProducto(ProductoCreateDTO dto)
     {
-        // Valida reglas de negocio
-        var erroresNegocio = await ValidaProducto(dto);
+        // Valida reglas de negocio usando el validador
+        var erroresNegocio = await _validador.ValidaProducto(dto);
         if (erroresNegocio.Any())
             throw new InvalidOperationException(string.Join(", ", erroresNegocio));
 
@@ -143,7 +129,7 @@ public class ProductoService : IProductoService
         };
     }
 
-// Actualiza los datos de un producto existente
+    // Actualiza los datos de un producto existente
     public async Task<ProductoDTO?> ActualizarAsyncProducto(int id, ProductoUpdateDTO dto)
     {
         // Busca el producto por ID
@@ -152,8 +138,8 @@ public class ProductoService : IProductoService
         // Si no existe, retorna null
         if (producto == null) return null;
 
-        // Valida reglas de negocio
-        var erroresNegocio = await ValidaProducto(new ProductoCreateDTO 
+        // Valida reglas de negocio usando el validador
+        var erroresNegocio = await _validador.ValidaProducto(new ProductoCreateDTO 
         { 
             NombreProducto = dto.NombreProducto,
             Descripcion = dto.Descripcion,

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using proyecto_SISIE.Models.DTOs;
+using proyecto_SISIE.Services;
 using proyecto_SISIE.Services.Interfaces;
 
 namespace proyecto_SISIE.Controllers;
@@ -11,23 +12,12 @@ namespace proyecto_SISIE.Controllers;
 public class CategoriasController : ControllerBase
 {
     private readonly ICategoriaService _categoriaService;
+    private readonly IValidadorCategoria _validador;
 
-    public CategoriasController(ICategoriaService categoriaService)
+    public CategoriasController(ICategoriaService categoriaService, IValidadorCategoria validador)
     {
         _categoriaService = categoriaService;
-    }
-
-    // Valida los datos de la categoría
-    private List<string> ValidarDatosCategoria()
-    {
-        if (!ModelState.IsValid)
-        {
-            return ModelState
-                .Where(x => x.Value?.Errors.Count > 0)
-                .Select(x => x.Value!.Errors.First().ErrorMessage)
-                .ToList();
-        }
-        return new List<string>();
+        _validador = validador;
     }
 
     // Lista todas las categorías
@@ -57,8 +47,8 @@ public class CategoriasController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<CategoriaDTO>> CrearCategoria([FromBody] CategoriaCreateDTO categoria)
     {
-        // Valida los datos
-        var errores = ValidarDatosCategoria();
+        // Valida usando el validador desacoplado
+        var errores = await _validador.ValidarAsync(categoria);
         if (errores.Count > 0)
         {
             return BadRequest(new { 
@@ -87,8 +77,8 @@ public class CategoriasController : ControllerBase
     [HttpPut("{id}")]
     public async Task<ActionResult<CategoriaDTO>> ActualizarCategoria(int id, [FromBody] CategoriaCreateDTO categoria)
     {
-        // Valida los datos
-        var errores = ValidarDatosCategoria();
+        // Valida usando el validador desacoplado (ValidaCategoria con ID para actualización)
+        var errores = await _validador.ValidaCategoria(categoria, id);
         if (errores.Count > 0)
         {
             return BadRequest(new { 
