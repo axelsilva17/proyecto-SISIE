@@ -11,6 +11,7 @@ public interface IValidadorProducto
     Task<List<string>> ValidarDatosProductoCreate(ProductoCreateDTO dto);
     Task<List<string>> ValidarDatosProductoUpdate(ProductoUpdateDTO dto);
     Task<List<string>> ValidaProducto(ProductoCreateDTO dto, int? idProducto = null);
+    Task<List<string>> ValidaProductoUpdate(ProductoUpdateDTO dto, int idProducto);
     Task<List<string>> ValidarStock(int idProducto, int cantidad);
 }
 
@@ -47,6 +48,32 @@ public class ValidadorProducto : IValidadorProducto
         var existeNombre = await _context.Productos
             .AnyAsync(p => p.NombreProducto.ToLower() == nombreLower 
                 && p.Activo && (idProducto == null || p.Id != idProducto));
+        
+        if (existeNombre) errores.Add("Ya existe un producto con ese nombre");
+        
+        var categoriaExiste = await _context.Categorias.AnyAsync(c => c.Id == dto.IdCategoria);
+        if (!categoriaExiste) errores.Add("La categoría no existe");
+        
+        return errores;
+    }
+
+    public async Task<List<string>> ValidaProductoUpdate(ProductoUpdateDTO dto, int idProducto)
+    {
+        var errores = new List<string>();
+        
+        // Para update, usamos el ID del producto actual
+        var producto = await _context.Productos.FindAsync(idProducto);
+        if (producto == null)
+        {
+            errores.Add("El producto no existe");
+            return errores;
+        }
+
+        // Verificar si el nombre ya existe en otro producto
+        var nombreLower = dto.NombreProducto.ToLower();
+        var existeNombre = await _context.Productos
+            .AnyAsync(p => p.NombreProducto.ToLower() == nombreLower 
+                && p.Activo && p.Id != idProducto);
         
         if (existeNombre) errores.Add("Ya existe un producto con ese nombre");
         

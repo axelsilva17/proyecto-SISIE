@@ -1,0 +1,1 @@
+SELECT name, type FROM sqlite_master WHERE type IN ('trigger','view') ORDER BY type, name;
