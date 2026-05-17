@@ -27,6 +27,7 @@ public class ValidadorVenta : IValidadorVenta
         var errores = new List<string>();
         errores.AddRange(ValidarDetallesVacios(dto.Detalles));
         errores.AddRange(ValidarMetodoPago(dto.MetodoPago));
+        errores.AddRange(ValidarDatosCliente(dto));
         return Task.FromResult(errores);
     }
 
@@ -105,6 +106,22 @@ public class ValidadorVenta : IValidadorVenta
             else if (producto.Stock < detalle.Cantidad)
                 errores.Add($"Stock insuficiente para '{producto.NombreProducto}'. Disponible: {producto.Stock}");
         }
+        return errores;
+    }
+
+    private List<string> ValidarDatosCliente(VentaCreateDTO dto)
+    {
+        var errores = new List<string>();
+        if (string.IsNullOrWhiteSpace(dto.DniCliente)) return errores; // opcional
+
+        if (dto.DniCliente.Length < 7 || dto.DniCliente.Length > 15)
+            errores.Add("El DNI del cliente debe tener entre 7 y 15 caracteres");
+        if (string.IsNullOrWhiteSpace(dto.NombreCliente))
+            errores.Add("El nombre del cliente es obligatorio");
+        if (string.IsNullOrWhiteSpace(dto.TelefonoCliente))
+            errores.Add("El teléfono del cliente es obligatorio");
+        if (!string.IsNullOrWhiteSpace(dto.EmailCliente) && !dto.EmailCliente.Contains("@"))
+            errores.Add("El email del cliente debe contener @");
         return errores;
     }
 
