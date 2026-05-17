@@ -51,8 +51,7 @@ public class ValidadorProducto : IValidadorProducto
     public async Task<List<string>> ValidaProductoUpdate(ProductoUpdateDTO dto, int idProducto)
     {
         var errores = new List<string>();
-        
-        // Para update, usamos el ID del producto actual
+
         var producto = await _context.Productos.FindAsync(idProducto);
         if (producto == null)
         {
@@ -60,17 +59,10 @@ public class ValidadorProducto : IValidadorProducto
             return errores;
         }
 
-        // Verificar si el nombre ya existe en otro producto
-        var nombreLower = dto.NombreProducto.ToLower();
-        var existeNombre = await _context.Productos
-            .AnyAsync(p => p.NombreProducto.ToLower() == nombreLower 
-                && p.Activo && p.Id != idProducto);
-        
-        if (existeNombre) errores.Add("Ya existe un producto con ese nombre");
-        
-        var categoriaExiste = await _context.Categorias.AnyAsync(c => c.Id == dto.IdCategoria);
-        if (!categoriaExiste) errores.Add("La categoría no existe");
-        
+        // Reutiliza los métodos privados de validación existentes
+        errores.AddRange(await ValidarNombreUnico(dto.NombreProducto, idProducto));
+        errores.AddRange(await ValidarCategoriaExiste(dto.IdCategoria));
+
         return errores;
     }
 
