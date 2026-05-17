@@ -177,7 +177,8 @@ var app = builder.Build();
         }
     }
 
-    // Seed de contactos si no existen (necesario para usuarios)
+    // Seed de contactos y usuarios: necesarios para la FK de Venta.IdUsuario
+    // (Venta apunta a la tabla Usuarios, NO a AspNetUsers de Identity)
     if (!db.Contactos.Any())
     {
         db.Contactos.Add(new proyecto_SISIE.Models.Entities.Contacto

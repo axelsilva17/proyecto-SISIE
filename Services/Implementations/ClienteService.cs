@@ -47,6 +47,7 @@ public class ClienteService : IClienteService
 
     public async Task<ClienteDTO> AgregarAsyncCliente(ClienteCreateDTO dto)
     {
+        // null en idCliente = validación completa (unicidad incluida) para una creación
         var errores = await _validador.ValidarDatosCliente(dto, null);
         if (errores.Any()) throw new InvalidOperationException(string.Join(", ", errores));
 

@@ -9,7 +9,9 @@ namespace proyecto_SISIE.Services;
 
 public interface IValidadorVenta
 {
+    // Pre-validación desde el controller (estructura del DTO, antes de tocar la BD)
     Task<List<string>> ValidarDatosVenta(VentaCreateDTO dto);
+    // Validación completa desde el service al registrar (incluye existencia de usuario, productos, envío)
     Task<List<string>> ValidarDatosVentaCreate(VentaCreateDTO dto, int idUsuario);
     Task<List<string>> ValidarDatosVentaUpdate(VentaUpdateDTO dto);
 }

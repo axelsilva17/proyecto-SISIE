@@ -8,7 +8,9 @@ namespace proyecto_SISIE.Services;
 
 public interface IValidadorCliente
 {
+    // Sin idCliente = pre-validación desde el controller (formato + ciudad, sin unicidad)
     Task<List<string>> ValidarDatosCliente(ClienteCreateDTO dto);
+    // Con idCliente = validación completa desde el service (incluye unicidad, excluye el ID si es update)
     Task<List<string>> ValidarDatosCliente(ClienteCreateDTO dto, int? idCliente);
 }
 
