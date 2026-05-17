@@ -11,17 +11,36 @@ public class VentaService : IVentaService
     private readonly ApplicationDbContext _context;
     private readonly IProductoService _productoService;
     private readonly IClienteService _clienteService;
+    private readonly IValidadorVenta _validador;
 
-    public VentaService(ApplicationDbContext context, IProductoService productoService, IClienteService clienteService)
+    public VentaService(ApplicationDbContext context, IProductoService productoService, IClienteService clienteService, IValidadorVenta validador)
     {
         _context = context;
         _productoService = productoService;
         _clienteService = clienteService;
+        _validador = validador;
     }
 
     public async Task<VentaDTO> RegistrarVentaAsync(int idUsuario, VentaCreateDTO dto)
     {
-        await ValidarDatosVentaAsync(idUsuario, dto);
+        // Auto-registrar cliente si se proporcionan datos y no existe
+        if (!string.IsNullOrWhiteSpace(dto.DniCliente))
+        {
+            var clienteExistente = await _clienteService.BuscarPorDniAsync(dto.DniCliente);
+            if (clienteExistente == null && !string.IsNullOrWhiteSpace(dto.NombreCliente))
+            {
+                var nuevoCliente = new ClienteCreateDTO
+                {
+                    Dni = dto.DniCliente,
+                    Nombre = dto.NombreCliente,
+                    Telefono = dto.TelefonoCliente ?? string.Empty,
+                    Email = dto.EmailCliente?.ToLower()
+                };
+                await _clienteService.AgregarAsyncCliente(nuevoCliente);
+            }
+        }
+
+        await _validador.ValidarDatosVentaCreate(dto, idUsuario);
         int? idDireccionFinal = dto.IdDireccion;
 
         if (dto.EsEnvio && !dto.IdDireccion.HasValue)
@@ -154,32 +173,5 @@ public class VentaService : IVentaService
             IdUsuario = venta.IdUsuario, NombreUsuario = venta.Usuario?.NombreUsuario,
             Detalles = venta.Detalles.Select(d => new DetalleVentaDTO { Id = d.Id, IdProducto = d.IdProducto,
                 NombreProducto = d.Producto?.NombreProducto, Cantidad = d.Cantidad, PrecioUnitario = d.PrecioUnitario, SubTotal = d.SubTotal }).ToList() };
-    }
-
-    private async Task ValidarDatosVentaAsync(int idUsuario, VentaCreateDTO dto)
-    {
-        var usuario = await _context.Usuarios.FindAsync(idUsuario);
-        if (usuario == null) throw new InvalidOperationException("El usuario no existe");
-        if (dto.Detalles == null || !dto.Detalles.Any()) throw new InvalidOperationException("Debe incluir al menos un producto");
-
-        if (dto.EsEnvio)
-        {
-            if (!dto.IdCiudad.HasValue || dto.IdCiudad.Value <= 0)
-                throw new InvalidOperationException("Debe seleccionar una ciudad para envío a domicilio");
-            if (!dto.IdDireccion.HasValue && string.IsNullOrWhiteSpace(dto.DireccionEnvio))
-                throw new InvalidOperationException("Debe indicar la dirección para envío a domicilio");
-        }
-
-        if (dto.IdDireccion.HasValue)
-        {
-            var direccionValida = await _context.Direcciones.AnyAsync(d => d.Id == dto.IdDireccion.Value);
-            if (!direccionValida) throw new InvalidOperationException("La dirección no es válida");
-        }
-
-        foreach (var detalle in dto.Detalles)
-        {
-            var stockVerificacion = await _productoService.VerificarStockProductoAsync(detalle.IdProducto, detalle.Cantidad);
-            if (!stockVerificacion.HayStock) throw new InvalidOperationException(stockVerificacion.Mensaje);
-        }
     }
 }

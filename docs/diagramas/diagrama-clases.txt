@@ -1,0 +1,302 @@
+╔══════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+║                                    SISIE — DIAGRAMA DE CLASES UML                                        ║
+╚══════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+                                        CLASES DE DOMINIO
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────┐    ┌─────────────────────────────────────┐    ┌──────────────────────────────┐
+│            ApplicationUser          │    │            Usuario                 │    │           Contacto            │
+├─────────────────────────────────────┤    ├─────────────────────────────────────┤    ├──────────────────────────────┤
+│ + NombreCompleto : string?          │    │ + Id : int                         │    │ + Id : int                   │
+│ + FechaCreacion : DateTime          │    │ + NombreUsuario : string           │    │ + Email : string             │
+│ + Activo : bool                     │    │ + PasswordHash : string            │    │ + Telefono : int             │
+│                                     │    │ + FechaCreacion : DateTime          │    │                              │
+│                                     │    │ + Activo : bool                     │    │                              │
+│                                     │    │ + IdContacto : int                  │    │                              │
+│                                     │    │ + Contacto : Contacto? (navegacion) │    │                              │
+│                                     │    │ + Ventas : ICollection<Venta>      │    │                              │
+├─────────────────────────────────────┤    ├─────────────────────────────────────┤    ├──────────────────────────────┤
+│ + IdentityUser (hereda)             │    │                                     │    │                              │
+└─────────────────────────────────────┘    └─────────────────────────────────────┘    └──────────────────────────────┘
+                                                   1 ───────────────────────────── 1
+
+┌─────────────────────────────────────┐    ┌─────────────────────────────────────┐
+│            Categoria                │    │            Producto                 │
+├─────────────────────────────────────┤    ├─────────────────────────────────────┤
+│ + Id : int                          │    │ + Id : int                         │
+│ + NombreCategoria : string          │    │ + NombreProducto : string          │
+│ + Productos : ICollection<Producto> │    │ + Descripcion : string?            │
+│                                     │    │ + PrecioUnitario : decimal          │
+│                                     │    │ + Stock : int                      │
+│                                     │    │ + FechaCreacion : DateTime         │
+│                                     │    │ + Activo : bool                    │
+│                                     │    │ + IdCategoria : int                │
+│                                     │    │ + Categoria : Categoria?           │
+│                                     │    │ + Detalles : ICollection<DVenta>   │
+├─────────────────────────────────────┤    ├─────────────────────────────────────┤
+│                                     │    │                                     │
+└─────────────────────────────────────┘    └─────────────────────────────────────┘
+          1 ─────────────────────────────── *         1 ──────────────────────── *
+
+┌─────────────────────────────────────┐    ┌─────────────────────────────────────┐
+│            Cliente                  │    │            Venta                    │
+├─────────────────────────────────────┤    ├─────────────────────────────────────┤
+│ + Id : int                          │    │ + Id : int                         │
+│ + Dni : string                      │    │ + NumeroVenta : int                │
+│ + Nombre : string                   │    │ + Descuento : int                  │
+│ + Telefono : string                 │    │ + Total : decimal                  │
+│ + Email : string?                   │    │ + MetodoPago : string              │
+│ + DireccionDefault : string?        │    │ + TipoEntrega : string             │
+│ + NumeroDefault : int?              │    │ + Notas : string?                  │
+│ + DepartamentoDefault : string?     │    │ + Estado : string                  │
+│ + IdCiudad : int?                   │    │ + FechaCreacion : DateTime         │
+│ + FechaCreacion : DateTime          │    │ + IdDireccion : int?               │
+│ + Activo : bool                     │    │ + IdUsuario : int                  │
+│ + Ciudad : Ciudad? (navegacion)     │    │ + Direccion : Direccion?           │
+│ + Ventas : ICollection<Venta>       │    │ + Usuario : Usuario?               │
+│                                     │    │ + Detalles : ICollection<DVenta>   │  ◆── *
+├─────────────────────────────────────┤    ├─────────────────────────────────────┤
+│                                     │    │                                     │
+└─────────────────────────────────────┘    └─────────────────────────────────────┘
+                                                  * ──────────────────────────── 1
+
+┌─────────────────────────────────────┐    ┌─────────────────────────────────────┐
+│           DetalleVenta              │    │            Direccion                │
+├─────────────────────────────────────┤    ├─────────────────────────────────────┤
+│ + Id : int                          │    │ + Id : int                         │
+│ + SubTotal : decimal                │    │ + Calle : string                   │
+│ + Cantidad : int                    │    │ + Numero : int                     │
+│ + PrecioUnitario : decimal          │    │ + Departamento : string?           │
+│ + IdVenta : int                     │    │ + IdUsuario : int                  │
+│ + IdProducto : int                  │    │ + IdCiudad : int                   │
+│ + Venta : Venta? (navegacion)       │    │ + Usuario : Usuario?               │
+│ + Producto : Producto? (navegacion) │    │ + Ciudad : Ciudad?                 │
+│                                     │    │ + Ventas : ICollection<Venta>      │
+├─────────────────────────────────────┤    ├─────────────────────────────────────┤
+│                                     │    │                                     │
+└─────────────────────────────────────┘    └─────────────────────────────────────┘
+                                                     * ────────────────────────── 1
+
+┌─────────────────────────────────────┐    ┌─────────────────────────────────────┐
+│            Ciudad                   │    │            Provincia                │
+├─────────────────────────────────────┤    ├─────────────────────────────────────┤
+│ + Id : int                          │    │ + Id : int                         │
+│ + NombreCiudad : string             │    │ + NombreProvincia : string         │
+│ + Cp : int                          │    │ + Ciudades : ICollection<Ciudad>   │
+│ + IdProvincia : int                 │    │                                     │
+│ + Provincia : Provincia?            │    │                                     │
+│ + Direcciones : ICollection<Dir>    │    │                                     │
+│ + Clientes : ICollection<Cliente>   │    │                                     │
+├─────────────────────────────────────┤    ├─────────────────────────────────────┤
+│                                     │    │                                     │
+└─────────────────────────────────────┘    └─────────────────────────────────────┘
+       * ─────────────────────────── 1         1 ──────────────────────────── *
+
+
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+                                      INTERFACES DE SERVICIO
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+                                      (Todas son «interface»)
+
+┌───────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│  ICategoriaService                                                                                        │
+├───────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│  + ValidaCategoria(dto, idCategoria?) : List<string>                                                      │
+│  + ObtenerTodosAsyncCategoria() : IEnumerable<CategoriaDTO>                                               │
+│  + ObtenerPorIdAsyncCategoria(int id) : CategoriaDTO?                                                     │
+│  + CrearAsyncCategoria(CategoriaCreateDTO) : CategoriaDTO                                                 │
+│  + ActualizarAsyncCategoria(int id, CategoriaCreateDTO) : CategoriaDTO?                                   │
+│  + EliminarAsyncCategoria(int id) : bool                                                                  │
+│  + PuedeEliminarAsync(int id) : bool                                                                      │
+└───────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+┌───────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│  IProductoService                                                                                         │
+├───────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│  + ValidaProducto(ProductoCreateDTO, idProducto?) : List<string>                                          │
+│  + ObtenerTodosAsyncProducto(pag, tam, cat?, activo?) : (Items, Total)                                    │
+│  + ObtenerPorIdAsyncProducto(int id) : ProductoDTO?                                                       │
+│  + CrearAsyncProducto(ProductoCreateDTO) : ProductoDTO                                                    │
+│  + ActualizarAsyncProducto(int id, ProductoUpdateDTO) : ProductoDTO?                                      │
+│  + EliminarAsyncProducto(int id) : bool                                                                   │
+│  + ToggleActivoAsyncProducto(int id) : ProductoDTO?                                                       │
+│  + VerificarStockProductoAsync(int id, int cant) : StockVerificacionDTO                                   │
+│  + ActualizarStockAsync(int id, int cant) : bool                                                          │
+└───────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+┌───────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│  IVentaService                                                                                            │
+├───────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│  + RegistrarVentaAsync(int idUsuario, VentaCreateDTO) : VentaDTO                                          │
+│  + ObtenerVentaPorIdAsync(int id) : VentaDTO?                                                             │
+│  + ObtenerHistorialVentasAsync(pag, tam, idUsuario?, estado?, d?, h?) : (Items, Total)                    │
+│  + ActualizarEstadoVentaAsync(int id, VentaUpdateDTO) : VentaDTO?                                         │
+│  + CancelarVentaAsync(int id) : VentaDTO?                                                                 │
+│  + VerificarStockCarritoAsync(List<VentaDetalleDTO>) : CarritoVerificacionDTO                              │
+│  + ObtenerVentasPorUsuarioAsync(int id, pag, tam) : VentaPagedResult                                      │
+│  + ObtenerEstadisticasVentasAsync(DateTime?, DateTime?) : object                                          │
+└───────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+┌───────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│  IAuthService                                                                                             │
+├───────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│  + RegisterAsync(RegisterRequest) : AuthResult                                                            │
+│  + LoginAsync(LoginRequest) : AuthResult                                                                  │
+│  + GetCurrentUserAsync(string userId) : UserDTO?                                                          │
+└───────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+┌───────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│  IClienteService                                                                                          │
+├───────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│  + ObtenerTodosAsync(pag, tam, nombre?, activo?) : (Items, Total)                                         │
+│  + ObtenerPorIdAsync(int id) : ClienteDTO?                                                                │
+│  + BuscarPorDniAsync(string dni) : ClienteDTO?                                                            │
+│  + AgregarAsyncCliente(ClienteCreateDTO) : ClienteDTO                                                     │
+│  + ValidarDatosClienteAsync(dni, nombre, tel, email, idCiudad?, idExcluir?)                               │
+└───────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+                                         CONTROLADORES (API)
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+┌───────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│  AuthController                                                                                           │
+├───────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│  ~ _authService : IAuthService                                                                            │
+│  ~ _validador : IValidadorAuth                                                                            │
+├───────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│  + POST /api/auth/register(RegisterRequest) : AuthResult                                                  │
+│  + POST /api/auth/login(LoginRequest) : AuthResult                                                        │
+│  + POST /api/auth/logout() : IActionResult                                                               │
+│  + GET /api/auth/me() : UserDTO                                                                           │
+└───────┬───────────────────────────────────────────────────────────────────────────────────────────────────┘
+        │                                                                                                      
+        │ depende                                                                                              
+        │                                                                                                      
+┌───────┴───────────────────────────────────────────────────────────────────────────────────────────────────┐
+│  CategoriasController                                                                                      │
+├───────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│  ~ _categoriaService : ICategoriaService                                                                   │
+│  ~ _validador : IValidadorCategoria                                                                        │
+├───────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│  + GET /api/categorias() : IEnumerable<CategoriaDTO>                                                       │
+│  + GET /api/categorias/{id} : CategoriaDTO                                                                 │
+│  + POST /api/categorias(CategoriaCreateDTO) : CategoriaDTO                                                 │
+│  + PUT /api/categorias/{id}(CategoriaCreateDTO) : CategoriaDTO                                             │
+│  + DELETE /api/categorias/{id}                                                                             │
+└───────┬───────────────────────────────────────────────────────────────────────────────────────────────────┘
+        │                                                                                                      
+        │ depende                                                                                              
+        │                                                                                                      
+┌───────┴───────────────────────────────────────────────────────────────────────────────────────────────────┐
+│  ProductosController                                                                                       │
+├───────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│  ~ _productoService : IProductoService                                                                     │
+│  ~ _validador : IValidadorProducto                                                                         │
+├───────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│  + GET /api/productos(?page, pageSize, idCategoria, activo) : PagedResult                                  │
+│  + GET /api/productos/{id} : ProductoDTO                                                                   │
+│  + POST /api/productos(ProductoCreateDTO) : ProductoDTO                                                    │
+│  + PUT /api/productos/{id}(ProductoUpdateDTO) : ProductoDTO                                                │
+│  + DELETE /api/productos/{id}                                                                              │
+│  + PATCH /api/productos/{id}/toggle                                                                        │
+└───────┬───────────────────────────────────────────────────────────────────────────────────────────────────┘
+        │                                                                                                      
+        │ depende                                                                                              
+        │                                                                                                      
+┌───────┴───────────────────────────────────────────────────────────────────────────────────────────────────┐
+│  VentasController                                                                                          │
+├───────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│  ~ _ventaService : IVentaService                                                                           │
+│  ~ _productoService : IProductoService                                                                     │
+│  ~ _clienteService : IClienteService                                                                       │
+│  ~ _validador : IValidadorVenta                                                                            │
+├───────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│  + POST /api/ventas/registrar(VentaCreateDTO) : VentaDTO                                                   │
+│  + GET  /api/ventas/{id} : VentaDTO                                                                        │
+│  + GET  /api/ventas/historial(?page, pageSize, idUsuario, estado, fechas) : PagedResult                    │
+│  + GET  /api/ventas/mis-ventas(?page, pageSize) : PagedResult                                              │
+│  + PUT  /api/ventas/{id}/estado(VentaUpdateDTO) : VentaDTO                                                 │
+│  + PUT  /api/ventas/{id}/cancelar() : VentaDTO                                                             │
+│  + GET  /api/ventas/verificar-stock/{idProducto}/{cantidad}                                                │
+│  + POST /api/ventas/verificar-carrito(List<VentaDetalleDTO>)                                               │
+│  + GET  /api/ventas/estadisticas(?fechaDesde, fechaHasta)                                                  │
+│  + GET  /api/ventas/buscar-cliente/{dni} : ClienteDTO                                                      │
+└───────┬───────────────────────────────────────────────────────────────────────────────────────────────────┘
+        │                                                                                                      
+        │ depende                                                                                              
+        │                                                                                                      
+┌───────┴───────────────────────────────────────────────────────────────────────────────────────────────────┐
+│  ClientesController                                                                                        │
+├───────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│  ~ _clienteService : IClienteService                                                                       │
+│  ~ _validador : IValidadorCliente                                                                          │
+├───────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│  + GET /api/clientes(?nombre)                                                                              │
+│  + GET /api/clientes/dni/{dni} : ClienteDTO                                                                │
+│  + GET /api/clientes/{id} : ClienteDTO                                                                     │
+│  + POST /api/clientes(ClienteCreateDTO) : ClienteDTO                                                       │
+└───────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+                                     INTERFACES DE VALIDADOR
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+                                      (Todas son «interface»)
+
+┌───────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│  IValidadorAuth                                                                                           │
+├───────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│  + ValidarDatosRegistro(RegisterRequest) : List<string>                                                    │
+│  + ValidarDatosLogin(LoginRequest) : List<string>                                                          │
+└───────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+┌───────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│  IValidadorCategoria                                                                                      │
+├───────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│  + ValidarDatosCategoria(CategoriaCreateDTO) : List<string>                                                │
+│  + ValidaCategoria(CategoriaCreateDTO, idCategoria?) : List<string>                                        │
+└───────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+┌───────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│  IValidadorProducto                                                                                       │
+├───────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│  + ValidarDatosProductoCreate(ProductoCreateDTO) : List<string>                                            │
+│  + ValidarDatosProductoUpdate(ProductoUpdateDTO) : List<string>                                            │
+│  + ValidaProducto(ProductoCreateDTO, idProducto?) : List<string>                                           │
+│  + ValidarStock(int idProducto, int cantidad) : List<string>                                               │
+└───────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+┌───────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│  IValidadorVenta                                                                                          │
+├───────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│  + ValidarDatosVenta(VentaCreateDTO) : List<string>                                                        │
+│  + ValidarDatosVentaCreate(VentaCreateDTO, int idUsuario) : List<string>                                   │
+│  + ValidarDatosVentaUpdate(VentaUpdateDTO) : List<string>                                                  │
+└───────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+┌───────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│  IValidadorCliente                                                                                        │
+├───────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│  + ValidarDatosCliente(ClienteCreateDTO) : List<string>                                                    │
+│  + ValidarDatosCliente(ClienteCreateDTO, int? idCliente) : List<string>                                    │
+└───────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+                                          LEYENDA DE RELACIONES
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+  ────────    Asociacion entre clases (con multiplicidad: 1, *, 0..1)
+  ◆───────    Composicion (Venta -> DetalleVenta)
+  - - - - >   Dependencia: el Controlador depende del Servicio / Validador
+  +            Visibilidad publica
+  ~            Visibilidad package/internal
+  «interface»  Estereotipo de interfaz
+  «Controller» Estereotipo de controlador
+  (hereda)     Herencia de clase base

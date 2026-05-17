@@ -14,18 +14,21 @@ public class AuthService : IAuthService
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly IConfiguration _configuration;
+    private readonly IValidadorAuth _validador;
 
-    public AuthService(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IConfiguration configuration)
+    public AuthService(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager,
+        IConfiguration configuration, IValidadorAuth validador)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _configuration = configuration;
+        _validador = validador;
     }
 
     public async Task<AuthResult> RegisterAsync(RegisterRequest request)
     {
-        var existingUser = await _userManager.FindByEmailAsync(request.Email);
-        if (existingUser != null) return new AuthResult { Success = false, Message = "El email ya está registrado" };
+        var errores = await _validador.ValidarDatosRegistro(request);
+        if (errores.Any()) return new AuthResult { Success = false, Message = string.Join(", ", errores) };
 
         var user = new ApplicationUser { UserName = request.NombreUsuario, Email = request.Email, NombreCompleto = request.NombreUsuario, FechaCreacion = DateTime.Now, Activo = true };
         var result = await _userManager.CreateAsync(user, request.Password);
@@ -37,6 +40,9 @@ public class AuthService : IAuthService
 
     public async Task<AuthResult> LoginAsync(LoginRequest request)
     {
+        var errores = await _validador.ValidarDatosLogin(request);
+        if (errores.Any()) return new AuthResult { Success = false, Message = string.Join(", ", errores) };
+
         var user = await _userManager.FindByEmailAsync(request.Email);
         if (user == null || !user.Activo) return new AuthResult { Success = false, Message = "Credenciales inválidas" };
 

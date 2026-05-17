@@ -177,6 +177,32 @@ var app = builder.Build();
         }
     }
 
+    // Seed de contactos y usuarios: necesarios para la FK de Venta.IdUsuario
+    // (Venta apunta a la tabla Usuarios, NO a AspNetUsers de Identity)
+    if (!db.Contactos.Any())
+    {
+        db.Contactos.Add(new proyecto_SISIE.Models.Entities.Contacto
+        {
+            Email = "admin@sisie.com",
+            Telefono = 987000000
+        });
+        db.SaveChanges();
+    }
+
+    // Seed de usuarios de prueba (necesario para ventas)
+    if (!db.Usuarios.Any())
+    {
+        db.Usuarios.Add(new proyecto_SISIE.Models.Entities.Usuario
+        {
+            NombreUsuario = "admin",
+            PasswordHash = "admin123",
+            FechaCreacion = DateTime.Now,
+            Activo = true,
+            IdContacto = 1
+        });
+        db.SaveChanges();
+    }
+
     // Seed de clientes de prueba
     if (!db.Clientes.Any())
     {
