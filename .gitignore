@@ -13,6 +13,13 @@ obj/
 
 # Entity Framework
 *.db
+*.db-shm
+*.db-wal
+
+# SQLite temp files
+sqlite-temp/
+sqlite.zip
+check_views.sql
 
 # Dotnet tools
 .DS_Store
@@ -25,3 +32,16 @@ obj/
 
 # Agent configuration (tracked separately in skills)
 .atl/
+
+# Project artifacts — not for version control
+docs/
+.pi/
+.agents/skills/disenador/
+openspec/
+node_modules/
+scripts/
+release-*.txt
+AGENTS.md
+tasks.md
+design.md
+appsettings.Development.json

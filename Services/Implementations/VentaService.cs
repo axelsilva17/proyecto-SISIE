@@ -23,6 +23,22 @@ public class VentaService : IVentaService
 
     public async Task<VentaDTO> RegistrarVentaAsync(int idUsuario, VentaCreateDTO dto)
     {
+        // Auto-registrar cliente si se proporcionan datos y no existe
+        if (!string.IsNullOrWhiteSpace(dto.DniCliente))
+        {
+            var clienteExistente = await _clienteService.BuscarPorDniAsync(dto.DniCliente);
+            if (clienteExistente == null && !string.IsNullOrWhiteSpace(dto.NombreCliente))
+            {
+                var nuevoCliente = new ClienteCreateDTO
+                {
+                    Dni = dto.DniCliente,
+                    Nombre = dto.NombreCliente,
+                    Telefono = dto.TelefonoCliente ?? string.Empty,
+                    Email = dto.EmailCliente?.ToLower()
+                };
+                await _clienteService.AgregarAsyncCliente(nuevoCliente);
+            }
+        }
         await _validador.ValidarDatosVentaCreate(dto, idUsuario);
         int? idDireccionFinal = dto.IdDireccion;
 
