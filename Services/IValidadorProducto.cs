@@ -18,8 +18,13 @@ public interface IValidadorProducto
 public class ValidadorProducto : IValidadorProducto
 {
     private readonly ApplicationDbContext _context;
+    private readonly IValidadorCategoria _validadorCategoria;
 
-    public ValidadorProducto(ApplicationDbContext context) => _context = context;
+    public ValidadorProducto(ApplicationDbContext context, IValidadorCategoria validadorCategoria)
+    {
+        _context = context;
+        _validadorCategoria = validadorCategoria;
+    }
 
     public Task<List<string>> ValidarDatosProductoCreate(ProductoCreateDTO dto)
     {
@@ -44,7 +49,7 @@ public class ValidadorProducto : IValidadorProducto
     {
         var errores = new List<string>();
         errores.AddRange(await ValidarNombreUnico(dto.NombreProducto, idProducto));
-        errores.AddRange(await ValidarCategoriaExiste(dto.IdCategoria));
+        errores.AddRange(await _validadorCategoria.ValidarCategoriaExiste(dto.IdCategoria));
         return errores;
     }
 
@@ -59,9 +64,8 @@ public class ValidadorProducto : IValidadorProducto
             return errores;
         }
 
-        // Reutiliza los métodos privados de validación existentes
         errores.AddRange(await ValidarNombreUnico(dto.NombreProducto, idProducto));
-        errores.AddRange(await ValidarCategoriaExiste(dto.IdCategoria));
+        errores.AddRange(await _validadorCategoria.ValidarCategoriaExiste(dto.IdCategoria));
 
         return errores;
     }
@@ -110,14 +114,6 @@ public class ValidadorProducto : IValidadorProducto
             .AnyAsync(p => p.NombreProducto.ToLower() == nombreLower
                 && p.Activo && (idProducto == null || p.Id != idProducto));
         if (existeNombre) errores.Add("Ya existe un producto con ese nombre");
-        return errores;
-    }
-
-    private async Task<List<string>> ValidarCategoriaExiste(int idCategoria)
-    {
-        var errores = new List<string>();
-        var categoriaExiste = await _context.Categorias.AnyAsync(c => c.Id == idCategoria);
-        if (!categoriaExiste) errores.Add("La categoría no existe");
         return errores;
     }
 }

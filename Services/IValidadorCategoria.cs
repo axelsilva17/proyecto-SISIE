@@ -10,6 +10,7 @@ public interface IValidadorCategoria
 {
     Task<List<string>> ValidarDatosCategoria(CategoriaCreateDTO dto);
     Task<List<string>> ValidaCategoria(CategoriaCreateDTO dto, int? idCategoria = null);
+    Task<List<string>> ValidarCategoriaExiste(int idCategoria);
 }
 
 public class ValidadorCategoria : IValidadorCategoria
@@ -50,5 +51,11 @@ public class ValidadorCategoria : IValidadorCategoria
                 && (idCategoria == null || c.Id != idCategoria));
         if (existeNombre) errores.Add("Ya existe una categoría con ese nombre");
         return errores;
+    }
+
+    public async Task<List<string>> ValidarCategoriaExiste(int idCategoria)
+    {
+        var existe = await _context.Categorias.AnyAsync(c => c.Id == idCategoria);
+        return existe ? [] : ["La categoría no existe"];
     }
 }
