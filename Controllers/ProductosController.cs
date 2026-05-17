@@ -47,19 +47,18 @@ public class ProductosController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<ProductoDTO>> CrearProducto([FromBody] ProductoCreateDTO producto)
     {
+        // Validar campos obligatorios
         var errores = await _validador.ValidarDatosProductoCreate(producto);
         if (errores.Count > 0)
             return BadRequest(new { success = false, message = "Error de validación", errors = errores });
 
-        try
-        {
-            var created = await _productoService.CrearAsyncProducto(producto);
-            return CreatedAtAction(nameof(ObtenerProductoPorId), new { id = created.Id }, created);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { success = false, message = ex.Message });
-        }
+        // Validar reglas de negocio (duplicado, categoría existe)
+        var erroresNegocio = await _validador.ValidaProducto(producto);
+        if (erroresNegocio.Count > 0)
+            return BadRequest(new { success = false, message = erroresNegocio[0], errors = erroresNegocio });
+
+        var created = await _productoService.CrearAsyncProducto(producto);
+        return CreatedAtAction(nameof(ObtenerProductoPorId), new { id = created.Id }, created);
     }
 
     [HttpPut("{id}")]
@@ -68,6 +67,11 @@ public class ProductosController : ControllerBase
         var errores = await _validador.ValidarDatosProductoUpdate(producto);
         if (errores.Count > 0)
             return BadRequest(new { success = false, message = "Error de validación", errors = errores });
+
+        // Validar reglas de negocio (duplicado, categoría existe)
+        var erroresNegocio = await _validador.ValidaProductoUpdate(producto, id);
+        if (erroresNegocio.Count > 0)
+            return BadRequest(new { success = false, message = erroresNegocio[0], errors = erroresNegocio });
 
         var updated = await _productoService.ActualizarAsyncProducto(id, producto);
         if (updated == null)
