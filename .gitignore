@@ -32,3 +32,16 @@ check_views.sql
 
 # Agent configuration (tracked separately in skills)
 .atl/
+
+# Project artifacts — not for version control
+docs/
+.pi/
+.agents/skills/disenador/
+openspec/
+node_modules/
+scripts/
+release-*.txt
+AGENTS.md
+tasks.md
+design.md
+appsettings.Development.json
