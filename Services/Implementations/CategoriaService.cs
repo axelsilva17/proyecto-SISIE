@@ -20,6 +20,7 @@ public class CategoriaService : ICategoriaService
     public async Task<List<string>> ValidaCategoria(CategoriaCreateDTO dto, int? idCategoria = null)
         => await _validador.ValidaCategoria(dto, idCategoria);
 
+
     public async Task<IEnumerable<CategoriaDTO>> ObtenerTodosAsyncCategoria()
         => await _context.Categorias.OrderBy(c => c.NombreCategoria)
             .Select(c => new CategoriaDTO { Id = c.Id, NombreCategoria = c.NombreCategoria }).ToListAsync();
@@ -28,7 +29,7 @@ public class CategoriaService : ICategoriaService
     {
         var categoria = await _context.Categorias.FindAsync(id);
         if (categoria == null) return null;
-        return new CategoriaDTO { Id = categoria.Id, NombreCategoria = categoria.NombreCategoria };
+        return MapToDTO(categoria);
     }
 
     public async Task<CategoriaDTO> CrearAsyncCategoria(CategoriaCreateDTO dto)
@@ -39,7 +40,7 @@ public class CategoriaService : ICategoriaService
         var categoria = new Categoria { NombreCategoria = dto.NombreCategoria };
         _context.Categorias.Add(categoria);
         await _context.SaveChangesAsync();
-        return new CategoriaDTO { Id = categoria.Id, NombreCategoria = categoria.NombreCategoria };
+        return MapToDTO(categoria);
     }
 
     public async Task<CategoriaDTO?> ActualizarAsyncCategoria(int id, CategoriaCreateDTO dto)
@@ -51,7 +52,7 @@ public class CategoriaService : ICategoriaService
 
         categoria.NombreCategoria = dto.NombreCategoria;
         await _context.SaveChangesAsync();
-        return new CategoriaDTO { Id = categoria.Id, NombreCategoria = categoria.NombreCategoria };
+        return MapToDTO(categoria);
     }
 
     public async Task<bool> EliminarAsyncCategoria(int id)
@@ -68,4 +69,9 @@ public class CategoriaService : ICategoriaService
         var tieneProductos = await _context.Productos.AnyAsync(p => p.IdCategoria == id && p.Activo);
         return !tieneProductos;
     }
+
+    private CategoriaDTO MapToDTO(Categoria categoria) => new CategoriaDTO
+    {
+        Id = categoria.Id, NombreCategoria = categoria.NombreCategoria
+    };
 }

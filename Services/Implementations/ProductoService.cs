@@ -17,6 +17,7 @@ public class ProductoService : IProductoService
         _validador = validador;
     }
 
+
     public async Task<List<string>> ValidaProducto(ProductoCreateDTO dto, int? idProducto = null)
         => await _validador.ValidaProducto(dto, idProducto);
 
@@ -38,14 +39,14 @@ public class ProductoService : IProductoService
         return (items, total);
     }
 
+
     public async Task<ProductoDTO?> ObtenerPorIdAsyncProducto(int id)
     {
         var producto = await _context.Productos.Include(p => p.Categoria).FirstOrDefaultAsync(p => p.Id == id);
         if (producto == null) return null;
-        return new ProductoDTO { Id = producto.Id, NombreProducto = producto.NombreProducto, Descripcion = producto.Descripcion,
-            PrecioUnitario = producto.PrecioUnitario, Stock = producto.Stock, IdCategoria = producto.IdCategoria,
-            NombreCategoria = producto.Categoria?.NombreCategoria, FechaCreacion = producto.FechaCreacion, Activo = producto.Activo };
+        return MapToDTO(producto);
     }
+
 
     public async Task<ProductoDTO> CrearAsyncProducto(ProductoCreateDTO dto)
     {
@@ -57,10 +58,9 @@ public class ProductoService : IProductoService
             FechaCreacion = DateTime.Now, Activo = true };
         _context.Productos.Add(producto);
         await _context.SaveChangesAsync();
-        return new ProductoDTO { Id = producto.Id, NombreProducto = producto.NombreProducto, Descripcion = producto.Descripcion,
-            PrecioUnitario = producto.PrecioUnitario, Stock = producto.Stock, IdCategoria = producto.IdCategoria,
-            FechaCreacion = producto.FechaCreacion, Activo = producto.Activo };
+        return MapToDTO(producto);
     }
+
 
     public async Task<ProductoDTO?> ActualizarAsyncProducto(int id, ProductoUpdateDTO dto)
     {
@@ -76,10 +76,9 @@ public class ProductoService : IProductoService
         producto.Stock = dto.Stock;
         producto.IdCategoria = dto.IdCategoria;
         await _context.SaveChangesAsync();
-        return new ProductoDTO { Id = producto.Id, NombreProducto = producto.NombreProducto, Descripcion = producto.Descripcion,
-            PrecioUnitario = producto.PrecioUnitario, Stock = producto.Stock, IdCategoria = producto.IdCategoria,
-            FechaCreacion = producto.FechaCreacion, Activo = producto.Activo };
+        return MapToDTO(producto);
     }
+
 
     public async Task<bool> EliminarAsyncProducto(int id)
     {
@@ -90,16 +89,22 @@ public class ProductoService : IProductoService
         return true;
     }
 
+
     public async Task<ProductoDTO?> ToggleActivoAsyncProducto(int id)
     {
         var producto = await _context.Productos.FindAsync(id);
         if (producto == null) return null;
         producto.Activo = !producto.Activo;
         await _context.SaveChangesAsync();
-        return new ProductoDTO { Id = producto.Id, NombreProducto = producto.NombreProducto, Descripcion = producto.Descripcion,
-            PrecioUnitario = producto.PrecioUnitario, Stock = producto.Stock, IdCategoria = producto.IdCategoria,
-            FechaCreacion = producto.FechaCreacion, Activo = producto.Activo };
+        return MapToDTO(producto);
     }
+
+    private ProductoDTO MapToDTO(Producto producto) => new ProductoDTO
+    {
+        Id = producto.Id, NombreProducto = producto.NombreProducto, Descripcion = producto.Descripcion,
+        PrecioUnitario = producto.PrecioUnitario, Stock = producto.Stock, IdCategoria = producto.IdCategoria,
+        NombreCategoria = producto.Categoria?.NombreCategoria, FechaCreacion = producto.FechaCreacion, Activo = producto.Activo
+    };
 
     public async Task<StockVerificacionDTO> VerificarStockProductoAsync(int idProducto, int cantidad)
     {
