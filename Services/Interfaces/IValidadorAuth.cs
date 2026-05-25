@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using proyecto_SISIE.Models.DTOs;
 using proyecto_SISIE.Models.Entities;
 
-namespace proyecto_SISIE.Services;
+namespace proyecto_SISIE.Services.Interfaces;
 
 public interface IValidadorAuth
 {

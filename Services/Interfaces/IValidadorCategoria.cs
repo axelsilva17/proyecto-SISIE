@@ -1,10 +1,7 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using proyecto_SISIE.Data;
 using proyecto_SISIE.Models.DTOs;
+using proyecto_SISIE.Services.Interfaces;
 
-namespace proyecto_SISIE.Services;
+namespace proyecto_SISIE.Services.Interfaces;
 
 public interface IValidadorCategoria
 {
@@ -15,9 +12,9 @@ public interface IValidadorCategoria
 
 public class ValidadorCategoria : IValidadorCategoria
 {
-    private readonly ApplicationDbContext _context;
+    private readonly ICategoriaRepositorio _categoriaRepositorio;
 
-    public ValidadorCategoria(ApplicationDbContext context) => _context = context;
+    public ValidadorCategoria(ICategoriaRepositorio categoriaRepositorio) => _categoriaRepositorio = categoriaRepositorio;
 
     public Task<List<string>> ValidarDatosCategoria(CategoriaCreateDTO dto)
     {
@@ -45,17 +42,14 @@ public class ValidadorCategoria : IValidadorCategoria
     private async Task<List<string>> ValidarNombreUnico(string nombre, int? idCategoria)
     {
         var errores = new List<string>();
-        var nombreLower = nombre.ToLower();
-        var existeNombre = await _context.Categorias
-            .AnyAsync(c => c.NombreCategoria.ToLower() == nombreLower
-                && (idCategoria == null || c.Id != idCategoria));
+        var existeNombre = await _categoriaRepositorio.ExisteNombreAsync(nombre, idCategoria);
         if (existeNombre) errores.Add("Ya existe una categoría con ese nombre");
         return errores;
     }
 
     public async Task<List<string>> ValidarCategoriaExiste(int idCategoria)
     {
-        var existe = await _context.Categorias.AnyAsync(c => c.Id == idCategoria);
+        var existe = await _categoriaRepositorio.ExisteAsync(idCategoria);
         return existe ? [] : ["La categoría no existe"];
     }
 }

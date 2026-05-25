@@ -4,8 +4,7 @@ namespace proyecto_SISIE.Services.Interfaces;
 
 public interface IProductoService
 {
-    Task<List<string>> ValidaProducto(ProductoCreateDTO dto, int? idProducto = null);
-    Task<(IEnumerable<ProductoListDTO> Items, int Total)> ObtenerTodosAsyncProducto(int pagina, int tamanioPagina, int? idCategoria, bool? activo);
+    Task<(IEnumerable<ProductoDTO> Items, int Total)> ObtenerTodosAsyncProducto(int pagina, int tamanioPagina, int? idCategoria, bool? activo);
     Task<ProductoDTO?> ObtenerPorIdAsyncProducto(int id);
     Task<ProductoDTO> CrearAsyncProducto(ProductoCreateDTO producto);
     Task<ProductoDTO?> ActualizarAsyncProducto(int id, ProductoUpdateDTO producto);
