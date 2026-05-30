@@ -772,29 +772,6 @@
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Procesando...';
 
             try {
-                // Guardar el cliente (el backend maneja duplicados - retorna existente si ya existe)
-                const clienteData = {
-                    dni: documento,
-                    nombre: cliente,
-                    telefono: telefono,
-                    email: email || null
-                };
-
-                console.log('Intentando guardar cliente:', clienteData);
-                try {
-                    const clienteRes = await fetch('/api/clientes', {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(clienteData)
-                    });
-                    console.log('Cliente response:', clienteRes.status, await clienteRes.text());
-                } catch(e) {
-                    console.log('Error cliente:', e);
-                }
-
                 // Estado: Pendiente para retiro en sucursal, Completado para los demás
                 const estado = (tipoEntrega === 'retiro') ? 'pendiente' : 'completado';
                 

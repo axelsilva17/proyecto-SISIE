@@ -6,9 +6,9 @@ using Microsoft.IdentityModel.Tokens;
 using AspNetCoreRateLimit;
 using proyecto_SISIE.Data;
 using proyecto_SISIE.Models.Entities;
-using proyecto_SISIE.Services;
 using proyecto_SISIE.Services.Interfaces;
 using proyecto_SISIE.Services.Implementations;
+using proyecto_SISIE.Services.Repositorios;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -110,6 +110,12 @@ builder.Services.AddSingleton<IProcessingStrategy, AsyncKeyLockProcessingStrateg
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Repositorios
+builder.Services.AddScoped<IProductoRepositorio, ProductoRepositorio>();
+builder.Services.AddScoped<ICategoriaRepositorio, CategoriaRepositorio>();
+builder.Services.AddScoped<IClienteRepositorio, ClienteRepositorio>();
+builder.Services.AddScoped<IVentaRepositorio, VentaRepositorio>();
+
 // Servicios
 builder.Services.AddScoped<ICategoriaService, CategoriaService>();
 builder.Services.AddScoped<IProductoService, ProductoService>();
@@ -175,6 +181,32 @@ var app = builder.Build();
             };
             db.Productos.AddRange(productos);
         }
+    }
+
+    // Seed de contactos y usuarios: necesarios para la FK de Venta.IdUsuario
+    // (Venta apunta a la tabla Usuarios, NO a AspNetUsers de Identity)
+    if (!db.Contactos.Any())
+    {
+        db.Contactos.Add(new proyecto_SISIE.Models.Entities.Contacto
+        {
+            Email = "admin@sisie.com",
+            Telefono = 987000000
+        });
+        db.SaveChanges();
+    }
+
+    // Seed de usuarios de prueba (necesario para ventas)
+    if (!db.Usuarios.Any())
+    {
+        db.Usuarios.Add(new proyecto_SISIE.Models.Entities.Usuario
+        {
+            NombreUsuario = "admin",
+            PasswordHash = "admin123",
+            FechaCreacion = DateTime.Now,
+            Activo = true,
+            IdContacto = 1
+        });
+        db.SaveChanges();
     }
 
     // Seed de clientes de prueba
