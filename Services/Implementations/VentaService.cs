@@ -1,6 +1,7 @@
 using proyecto_SISIE.Models.DTOs;
 using proyecto_SISIE.Models.Entities;
 using proyecto_SISIE.Services.Interfaces;
+using proyecto_SISIE.Services.Strategy;
 
 namespace proyecto_SISIE.Services.Implementations;
 
@@ -11,19 +12,22 @@ public class VentaService : IVentaService
     private readonly IProductoService _productoService;
     private readonly IClienteService _clienteService;
     private readonly IValidadorVenta _validador;
+    private readonly ProcesadorPago _procesadorPago;
 
     public VentaService(
         IVentaRepositorio ventaRepositorio,
         IProductoRepositorio productoRepositorio,
         IProductoService productoService,
         IClienteService clienteService,
-        IValidadorVenta validador)
+        IValidadorVenta validador,
+        ProcesadorPago procesadorPago)
     {
         _ventaRepositorio = ventaRepositorio;
         _productoRepositorio = productoRepositorio;
         _productoService = productoService;
         _clienteService = clienteService;
         _validador = validador;
+        _procesadorPago = procesadorPago;
     }
 
     public async Task<VentaDTO> RegistrarVentaAsync(int idUsuario, VentaCreateDTO dto)
@@ -36,8 +40,10 @@ public class VentaService : IVentaService
 
         var idDireccion = await ObtenerOCrearDireccion(dto, idUsuario);
         var venta = await CrearVenta(idUsuario, dto, idDireccion);
-        var totalVenta = await ProcesarDetallesVenta(venta.Id, dto.Detalles);
-        await AplicarDescuentoYActualizarTotal(venta, dto.Descuento, totalVenta);
+        var subtotal = await ProcesarDetallesVenta(venta.Id, dto.Detalles);
+        var totalConMetodoPago = _procesadorPago.CalcularTotal(venta.MetodoPago, subtotal, dto.Descuento);
+        venta.Total = totalConMetodoPago;
+        await _ventaRepositorio.ActualizarAsync(venta);
 
         return (await ObtenerVentaDTOCompleto(venta.Id))!;
     }
@@ -123,13 +129,6 @@ public class VentaService : IVentaService
             total += subtotal;
         }
         return total;
-    }
-
-    private async Task AplicarDescuentoYActualizarTotal(Venta venta, int descuento, decimal totalVenta)
-    {
-        var descuentoDecimal = (decimal)descuento / 100;
-        venta.Total = Math.Round(totalVenta * (1 - descuentoDecimal), 2);
-        await _ventaRepositorio.ActualizarAsync(venta);
     }
 
     public async Task<VentaDTO?> ObtenerVentaPorIdAsync(int id) => await ObtenerVentaDTOCompleto(id);
