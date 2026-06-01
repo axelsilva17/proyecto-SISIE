@@ -1,9 +1,5 @@
 namespace proyecto_SISIE.Services.Strategy;
 
-/// <summary>
-/// Contexto del patrón Strategy. Recibe todas las estrategias vía DI,
-/// selecciona la que corresponde según el método de pago y delega el cálculo.
-/// </summary>
 public class ProcesadorPago
 {
     private readonly IEnumerable<IMetodoPagoStrategy> _estrategias;
