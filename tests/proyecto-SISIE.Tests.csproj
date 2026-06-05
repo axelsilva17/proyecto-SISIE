@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\proyecto-SISIE.csproj" />
+    <ProjectReference Include="..\proyecto-SISIE.csproj" />
   </ItemGroup>
 
 </Project>
