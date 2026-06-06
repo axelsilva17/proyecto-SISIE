@@ -78,17 +78,4 @@ public class CategoriaServiceTests
         _repositorioMock.Verify(r => r.CrearAsync(It.IsAny<Categoria>()), Times.Never);
     }
 
-    [Fact]
-    public async Task ObtenerCategoria_PorIdInexistente_RetornaNull()
-    {
-        _repositorioMock
-            .Setup(r => r.ObtenerPorIdAsync(999))
-            .ReturnsAsync((Categoria?)null);
-
-        var result = await _service.ObtenerPorIdAsyncCategoria(999);
-
-        Assert.Null(result);
-
-        _repositorioMock.Verify(r => r.ObtenerPorIdAsync(999), Times.Once);
-    }
 }

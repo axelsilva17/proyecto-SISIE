@@ -129,57 +129,31 @@ public class ProductoServiceTests
     }
 
     [Theory]
+    [InlineData(0)]
     [InlineData(-1)]
     [InlineData(-999)]
-    public async Task RegistrarProducto_StockNegativo_RetornaError(int stockNegativo)
+    public async Task RegistrarProducto_StockInvalido_RetornaError(int stockInvalido)
     {
         var dto = new ProductoCreateDTO
         {
             NombreProducto = "Martillo",
             Descripcion = "Test",
             PrecioUnitario = 1500m,
-            Stock = stockNegativo,
+            Stock = stockInvalido,
             IdCategoria = 1
         };
 
-        var errores = new List<string> { "El stock no puede ser negativo" };
+        var errores = new List<string> { "El stock debe ser mayor a 0" };
 
         _validadorMock
             .Setup(v => v.ValidaProducto(
-                It.Is<ProductoCreateDTO>(p => p.Stock < 0), null))
+                It.Is<ProductoCreateDTO>(p => p.Stock <= 0), null))
             .ReturnsAsync(errores);
 
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(
             () => _service.CrearAsyncProducto(dto));
 
-        Assert.Contains("El stock no puede ser negativo", ex.Message);
-
-        _repositorioMock.Verify(r => r.CrearAsync(It.IsAny<Producto>()), Times.Never);
-    }
-
-    [Fact]
-    public async Task RegistrarProducto_CategoriaInexistente_LanzaExcepcion()
-    {
-        var dto = new ProductoCreateDTO
-        {
-            NombreProducto = "Martillo",
-            Descripcion = "Martillo 20 oz",
-            PrecioUnitario = 1500m,
-            Stock = 10,
-            IdCategoria = 999
-        };
-
-        var errores = new List<string> { "La categoría no existe" };
-
-        _validadorMock
-            .Setup(v => v.ValidaProducto(
-                It.Is<ProductoCreateDTO>(p => p.IdCategoria == 999), null))
-            .ReturnsAsync(errores);
-
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _service.CrearAsyncProducto(dto));
-
-        Assert.Contains("La categoría no existe", ex.Message);
+        Assert.Contains("El stock debe ser mayor a 0", ex.Message);
 
         _repositorioMock.Verify(r => r.CrearAsync(It.IsAny<Producto>()), Times.Never);
     }

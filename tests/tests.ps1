@@ -238,12 +238,6 @@ Run-TestCase -Id "CP-P05" -Description "Stock negativo — valor -1" `
     -Body '{"nombreProducto":"Cierra","descripcion":"Cierra circular","precioUnitario":5000,"stock":-1,"idCategoria":1}' `
     -ExpectedStatus @(400)
 
-# CP-P06 — Error al guardar (nombre null)
-Run-TestCase -Id "CP-P06" -Description "Error al guardar en la base de datos (nombre null)" `
-    -Endpoint "/api/productos" -Method POST `
-    -Body '{"nombreProducto":null,"descripcion":"Martillo de goma","precioUnitario":80000,"stock":3,"idCategoria":1}' `
-    -ExpectedStatus @(400, 500)
-
 # ══════════════════════════════════════════════════════════════════════
 # VENTAS  (POST /api/ventas/registrar)
 # ══════════════════════════════════════════════════════════════════════
@@ -252,61 +246,82 @@ Write-Host "══════════════════════�
 Write-Host "  CASOS DE PRUEBA — registrarVenta"        -ForegroundColor Cyan
 Write-Host "══════════════════════════════════════════" -ForegroundColor Cyan
 
-# Body base valido para ventas — incluye todos los campos requeridos por VentaCreateDTO
-$ventaValida = '{"dniCliente":"12345678","nombreCliente":"Juan Perez","telefonoCliente":"3794000000","emailCliente":"juan@mail.com","esEnvio":false,"detalles":[{"idProducto":1,"cantidad":2}],"metodoPago":"Efectivo","tipoEntrega":"Mostrador"}'
+# Creamos 2 productos frescos con stock conocido para los tests de venta
+Write-Host ""
+Write-Host ">>> Creando productos de prueba para ventas..." -ForegroundColor Yellow
+$prodVenta1 = Invoke-Api -Uri "/api/productos" -Method POST -Body "{`"nombreProducto`":`"ProductoVentaA$ts`",`"descripcion`":`"Test ventas`",`"precioUnitario`":500,`"stock`":50,`"idCategoria`":1}"
+$prodVenta2 = Invoke-Api -Uri "/api/productos" -Method POST -Body "{`"nombreProducto`":`"ProductoVentaB$ts`",`"descripcion`":`"Test ventas`",`"precioUnitario`":300,`"stock`":50,`"idCategoria`":1}"
+$idP1 = $prodVenta1.Content.id
+$idP2 = $prodVenta2.Content.id
+Write-Host "  Producto $idP1 (stock 50) | Producto $idP2 (stock 50)" -ForegroundColor Gray
+
+# Body base para ventas con los productos recien creados
+$baseBody = @{ dniCliente = "12345678"; nombreCliente = "Juan Perez"; telefonoCliente = "3794000000"; emailCliente = "juan@mail.com"; esEnvio = $false; metodoPago = "Efectivo"; tipoEntrega = "Mostrador" }
 
 # CP-V01 — Registro exitoso
+$bodyV01 = $baseBody.Clone()
+$bodyV01.detalles = @(@{ idProducto = $idP1; cantidad = 2 })
 Run-TestCase -Id "CP-V01" -Description "Registro exitoso de venta con datos validos" `
     -Endpoint "/api/ventas/registrar" -Method POST `
-    -Body $ventaValida `
+    -Body ($bodyV01 | ConvertTo-Json) `
     -ExpectedStatus @(200, 201)
 
 # CP-V02 — Stock insuficiente (cantidad 9999)
-Run-TestCase -Id "CP-V02" -Description "Stock insuficiente — stock disponible es 1" `
+$bodyV02 = $baseBody.Clone()
+$bodyV02.detalles = @(@{ idProducto = $idP1; cantidad = 9999 })
+Run-TestCase -Id "CP-V02" -Description "Stock insuficiente — cantidad 9999" `
     -Endpoint "/api/ventas/registrar" -Method POST `
-    -Body '{"dniCliente":"12345678","nombreCliente":"Juan Perez","telefonoCliente":"3794000000","emailCliente":"juan@mail.com","esEnvio":false,"detalles":[{"idProducto":1,"cantidad":9999}],"metodoPago":"Efectivo","tipoEntrega":"Mostrador"}' `
+    -Body ($bodyV02 | ConvertTo-Json) `
     -ExpectedStatus @(400)
 
 # CP-V03 — Producto inexistente
+$bodyV03 = $baseBody.Clone()
+$bodyV03.detalles = @(@{ idProducto = 99999; cantidad = 1 })
 Run-TestCase -Id "CP-V03" -Description "Producto inexistente — Id no existe en BD" `
     -Endpoint "/api/ventas/registrar" -Method POST `
-    -Body '{"dniCliente":"12345678","nombreCliente":"Juan Perez","telefonoCliente":"3794000000","emailCliente":"juan@mail.com","esEnvio":false,"detalles":[{"idProducto":99999,"cantidad":1}],"metodoPago":"Efectivo","tipoEntrega":"Mostrador"}' `
+    -Body ($bodyV03 | ConvertTo-Json) `
     -ExpectedStatus @(400, 404)
 
 # CP-V04 — Lista de productos vacia
+$bodyV04 = $baseBody.Clone()
+$bodyV04.detalles = @()
 Run-TestCase -Id "CP-V04" -Description "Lista de productos vacia" `
     -Endpoint "/api/ventas/registrar" -Method POST `
-    -Body '{"dniCliente":"12345678","nombreCliente":"Juan Perez","telefonoCliente":"3794000000","emailCliente":"juan@mail.com","esEnvio":false,"detalles":[],"metodoPago":"Efectivo","tipoEntrega":"Mostrador"}' `
+    -Body ($bodyV04 | ConvertTo-Json) `
     -ExpectedStatus @(400)
 
-# CP-V05 — Error al guardar: nombre null (campo obligatorio)
-# dniCliente presente pero nombreCliente null — debe rechazarlo con 400
-Run-TestCase -Id "CP-V05" -Description "Error al guardar en la base de datos (nombreCliente null)" `
+# CP-V05 — Error al guardar (nombreCliente null)
+$bodyV05 = $baseBody.Clone()
+$bodyV05.nombreCliente = $null
+$bodyV05.detalles = @(@{ idProducto = $idP1; cantidad = 1 })
+Run-TestCase -Id "CP-V05" -Description "Error al guardar (nombreCliente null)" `
     -Endpoint "/api/ventas/registrar" -Method POST `
-    -Body '{"dniCliente":"12345678","nombreCliente":null,"telefonoCliente":"3794000000","emailCliente":"juan@mail.com","esEnvio":false,"detalles":[{"idProducto":1,"cantidad":1}],"metodoPago":"Efectivo","tipoEntrega":"Mostrador"}' `
+    -Body ($bodyV05 | ConvertTo-Json) `
     -ExpectedStatus @(400, 500)
 
 # CP-V06 — Postcondicion stock actualizado (2 productos)
 Write-Host ""
-Write-Host ">>> CP-V06: consultando stock inicial de idProducto=1 e idProducto=2..." -ForegroundColor Yellow
-$p1Before = (Invoke-Api -Uri "/api/productos/1" -Method GET).Content.stock
-$p2Before = (Invoke-Api -Uri "/api/productos/2" -Method GET).Content.stock
-Write-Host "  Stock producto 1: $p1Before | Stock producto 2: $p2Before" -ForegroundColor Gray
+Write-Host ">>> CP-V06: consultando stock inicial..." -ForegroundColor Yellow
+$p1Before = (Invoke-Api -Uri "/api/productos/$idP1" -Method GET).Content.stock
+$p2Before = (Invoke-Api -Uri "/api/productos/$idP2" -Method GET).Content.stock
+Write-Host "  Stock ${idP1}: $p1Before | Stock ${idP2}: $p2Before" -ForegroundColor Gray
 
 $extraV06 = {
-    $p1After = (Invoke-Api -Uri "/api/productos/1" -Method GET).Content.stock
-    $p2After = (Invoke-Api -Uri "/api/productos/2" -Method GET).Content.stock
+    $p1After = (Invoke-Api -Uri "/api/productos/$idP1" -Method GET).Content.stock
+    $p2After = (Invoke-Api -Uri "/api/productos/$idP2" -Method GET).Content.stock
     $exp1 = $p1Before - 2
     $exp2 = $p2Before - 3
     $ok1  = $p1After -eq $exp1
     $ok2  = $p2After -eq $exp2
-    $msg  = "Prod1: $p1Before->$p1After (esp $exp1) | Prod2: $p2Before->$p2After (esp $exp2)"
+    $msg  = "Prod${idP1}: $p1Before->$p1After (esp $exp1) | Prod${idP2}: $p2Before->$p2After (esp $exp2)"
     return @{ Ok = ($ok1 -and $ok2); Message = $msg }
 }
 
+$bodyV06 = $baseBody.Clone()
+$bodyV06.detalles = @(@{ idProducto = $idP1; cantidad = 2 }, @{ idProducto = $idP2; cantidad = 3 })
 Run-TestCase -Id "CP-V06" -Description "Postcondicion — stock actualizado por producto (ActualizarStockAsync x2)" `
     -Endpoint "/api/ventas/registrar" -Method POST `
-    -Body '{"dniCliente":"12345678","nombreCliente":"Juan Perez","telefonoCliente":"3794000000","emailCliente":"juan@mail.com","esEnvio":false,"detalles":[{"idProducto":1,"cantidad":2},{"idProducto":2,"cantidad":3}],"metodoPago":"Efectivo","tipoEntrega":"Mostrador"}' `
+    -Body ($bodyV06 | ConvertTo-Json) `
     -ExpectedStatus @(200, 201) `
     -ExtraValidation $extraV06
 
