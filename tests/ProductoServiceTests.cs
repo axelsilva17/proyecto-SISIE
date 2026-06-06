@@ -55,7 +55,7 @@ public class ProductoServiceTests
             .ReturnsAsync(new List<string>());
 
         _repositorioMock
-            .Setup(r => r.CrearAsync(It.IsAny<Producto>()))
+            .Setup(r => r.InsertarProductoAsync(It.IsAny<Producto>()))
             .ReturnsAsync(producto);
 
         var result = await _service.CrearAsyncProducto(dto);
@@ -69,7 +69,7 @@ public class ProductoServiceTests
         Assert.Equal("Herramientas", result.NombreCategoria);
         Assert.True(result.Activo);
 
-        _repositorioMock.Verify(r => r.CrearAsync(It.IsAny<Producto>()), Times.Once);
+        _repositorioMock.Verify(r => r.InsertarProductoAsync(It.IsAny<Producto>()), Times.Once);
     }
 
     [Fact]
@@ -95,7 +95,7 @@ public class ProductoServiceTests
 
         Assert.Contains("Ya existe un producto con ese nombre", ex.Message);
 
-        _repositorioMock.Verify(r => r.CrearAsync(It.IsAny<Producto>()), Times.Never);
+        _repositorioMock.Verify(r => r.InsertarProductoAsync(It.IsAny<Producto>()), Times.Never);
     }
 
     [Theory]
@@ -125,7 +125,7 @@ public class ProductoServiceTests
 
         Assert.Contains("El precio debe ser mayor a 0", ex.Message);
 
-        _repositorioMock.Verify(r => r.CrearAsync(It.IsAny<Producto>()), Times.Never);
+        _repositorioMock.Verify(r => r.InsertarProductoAsync(It.IsAny<Producto>()), Times.Never);
     }
 
     [Theory]
@@ -155,6 +155,6 @@ public class ProductoServiceTests
 
         Assert.Contains("El stock debe ser mayor a 0", ex.Message);
 
-        _repositorioMock.Verify(r => r.CrearAsync(It.IsAny<Producto>()), Times.Never);
+        _repositorioMock.Verify(r => r.InsertarProductoAsync(It.IsAny<Producto>()), Times.Never);
     }
 }

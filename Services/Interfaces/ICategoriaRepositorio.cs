@@ -4,27 +4,27 @@ namespace proyecto_SISIE.Services.Interfaces;
 
 public interface ICategoriaRepositorio
 {
-    /// <summary>Obtiene todas las categorías ordenadas por nombre.</summary>
-    Task<List<Categoria>> ObtenerTodasAsync();
+    /// <summary>Busca todas las categorías ordenadas por nombre.</summary>
+    Task<List<Categoria>> BuscarCategoriasAsync();
 
-    /// <summary>Obtiene una categoría por ID.</summary>
-    Task<Categoria?> ObtenerPorIdAsync(int id);
+    /// <summary>Busca una categoría por ID.</summary>
+    Task<Categoria?> BuscarCategoriaPorIdAsync(int id);
 
-    /// <summary>Crea una categoría y guarda en BD.</summary>
-    Task<Categoria> CrearAsync(Categoria categoria);
+    /// <summary>Inserta una categoría en BD.</summary>
+    Task<Categoria> InsertarCategoriaAsync(Categoria categoria);
 
-    /// <summary>Actualiza una categoría y guarda en BD.</summary>
-    Task<Categoria> ActualizarAsync(Categoria categoria);
+    /// <summary>Modifica una categoría en BD.</summary>
+    Task<Categoria> ModificarCategoriaAsync(Categoria categoria);
 
     /// <summary>Elimina físicamente una categoría.</summary>
-    Task<bool> EliminarFisicoAsync(int id);
+    Task<bool> EliminarCategoriaFisicoAsync(int id);
 
     /// <summary>Verifica si la categoría tiene productos activos vinculados.</summary>
-    Task<bool> TieneProductosActivosAsync(int idCategoria);
+    Task<bool> VerificarProductosActivosAsync(int idCategoria);
 
     /// <summary>Verifica si ya existe una categoría con ese nombre.</summary>
-    Task<bool> ExisteNombreAsync(string nombre, int? idExcluir);
+    Task<bool> VerificarNombreCategoriaExisteAsync(string nombre, int? idExcluir);
 
     /// <summary>Verifica si existe una categoría por ID.</summary>
-    Task<bool> ExisteAsync(int id);
+    Task<bool> VerificarCategoriaExisteAsync(int id);
 }

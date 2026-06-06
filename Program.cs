@@ -2,6 +2,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Data.SqlClient;
 using Microsoft.IdentityModel.Tokens;
 using AspNetCoreRateLimit;
 using proyecto_SISIE.Data;
@@ -18,9 +21,9 @@ var builder = WebApplication.CreateBuilder(args);
 // CONFIGURACIÓN DE SERVICIOS
 // ============================================
 
-// Base de datos - SQLite
+// Base de datos - SQL Server
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
@@ -147,8 +150,71 @@ var app = builder.Build();
     using (var scope = app.Services.CreateScope())
     {
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        // Aplicar migraciones (Identity + modelo) en vez de EnsureCreated
-        db.Database.Migrate();
+        
+        // ================================================
+        // CREACIÓN DE BASE DE DATOS Y TABLAS
+        // ================================================
+        // EnsureCreated falla si el usuario no tiene permiso CREATE DATABASE
+        // aunque la DB ya exista. Probamos con conexión directa a SISIE:
+        // si podemos conectar, creamos tablas via el modelo EF.
+        // ================================================
+        var sisieConnStr = db.Database.GetConnectionString();
+        var schemaReady = false;
+
+        using (var testConn = new SqlConnection(sisieConnStr))
+        {
+            try
+            {
+                testConn.Open();
+
+                // Conexión exitosa → verificar si tiene tablas
+                using var checkCmd = testConn.CreateCommand();
+                checkCmd.CommandText = "SELECT COUNT(*) FROM sys.tables";
+                var tableCount = (int)checkCmd.ExecuteScalar();
+
+                if (tableCount == 0)
+                {
+                    // No hay tablas → usar EnsureCreated pero con flag
+                    // para que SKIP el CREATE DATABASE
+                    var creator = db.Database.GetService<IRelationalDatabaseCreator>();
+                    creator.CreateTables();
+                }
+
+                schemaReady = true;
+            }
+            catch (SqlException ex) when (ex.Number == 4060 || ex.Number == 18456)
+            {
+                // 4060 = cannot open database (no CONNECT)
+                // 18456 = login failed
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine($"[WARN] No se puede conectar a SISIE: {ex.Message}");
+                Console.ResetColor();
+            }
+            catch (InvalidOperationException ex)
+            {
+                // Si GetService<IRelationalDatabaseCreator> falla,
+                // usamos EnsureCreated normal como respaldo (raro)
+                Console.WriteLine($"[WARN] Usando EnsureCreated como respaldo: {ex.Message}");
+                try { db.Database.EnsureCreated(); schemaReady = true; }
+                catch { /* ignorar */ }
+            }
+        }
+
+        if (!schemaReady)
+        {
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine("============================================================================");
+            Console.WriteLine("  No se pudo inicializar la base de datos automáticamente."                   );
+            Console.WriteLine("  Abrí SSMS, conectate a .\\SQLEXPRESS y ejecutá el script:"                  );
+            Console.WriteLine("    C:\\Users\\flia\\Desktop\\script-migracion-sqlserver.sql"                 );
+            Console.WriteLine("  Luego reiniciá la aplicación."                                             );
+            Console.WriteLine("============================================================================");
+            Console.ResetColor();
+            return;
+        }
+
+        // Ejecutar SPs, triggers y transacciones (solo si no existen aun)
+        EjecutarSqlProgrammable(db);
     
     // Seed de datos si no existen
     if (!db.Categorias.Any())
@@ -261,3 +327,231 @@ app.MapControllers();
 app.MapFallbackToFile("index.html");
 
 app.Run();
+
+// ============================================
+// EJECUCIÓN DE SPs, TRIGGERS Y TRANSACCIONES
+// ============================================
+static void EjecutarSqlProgrammable(ApplicationDbContext db)
+{
+    // Usamos ADO.NET directo porque ExecuteSqlRaw puede fallar con
+    // CREATE PROCEDURE debido al manejo de batches.
+    var connStr = db.Database.GetConnectionString();
+    using var sqlConn = new SqlConnection(connStr);
+    sqlConn.Open();
+    // NOTA: Todos los nombres de tablas y columnas deben coincidir
+    // con lo que genera EF Core (PascalCase, pluralizados).
+    // Tables: Ventas, DetallesVenta, Productos, Categorias, Usuarios, etc.
+    //
+    // Cada SQL se ejecuta como batch independiente. Los SPs se crean
+    // con ADO.NET directo (no ExecuteSqlRaw) porque CREATE PROCEDURE
+    // necesita ser la única instrucción del batch.
+    var tablesAndTriggers = new[]
+    {
+        // ===== TABLA DE AUDITORÍA =====
+        @"
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'AuditoriaVenta')
+CREATE TABLE AuditoriaVenta (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    IdVenta INT NOT NULL FOREIGN KEY REFERENCES Ventas(Id),
+    EstadoAnterior VARCHAR(20),
+    EstadoNuevo VARCHAR(20) NOT NULL,
+    Usuario VARCHAR(100),
+    FechaCambio DATETIME2 DEFAULT GETDATE()
+)",
+        // ===== TRIGGER: Auditoría de cambios de estado =====
+        @"
+CREATE OR ALTER TRIGGER trg_Audit_VentaEstado
+ON Ventas AFTER UPDATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    IF UPDATE(Estado)
+    BEGIN
+        INSERT INTO AuditoriaVenta (IdVenta, EstadoAnterior, EstadoNuevo, Usuario)
+        SELECT i.Id, d.Estado, i.Estado, SYSTEM_USER
+        FROM inserted i INNER JOIN deleted d ON i.Id = d.Id
+        WHERE i.Estado <> d.Estado;
+    END
+END",
+        // ===== TRIGGER: Prevenir modificar entregadas/canceladas =====
+        // NOTA: INSTEAD OF no es compatible con FKs CASCADE en SQL Server.
+        @"
+CREATE OR ALTER TRIGGER trg_PreventCancelarEntregada
+ON Ventas AFTER UPDATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    IF UPDATE(Estado)
+    BEGIN
+        IF EXISTS (SELECT 1 FROM deleted WHERE Estado = 'Entregada')
+        BEGIN
+            ROLLBACK TRANSACTION;
+            THROW 50002, 'No se puede modificar una venta que ya fue entregada.', 1;
+        END
+        IF EXISTS (SELECT 1 FROM deleted d WHERE d.Estado = 'Cancelada'
+            AND EXISTS (SELECT 1 FROM inserted i WHERE i.Id = d.Id AND i.Estado <> 'Cancelada'))
+        BEGIN
+            ROLLBACK TRANSACTION;
+            THROW 50003, 'No se puede reactivar una venta cancelada.', 1;
+        END
+    END
+END"
+    };
+
+    foreach (var sql in tablesAndTriggers)
+    {
+        try
+        {
+            using var cmd = sqlConn.CreateCommand();
+            cmd.CommandText = sql;
+            cmd.ExecuteNonQuery();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[SQL Programmable] Info: {ex.Message}");
+        }
+    }
+
+    // Los SPs se crean uno por uno como batch independiente
+    var spScripts = new[]
+    {
+        // ===== SP: Registrar Venta (transaccional) =====
+        @"
+CREATE OR ALTER PROCEDURE sp_RegistrarVenta
+    @NumeroVenta INT, @Descuento INT, @MetodoPago VARCHAR(30), @TipoEntrega VARCHAR(30),
+    @Estado VARCHAR(20) = 'Pendiente', @Notas VARCHAR(200) = NULL, @IdDireccion INT = NULL,
+    @IdUsuario INT, @Total DECIMAL(18,2) = 0
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DECLARE @IdVenta INT, @ErrMsg NVARCHAR(4000);
+    BEGIN TRY
+        BEGIN TRANSACTION;
+        INSERT INTO Ventas (NumeroVenta, Descuento, MetodoPago, TipoEntrega, Estado,
+            Notas, FechaCreacion, IdDireccion, IdUsuario, Total)
+        VALUES (@NumeroVenta, @Descuento, @MetodoPago, @TipoEntrega, @Estado,
+            @Notas, GETDATE(), @IdDireccion, @IdUsuario, @Total);
+        SET @IdVenta = SCOPE_IDENTITY();
+        SELECT @IdVenta AS IdVenta;
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        SET @ErrMsg = ERROR_MESSAGE();
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+        THROW 50010, @ErrMsg, 1;
+    END CATCH;
+END",
+        // ===== SP: Registrar Detalle Venta (solo inserta, stock por ActualizarStockAsync) =====
+        @"
+CREATE OR ALTER PROCEDURE sp_RegistrarDetalleVenta
+    @IdVenta INT, @IdProducto INT, @Cantidad INT, @PrecioUnitario DECIMAL(18,2)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DECLARE @ErrMsg NVARCHAR(4000), @StockActual INT;
+    BEGIN TRY
+        BEGIN TRANSACTION;
+        SELECT @StockActual = Stock FROM Productos WHERE Id = @IdProducto;
+        IF @StockActual IS NULL THROW 50020, 'Producto no encontrado.', 1;
+        IF @StockActual < @Cantidad
+        BEGIN
+            SET @ErrMsg = 'Stock insuficiente. Disp: ' + CAST(@StockActual AS VARCHAR) + ', req: ' + CAST(@Cantidad AS VARCHAR);
+            THROW 50021, @ErrMsg, 1;
+        END
+        INSERT INTO DetallesVenta (IdVenta, IdProducto, Cantidad, PrecioUnitario, SubTotal)
+        VALUES (@IdVenta, @IdProducto, @Cantidad, @PrecioUnitario, @Cantidad * @PrecioUnitario);
+        SELECT SCOPE_IDENTITY() AS Id;
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        SET @ErrMsg = ERROR_MESSAGE();
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+        THROW 50022, @ErrMsg, 1;
+    END CATCH;
+END",
+        // ===== SP: Cancelar Venta con restauración de stock =====
+        @"
+CREATE OR ALTER PROCEDURE sp_CancelarVenta
+    @IdVenta INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DECLARE @EstadoActual VARCHAR(20), @ErrMsg NVARCHAR(4000);
+    BEGIN TRY
+        BEGIN TRANSACTION;
+        SELECT @EstadoActual = Estado FROM Ventas WHERE Id = @IdVenta;
+        IF @EstadoActual IS NULL THROW 50030, 'Venta no encontrada.', 1;
+        IF @EstadoActual = 'Cancelada' THROW 50031, 'La venta ya está cancelada.', 1;
+        IF @EstadoActual = 'Entregada' THROW 50032, 'No se puede cancelar una venta entregada.', 1;
+        UPDATE p SET Stock = p.Stock + dv.Cantidad
+        FROM Productos p INNER JOIN DetallesVenta dv ON p.Id = dv.IdProducto
+        WHERE dv.IdVenta = @IdVenta;
+        UPDATE Ventas SET Estado = 'Cancelada' WHERE Id = @IdVenta;
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        SET @ErrMsg = ERROR_MESSAGE();
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+        THROW 50033, @ErrMsg, 1;
+    END CATCH;
+END",
+        // ===== SP: Historial paginado (consulta) =====
+        @"
+CREATE OR ALTER PROCEDURE sp_ObtenerHistorialVentas
+    @Pagina INT = 1, @TamanoPagina INT = 10, @IdUsuario INT = NULL,
+    @Estado VARCHAR(20) = NULL, @FechaDesde DATETIME2 = NULL, @FechaHasta DATETIME2 = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DECLARE @Offset INT = (@Pagina - 1) * @TamanoPagina;
+    SELECT COUNT(*) AS Total FROM Ventas v
+    WHERE (@IdUsuario IS NULL OR v.IdUsuario = @IdUsuario)
+      AND (@Estado IS NULL OR v.Estado = @Estado)
+      AND (@FechaDesde IS NULL OR v.FechaCreacion >= @FechaDesde)
+      AND (@FechaHasta IS NULL OR v.FechaCreacion <= @FechaHasta);
+    SELECT v.Id, v.NumeroVenta, v.Estado, v.Total,
+        v.MetodoPago, v.FechaCreacion,
+        (SELECT COUNT(*) FROM DetallesVenta dv WHERE dv.IdVenta = v.Id) AS CantidadItems
+    FROM Ventas v
+    WHERE (@IdUsuario IS NULL OR v.IdUsuario = @IdUsuario)
+      AND (@Estado IS NULL OR v.Estado = @Estado)
+      AND (@FechaDesde IS NULL OR v.FechaCreacion >= @FechaDesde)
+      AND (@FechaHasta IS NULL OR v.FechaCreacion <= @FechaHasta)
+    ORDER BY v.FechaCreacion DESC
+    OFFSET @Offset ROWS FETCH NEXT @TamanoPagina ROWS ONLY;
+END",
+        // ===== SP: Estadísticas (consulta) =====
+        @"
+CREATE OR ALTER PROCEDURE sp_ObtenerEstadisticasVentas
+    @FechaDesde DATETIME2 = NULL, @FechaHasta DATETIME2 = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT COUNT(*) AS TotalVentas, ISNULL(SUM(Total), 0) AS TotalFacturado,
+        COUNT(CASE WHEN Estado = 'Cancelada' THEN 1 END) AS VentasCanceladas,
+        COUNT(CASE WHEN Estado = 'Pendiente' THEN 1 END) AS VentasPendientes,
+        COUNT(CASE WHEN Estado = 'Entregada' THEN 1 END) AS VentasEntregadas,
+        @FechaDesde AS FechaDesde, @FechaHasta AS FechaHasta
+    FROM Ventas
+    WHERE (@FechaDesde IS NULL OR FechaCreacion >= @FechaDesde)
+      AND (@FechaHasta IS NULL OR FechaCreacion <= @FechaHasta);
+END"
+    };
+
+    // Ejecutar SPs uno por uno (cada uno es un batch independiente)
+    foreach (var sql in spScripts)
+    {
+        try
+        {
+            using var cmd = sqlConn.CreateCommand();
+            cmd.CommandText = sql;
+            cmd.ExecuteNonQuery();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[SQL Programmable] Info: {ex.Message}");
+        }
+    }
+
+    sqlConn.Close();
+}

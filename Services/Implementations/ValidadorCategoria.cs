@@ -35,14 +35,14 @@ public class ValidadorCategoria : IValidadorCategoria
     private async Task<List<string>> ValidarNombreUnico(string nombre, int? idCategoria)
     {
         var errores = new List<string>();
-        var existeNombre = await _categoriaRepositorio.ExisteNombreAsync(nombre, idCategoria);
+        var existeNombre = await _categoriaRepositorio.VerificarNombreCategoriaExisteAsync(nombre, idCategoria);
         if (existeNombre) errores.Add("Ya existe una categoría con ese nombre");
         return errores;
     }
 
     public async Task<List<string>> ValidarCategoriaExiste(int idCategoria)
     {
-        var existe = await _categoriaRepositorio.ExisteAsync(idCategoria);
+        var existe = await _categoriaRepositorio.VerificarCategoriaExisteAsync(idCategoria);
         return existe ? [] : ["La categoría no existe"];
     }
 }

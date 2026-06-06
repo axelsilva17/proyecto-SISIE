@@ -10,7 +10,6 @@ namespace proyecto_SISIE.Tests;
 public class VentaServiceTests
 {
     private readonly Mock<IVentaRepositorio> _ventaRepositorioMock;
-    private readonly Mock<IProductoRepositorio> _productoRepositorioMock;
     private readonly Mock<IProductoService> _productoServiceMock;
     private readonly Mock<IClienteService> _clienteServiceMock;
     private readonly Mock<IValidadorVenta> _validadorMock;
@@ -20,7 +19,6 @@ public class VentaServiceTests
     public VentaServiceTests()
     {
         _ventaRepositorioMock = new Mock<IVentaRepositorio>();
-        _productoRepositorioMock = new Mock<IProductoRepositorio>();
         _productoServiceMock = new Mock<IProductoService>();
         _clienteServiceMock = new Mock<IClienteService>();
         _validadorMock = new Mock<IValidadorVenta>();
@@ -38,7 +36,6 @@ public class VentaServiceTests
 
         _service = new VentaService(
             _ventaRepositorioMock.Object,
-            _productoRepositorioMock.Object,
             _productoServiceMock.Object,
             _clienteServiceMock.Object,
             _validadorMock.Object,
@@ -107,7 +104,7 @@ public class VentaServiceTests
             .ReturnsAsync(new List<string>());
 
         _ventaRepositorioMock
-            .Setup(r => r.CrearAsync(It.IsAny<Venta>()))
+            .Setup(r => r.InsertarVentaAsync(It.IsAny<Venta>()))
             .ReturnsAsync(ventaCreada);
 
         _productoServiceMock
@@ -116,30 +113,27 @@ public class VentaServiceTests
             {
                 IdProducto = 1,
                 NombreProducto = "Producto 1",
+                PrecioUnitario = 100m,
                 StockDisponible = 50,
                 HayStock = true,
                 Mensaje = "Stock disponible"
             });
-
-        _productoRepositorioMock
-            .Setup(r => r.ObtenerPorIdCrudoAsync(1))
-            .ReturnsAsync(new Producto { Id = 1, NombreProducto = "Producto 1", PrecioUnitario = 100m, Stock = 50 });
 
         _productoServiceMock
             .Setup(p => p.ActualizarStockAsync(1, 2))
             .ReturnsAsync(true);
 
         _ventaRepositorioMock
-            .Setup(r => r.ActualizarAsync(It.IsAny<Venta>()))
+            .Setup(r => r.ModificarVentaAsync(It.IsAny<Venta>()))
             .ReturnsAsync(ventaCreada);
 
         _ventaRepositorioMock
-            .Setup(r => r.ObtenerPorIdConTodoAsync(1))
+            .Setup(r => r.BuscarVentaConTodoAsync(1))
             .ReturnsAsync(ventaCreada);
 
         _productoServiceMock
             .Setup(p => p.VerificarStockProductoAsync(It.IsAny<int>(), It.IsAny<int>()))
-            .ReturnsAsync(new StockVerificacionDTO { HayStock = true, Mensaje = "Stock disponible" });
+            .ReturnsAsync(new StockVerificacionDTO { HayStock = true, Mensaje = "Stock disponible", PrecioUnitario = 100m });
 
         var result = await _service.RegistrarVentaAsync(idUsuario, dto);
 
@@ -150,8 +144,8 @@ public class VentaServiceTests
         Assert.True(result.Total > 0);
         Assert.Single(result.Detalles);
 
-        _ventaRepositorioMock.Verify(r => r.CrearAsync(It.IsAny<Venta>()), Times.Once);
-        _ventaRepositorioMock.Verify(r => r.ActualizarAsync(It.IsAny<Venta>()), Times.Once);
+        _ventaRepositorioMock.Verify(r => r.InsertarVentaAsync(It.IsAny<Venta>()), Times.Once);
+        _ventaRepositorioMock.Verify(r => r.ModificarVentaAsync(It.IsAny<Venta>()), Times.Once);
     }
 
     [Fact]
@@ -184,7 +178,7 @@ public class VentaServiceTests
 
         Assert.Contains("Stock insuficiente", ex.Message);
 
-        _ventaRepositorioMock.Verify(r => r.CrearAsync(It.IsAny<Venta>()), Times.Never);
+        _ventaRepositorioMock.Verify(r => r.InsertarVentaAsync(It.IsAny<Venta>()), Times.Never);
     }
 
     [Fact]
@@ -215,7 +209,7 @@ public class VentaServiceTests
 
         Assert.Contains("El producto con ID 999 no existe", ex.Message);
 
-        _ventaRepositorioMock.Verify(r => r.CrearAsync(It.IsAny<Venta>()), Times.Never);
+        _ventaRepositorioMock.Verify(r => r.InsertarVentaAsync(It.IsAny<Venta>()), Times.Never);
     }
 
     [Fact]
@@ -240,7 +234,7 @@ public class VentaServiceTests
 
         Assert.Contains("Debe incluir al menos un producto", ex.Message);
 
-        _ventaRepositorioMock.Verify(r => r.CrearAsync(It.IsAny<Venta>()), Times.Never);
+        _ventaRepositorioMock.Verify(r => r.InsertarVentaAsync(It.IsAny<Venta>()), Times.Never);
     }
 
 
@@ -268,27 +262,23 @@ public class VentaServiceTests
             .ReturnsAsync(new List<string>());
 
         _ventaRepositorioMock
-            .Setup(r => r.CrearAsync(It.IsAny<Venta>()))
+            .Setup(r => r.InsertarVentaAsync(It.IsAny<Venta>()))
             .ReturnsAsync(ventaCreada);
 
         _productoServiceMock
             .Setup(p => p.VerificarStockProductoAsync(It.IsAny<int>(), It.IsAny<int>()))
-            .ReturnsAsync(new StockVerificacionDTO { HayStock = true, Mensaje = "Stock disponible" });
-
-        _productoRepositorioMock
-            .Setup(r => r.ObtenerPorIdCrudoAsync(It.IsAny<int>()))
-            .ReturnsAsync(new Producto { Id = 1, NombreProducto = "Producto 1", PrecioUnitario = 100m, Stock = 50 });
+            .ReturnsAsync(new StockVerificacionDTO { HayStock = true, Mensaje = "Stock disponible", PrecioUnitario = 100m });
 
         _productoServiceMock
             .Setup(p => p.ActualizarStockAsync(It.IsAny<int>(), It.IsAny<int>()))
             .ReturnsAsync(true);
 
         _ventaRepositorioMock
-            .Setup(r => r.ActualizarAsync(It.IsAny<Venta>()))
+            .Setup(r => r.ModificarVentaAsync(It.IsAny<Venta>()))
             .ReturnsAsync(ventaCreada);
 
         _ventaRepositorioMock
-            .Setup(r => r.ObtenerPorIdConTodoAsync(1))
+            .Setup(r => r.BuscarVentaConTodoAsync(1))
             .ReturnsAsync(ventaCreada);
 
         await _service.RegistrarVentaAsync(idUsuario, dto);

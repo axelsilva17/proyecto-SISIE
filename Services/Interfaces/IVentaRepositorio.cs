@@ -5,38 +5,42 @@ namespace proyecto_SISIE.Services.Interfaces;
 
 public interface IVentaRepositorio
 {
-    /// <summary>Obtiene una venta completa con Usuario, Direccion, Detalles y Productos.</summary>
-    Task<Venta?> ObtenerPorIdConTodoAsync(int id);
+    /// <summary>Busca una venta completa con Usuario, Direccion, Detalles y Productos.</summary>
+    Task<Venta?> BuscarVentaConTodoAsync(int id);
 
-    /// <summary>Obtiene una venta con sus detalles (para cancelaciones).</summary>
-    Task<Venta?> ObtenerPorIdConDetallesAsync(int id);
+    /// <summary>Busca una venta con sus detalles (para cancelaciones).</summary>
+    Task<Venta?> BuscarVentaConDetallesAsync(int id);
 
-    /// <summary>Obtiene una venta sin includes (para cambios de estado).</summary>
-    Task<Venta?> ObtenerPorIdCrudoAsync(int id);
+    /// <summary>Busca una venta sin includes (para cambios de estado).</summary>
+    Task<Venta?> BuscarVentaCrudaAsync(int id);
 
-    /// <summary>Obtiene historial de ventas paginado con filtros.</summary>
-    Task<(List<Venta> Items, int Total)> ObtenerHistorialAsync(
-        int pagina, int tamanioPagina, int? idUsuario, string? estado,
-        DateTime? fechaDesde, DateTime? fechaHasta);
+    /// <summary>Inserta una venta en BD.</summary>
+    Task<Venta> InsertarVentaAsync(Venta venta);
 
-    /// <summary>Crea una venta y guarda en BD.</summary>
-    Task<Venta> CrearAsync(Venta venta);
+    /// <summary>Modifica una venta existente en BD.</summary>
+    Task<Venta> ModificarVentaAsync(Venta venta);
 
-    /// <summary>Persiste cambios en una venta existente.</summary>
-    Task<Venta> ActualizarAsync(Venta venta);
+    /// <summary>Inserta un detalle de venta en BD.</summary>
+    Task<DetalleVenta> InsertarDetalleVentaAsync(DetalleVenta detalle);
 
-    /// <summary>Agrega un detalle a una venta y guarda en BD.</summary>
-    Task<DetalleVenta> AgregarDetalleAsync(DetalleVenta detalle);
-
-    /// <summary>Crea una dirección y guarda en BD (devuelve con ID asignado).</summary>
-    Task<Direccion> CrearDireccionAsync(Direccion direccion);
+    /// <summary>Inserta una dirección en BD (devuelve con ID asignado).</summary>
+    Task<Direccion> InsertarDireccionAsync(Direccion direccion);
 
     /// <summary>Verifica si existe un usuario por ID.</summary>
-    Task<bool> ExisteUsuarioAsync(int idUsuario);
+    Task<bool> VerificarUsuarioExisteAsync(int idUsuario);
 
     /// <summary>Verifica si existe una dirección por ID.</summary>
-    Task<bool> ExisteDireccionAsync(int idDireccion);
+    Task<bool> VerificarDireccionExisteAsync(int idDireccion);
 
-    /// <summary>Obtiene estadísticas de ventas con filtro de fechas.</summary>
-    Task<VentasEstadisticas> ObtenerEstadisticasAsync(DateTime? fechaDesde, DateTime? fechaHasta);
+    /// <summary>Consulta estadísticas de ventas con filtro de fechas.</summary>
+    Task<VentasEstadisticas> ConsultarEstadisticasVentasAsync(DateTime? fechaDesde, DateTime? fechaHasta);
+
+    // ===== MÉTODOS CON STORED PROCEDURES =====
+
+    /// <summary>Cancela una venta y restaura stock usando sp_CancelarVenta.</summary>
+    Task CancelarVentaConSPAsync(int idVenta);
+
+    /// <summary>Consulta historial paginado usando sp_ObtenerHistorialVentas.</summary>
+    Task<(List<VentaHistorialDTO> Items, int Total)> ConsultarHistorialPaginadoAsync(int pagina, int tamanioPagina,
+        int? idUsuario, string? estado, DateTime? fechaDesde, DateTime? fechaHasta);
 }

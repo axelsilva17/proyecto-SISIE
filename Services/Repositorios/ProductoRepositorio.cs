@@ -14,7 +14,7 @@ public class ProductoRepositorio : IProductoRepositorio
         _context = context;
     }
 
-    public async Task<(List<Producto> Items, int Total)> ObtenerTodosAsync(
+    public async Task<(List<Producto> Items, int Total)> BuscarProductosAsync(
         int pagina, int tamanioPagina, int? idCategoria, bool? activo)
     {
         var query = _context.Productos.Include(p => p.Categoria).AsQueryable();
@@ -35,19 +35,19 @@ public class ProductoRepositorio : IProductoRepositorio
         return (items, total);
     }
 
-    public async Task<Producto?> ObtenerPorIdAsync(int id)
+    public async Task<Producto?> BuscarProductoPorIdAsync(int id)
     {
         return await _context.Productos
             .Include(p => p.Categoria)
             .FirstOrDefaultAsync(p => p.Id == id);
     }
 
-    public async Task<Producto?> ObtenerPorIdCrudoAsync(int id)
+    public async Task<Producto?> BuscarProductoCrudoAsync(int id)
     {
         return await _context.Productos.FindAsync(id);
     }
 
-    public async Task<Producto> CrearAsync(Producto producto)
+    public async Task<Producto> InsertarProductoAsync(Producto producto)
     {
         _context.Productos.Add(producto);
         await _context.SaveChangesAsync();
@@ -55,14 +55,14 @@ public class ProductoRepositorio : IProductoRepositorio
         return producto;
     }
 
-    public async Task<Producto> ActualizarAsync(Producto producto)
+    public async Task<Producto> ModificarProductoAsync(Producto producto)
     {
         await _context.SaveChangesAsync();
         await _context.Entry(producto).Reference(p => p.Categoria).LoadAsync();
         return producto;
     }
 
-    public async Task<bool> EliminarLogicoAsync(int id)
+    public async Task<bool> EliminarProductoLogicoAsync(int id)
     {
         var producto = await _context.Productos.FindAsync(id);
         if (producto == null) return false;
@@ -72,7 +72,7 @@ public class ProductoRepositorio : IProductoRepositorio
         return true;
     }
 
-    public async Task<Producto?> ToggleActivoAsync(int id)
+    public async Task<Producto?> AlternarActivoProductoAsync(int id)
     {
         var producto = await _context.Productos.FindAsync(id);
         if (producto == null) return null;
@@ -83,7 +83,7 @@ public class ProductoRepositorio : IProductoRepositorio
         return producto;
     }
 
-    public async Task<bool> ActualizarStockAsync(int idProducto, int cantidad)
+    public async Task<bool> ModificarStockProductoAsync(int idProducto, int cantidad)
     {
         var producto = await _context.Productos.FindAsync(idProducto);
         if (producto == null) return false;
@@ -93,7 +93,7 @@ public class ProductoRepositorio : IProductoRepositorio
         return true;
     }
 
-    public async Task<bool> ExisteNombreAsync(string nombre, int? idExcluir)
+    public async Task<bool> VerificarNombreProductoExisteAsync(string nombre, int? idExcluir)
     {
         var nombreLower = nombre.ToLower();
         return await _context.Productos
@@ -102,7 +102,7 @@ public class ProductoRepositorio : IProductoRepositorio
                 && (idExcluir == null || p.Id != idExcluir));
     }
 
-    public async Task<bool> ExisteAsync(int id)
+    public async Task<bool> VerificarProductoExisteAsync(int id)
     {
         return await _context.Productos.AnyAsync(p => p.Id == id);
     }

@@ -45,7 +45,7 @@ public class ValidadorProducto : IValidadorProducto
     {
         var errores = new List<string>();
 
-        if (!await _productoRepositorio.ExisteAsync(idProducto))
+        if (!await _productoRepositorio.VerificarProductoExisteAsync(idProducto))
         {
             errores.Add("El producto no existe");
             return errores;
@@ -81,7 +81,7 @@ public class ValidadorProducto : IValidadorProducto
     private async Task<List<string>> ValidarNombreUnico(string nombre, int? idProducto)
     {
         var errores = new List<string>();
-        var existeNombre = await _productoRepositorio.ExisteNombreAsync(nombre, idProducto);
+        var existeNombre = await _productoRepositorio.VerificarNombreProductoExisteAsync(nombre, idProducto);
         if (existeNombre) errores.Add("Ya existe un producto con ese nombre");
         return errores;
     }

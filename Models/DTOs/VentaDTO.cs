@@ -98,6 +98,7 @@ public class StockVerificacionDTO
 {
     public int IdProducto { get; set; }
     public string? NombreProducto { get; set; }
+    public decimal PrecioUnitario { get; set; }
     public int StockDisponible { get; set; }
     public bool HayStock { get; set; }
     public string? Mensaje { get; set; }
