@@ -1,26 +1,18 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using proyecto_SISIE.Data;
 using proyecto_SISIE.Models.DTOs;
+using proyecto_SISIE.Services.Interfaces;
 
-namespace proyecto_SISIE.Services;
-
-public interface IValidadorVenta
-{
-    // Pre-validación desde el controller (estructura del DTO, antes de tocar la BD)
-    Task<List<string>> ValidarDatosVenta(VentaCreateDTO dto);
-    // Validación completa desde el service al registrar (incluye existencia de usuario, productos, envío)
-    Task<List<string>> ValidarDatosVentaCreate(VentaCreateDTO dto, int idUsuario);
-    Task<List<string>> ValidarDatosVentaUpdate(VentaUpdateDTO dto);
-}
+namespace proyecto_SISIE.Services.Implementations;
 
 public class ValidadorVenta : IValidadorVenta
 {
-    private readonly ApplicationDbContext _context;
+    private readonly IVentaRepositorio _ventaRepositorio;
+    private readonly IProductoRepositorio _productoRepositorio;
 
-    public ValidadorVenta(ApplicationDbContext context) => _context = context;
+    public ValidadorVenta(IVentaRepositorio ventaRepositorio, IProductoRepositorio productoRepositorio)
+    {
+        _ventaRepositorio = ventaRepositorio;
+        _productoRepositorio = productoRepositorio;
+    }
 
     public Task<List<string>> ValidarDatosVenta(VentaCreateDTO dto)
     {
@@ -49,10 +41,23 @@ public class ValidadorVenta : IValidadorVenta
         return Task.FromResult(errores);
     }
 
+    public async Task<List<string>> ValidarStockProducto(int idProducto, int cantidad)
+    {
+        var errores = new List<string>();
+        var producto = await _productoRepositorio.ObtenerPorIdCrudoAsync(idProducto);
+        if (producto == null)
+            errores.Add($"El producto con ID {idProducto} no existe");
+        else if (!producto.Activo)
+            errores.Add($"El producto '{producto.NombreProducto}' está inactivo");
+        else if (producto.Stock < cantidad)
+            errores.Add($"Stock insuficiente para '{producto.NombreProducto}'. Disponible: {producto.Stock}");
+        return errores;
+    }
+
     private async Task<List<string>> ValidarUsuarioExiste(int idUsuario)
     {
-        var usuario = await _context.Usuarios.FindAsync(idUsuario);
-        return usuario == null ? ["El usuario no existe"] : [];
+        var existe = await _ventaRepositorio.ExisteUsuarioAsync(idUsuario);
+        return existe ? [] : ["El usuario no existe"];
     }
 
     private List<string> ValidarDetallesVacios(List<VentaDetalleDTO>? detalles)
@@ -89,30 +94,22 @@ public class ValidadorVenta : IValidadorVenta
     private async Task<List<string>> ValidarDireccion(VentaCreateDTO dto)
     {
         if (!dto.IdDireccion.HasValue) return [];
-        var direccionValida = await _context.Direcciones.AnyAsync(d => d.Id == dto.IdDireccion.Value);
+        var direccionValida = await _ventaRepositorio.ExisteDireccionAsync(dto.IdDireccion.Value);
         return direccionValida ? [] : ["La dirección no es válida"];
     }
 
     private async Task<List<string>> ValidarProductosEnDetalles(List<VentaDetalleDTO>? detalles)
     {
         var errores = new List<string>();
-        foreach (var detalle in detalles ?? Enumerable.Empty<VentaDetalleDTO>())
-        {
-            var producto = await _context.Productos.FindAsync(detalle.IdProducto);
-            if (producto == null)
-                errores.Add($"El producto con ID {detalle.IdProducto} no existe");
-            else if (!producto.Activo)
-                errores.Add($"El producto '{producto.NombreProducto}' está inactivo");
-            else if (producto.Stock < detalle.Cantidad)
-                errores.Add($"Stock insuficiente para '{producto.NombreProducto}'. Disponible: {producto.Stock}");
-        }
+        foreach (var detalle in detalles ?? [])
+            errores.AddRange(await ValidarStockProducto(detalle.IdProducto, detalle.Cantidad));
         return errores;
     }
 
     private List<string> ValidarDatosCliente(VentaCreateDTO dto)
     {
         var errores = new List<string>();
-        if (string.IsNullOrWhiteSpace(dto.DniCliente)) return errores; // opcional
+        if (string.IsNullOrWhiteSpace(dto.DniCliente)) return errores;
 
         if (dto.DniCliente.Length < 7 || dto.DniCliente.Length > 15)
             errores.Add("El DNI del cliente debe tener entre 7 y 15 caracteres");

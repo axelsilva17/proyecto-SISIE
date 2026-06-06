@@ -4,7 +4,6 @@ namespace proyecto_SISIE.Services.Interfaces;
 
 public interface ICategoriaService
 {
-    Task<List<string>> ValidaCategoria(CategoriaCreateDTO dto, int? idCategoria = null);
     Task<IEnumerable<CategoriaDTO>> ObtenerTodosAsyncCategoria();
     Task<CategoriaDTO?> ObtenerPorIdAsyncCategoria(int id);
     Task<CategoriaDTO> CrearAsyncCategoria(CategoriaCreateDTO categoria);

@@ -6,9 +6,10 @@ using Microsoft.IdentityModel.Tokens;
 using AspNetCoreRateLimit;
 using proyecto_SISIE.Data;
 using proyecto_SISIE.Models.Entities;
-using proyecto_SISIE.Services;
 using proyecto_SISIE.Services.Interfaces;
 using proyecto_SISIE.Services.Implementations;
+using proyecto_SISIE.Services.Repositorios;
+using proyecto_SISIE.Services.Strategy;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -110,12 +111,24 @@ builder.Services.AddSingleton<IProcessingStrategy, AsyncKeyLockProcessingStrateg
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Repositorios
+builder.Services.AddScoped<IProductoRepositorio, ProductoRepositorio>();
+builder.Services.AddScoped<ICategoriaRepositorio, CategoriaRepositorio>();
+builder.Services.AddScoped<IClienteRepositorio, ClienteRepositorio>();
+builder.Services.AddScoped<IVentaRepositorio, VentaRepositorio>();
+
 // Servicios
 builder.Services.AddScoped<ICategoriaService, CategoriaService>();
 builder.Services.AddScoped<IProductoService, ProductoService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IVentaService, VentaService>();
 builder.Services.AddScoped<IClienteService, ClienteService>();
+
+// Estrategias de pago (patrón Strategy)
+builder.Services.AddScoped<IMetodoPagoStrategy, EfectivoStrategy>();
+builder.Services.AddScoped<IMetodoPagoStrategy, TarjetaStrategy>();
+builder.Services.AddScoped<IMetodoPagoStrategy, TransferenciaStrategy>();
+builder.Services.AddScoped<ProcesadorPago>();
 
 // Validadores (desacoplados)
 builder.Services.AddScoped<IValidadorProducto, ValidadorProducto>();

@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using proyecto_SISIE.Models.DTOs;
-using proyecto_SISIE.Services;
+using proyecto_SISIE.Helpers;
 using proyecto_SISIE.Services.Interfaces;
 using System.Security.Claims;
 
@@ -16,25 +16,24 @@ public class VentasController : ControllerBase
     private readonly IProductoService _productoService;
     private readonly IClienteService _clienteService;
     private readonly IValidadorVenta _validador;
+    private readonly IAuthService _authService;
 
-    public VentasController(IVentaService ventaService, IProductoService productoService, IClienteService clienteService, IValidadorVenta validador)
+    public VentasController(IVentaService ventaService, IProductoService productoService, IClienteService clienteService, IValidadorVenta validador, IAuthService authService)
     {
         _ventaService = ventaService;
         _productoService = productoService;
         _clienteService = clienteService;
         _validador = validador;
+        _authService = authService;
     }
 
-    private int ObtenerIdUsuario()
+    private async Task<int> ObtenerIdUsuarioAsync()
     {
-        var claim = User.FindFirst(ClaimTypes.NameIdentifier);
-        if (claim == null)
-            throw new UnauthorizedAccessException("No se encontró el ID del usuario en el token");
+        var userName = User.FindFirst(ClaimTypes.Name)?.Value
+            ?? throw new UnauthorizedAccessException("No se pudo identificar al usuario en la sesión");
 
-        if (int.TryParse(claim.Value, out int idInt))
-            return idInt;
-
-        return 1;
+        var idUsuario = await _authService.ObtenerIdUsuarioPorNombreAsync(userName);
+        return idUsuario ?? throw new UnauthorizedAccessException("El usuario no tiene permisos para realizar ventas");
     }
 
     [HttpPost("registrar")]
@@ -46,7 +45,7 @@ public class VentasController : ControllerBase
 
         try
         {
-            var idUsuario = ObtenerIdUsuario();
+            var idUsuario = await ObtenerIdUsuarioAsync();
             var venta = await _ventaService.RegistrarVentaAsync(idUsuario, ventaDto);
             return CreatedAtAction(nameof(ObtenerVentaPorId), new { id = venta.Id }, venta);
         }
@@ -70,7 +69,7 @@ public class VentasController : ControllerBase
     }
 
     [HttpGet("historial")]
-    public async Task<ActionResult<VentaPagedResult>> ObtenerHistorialVentas(
+    public async Task<ActionResult<PagedResult<VentaHistorialDTO>>> ObtenerHistorialVentas(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10,
         [FromQuery] int? idUsuario = null,
@@ -78,14 +77,12 @@ public class VentasController : ControllerBase
         [FromQuery] DateTime? fechaDesde = null,
         [FromQuery] DateTime? fechaHasta = null)
     {
-        if (page < 1) page = 1;
-        if (pageSize < 1) pageSize = 10;
-        if (pageSize > 100) pageSize = 100;
+        (page, pageSize) = PageHelper.Clamp(page, pageSize);
 
         try
         {
             var (items, total) = await _ventaService.ObtenerHistorialVentasAsync(page, pageSize, idUsuario, estado, fechaDesde, fechaHasta);
-            return Ok(new VentaPagedResult { Items = items, Total = total, Page = page, PageSize = pageSize });
+            return Ok(new PagedResult<VentaHistorialDTO> { Items = items, Total = total, Page = page, PageSize = pageSize });
         }
         catch (Exception ex)
         {
@@ -94,15 +91,13 @@ public class VentasController : ControllerBase
     }
 
     [HttpGet("mis-ventas")]
-    public async Task<ActionResult<VentaPagedResult>> ObtenerMisVentas([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    public async Task<ActionResult<PagedResult<VentaHistorialDTO>>> ObtenerMisVentas([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
-        if (page < 1) page = 1;
-        if (pageSize < 1) pageSize = 10;
-        if (pageSize > 100) pageSize = 100;
+        (page, pageSize) = PageHelper.Clamp(page, pageSize);
 
         try
         {
-            var idUsuario = ObtenerIdUsuario();
+            var idUsuario = await ObtenerIdUsuarioAsync();
             var resultado = await _ventaService.ObtenerVentasPorUsuarioAsync(idUsuario, page, pageSize);
             return Ok(resultado);
         }

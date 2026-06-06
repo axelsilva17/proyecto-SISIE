@@ -20,28 +20,6 @@ public class ClienteCreateDTO
     public int? IdCiudad { get; set; }
 }
 
-// DTO para actualizar un cliente
-public class ClienteUpdateDTO
-{
-    public int Id { get; set; }
-    
-    public string Dni { get; set; } = string.Empty;
-    
-    public string Nombre { get; set; } = string.Empty;
-    
-    public string Telefono { get; set; } = string.Empty;
-    
-    public string? Email { get; set; }
-    
-    public string? DireccionDefault { get; set; }
-    
-    public int? NumeroDefault { get; set; }
-    
-    public string? DepartamentoDefault { get; set; }
-    
-    public int? IdCiudad { get; set; }
-}
-
 // DTO para respuesta de cliente
 public class ClienteDTO
 {
@@ -60,11 +38,3 @@ public class ClienteDTO
     public int CantidadVentas { get; set; }
 }
 
-// Lista paginada de clientes
-public class ClientePagedResult
-{
-    public IEnumerable<ClienteDTO> Items { get; set; } = Enumerable.Empty<ClienteDTO>();
-    public int Total { get; set; }
-    public int Page { get; set; }
-    public int PageSize { get; set; }
-}

@@ -11,6 +11,6 @@ public interface IVentaService
     Task<VentaDTO?> ActualizarEstadoVentaAsync(int id, VentaUpdateDTO updateDto);
     Task<VentaDTO?> CancelarVentaAsync(int id);
     Task<CarritoVerificacionDTO> VerificarStockCarritoAsync(List<VentaDetalleDTO> detalles);
-    Task<VentaPagedResult> ObtenerVentasPorUsuarioAsync(int idUsuario, int pagina, int tamanioPagina);
+    Task<PagedResult<VentaHistorialDTO>> ObtenerVentasPorUsuarioAsync(int idUsuario, int pagina, int tamanioPagina);
     Task<object> ObtenerEstadisticasVentasAsync(DateTime? fechaDesde, DateTime? fechaHasta);
 }

@@ -1,16 +1,9 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using proyecto_SISIE.Models.DTOs;
 using proyecto_SISIE.Models.Entities;
+using proyecto_SISIE.Services.Interfaces;
 
-namespace proyecto_SISIE.Services;
-
-public interface IValidadorAuth
-{
-    Task<List<string>> ValidarDatosRegistro(RegisterRequest dto);
-    Task<List<string>> ValidarDatosLogin(LoginRequest dto);
-}
+namespace proyecto_SISIE.Services.Implementations;
 
 public class ValidadorAuth : IValidadorAuth
 {

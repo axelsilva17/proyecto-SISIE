@@ -1,24 +1,13 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using proyecto_SISIE.Data;
 using proyecto_SISIE.Models.DTOs;
+using proyecto_SISIE.Services.Interfaces;
 
-namespace proyecto_SISIE.Services;
-
-public interface IValidadorCliente
-{
-    // Sin idCliente = pre-validación desde el controller (formato + ciudad, sin unicidad)
-    Task<List<string>> ValidarDatosCliente(ClienteCreateDTO dto);
-    // Con idCliente = validación completa desde el service (incluye unicidad, excluye el ID si es update)
-    Task<List<string>> ValidarDatosCliente(ClienteCreateDTO dto, int? idCliente);
-}
+namespace proyecto_SISIE.Services.Implementations;
 
 public class ValidadorCliente : IValidadorCliente
 {
-    private readonly ApplicationDbContext _context;
+    private readonly IClienteRepositorio _clienteRepositorio;
 
-    public ValidadorCliente(ApplicationDbContext context) => _context = context;
+    public ValidadorCliente(IClienteRepositorio clienteRepositorio) => _clienteRepositorio = clienteRepositorio;
 
     public async Task<List<string>> ValidarDatosCliente(ClienteCreateDTO dto)
     {
@@ -62,16 +51,12 @@ public class ValidadorCliente : IValidadorCliente
     {
         var errores = new List<string>();
 
-        var query = _context.Clientes.Where(c => c.Dni == dto.Dni);
-        if (idCliente.HasValue) query = query.Where(c => c.Id != idCliente.Value);
-        if (await query.AnyAsync()) errores.Add("Ya existe un cliente con ese DNI");
+        if (await _clienteRepositorio.ExisteDniAsync(dto.Dni, idCliente))
+            errores.Add("Ya existe un cliente con ese DNI");
 
-        if (!string.IsNullOrWhiteSpace(dto.Email))
-        {
-            var emailQuery = _context.Clientes.Where(c => c.Email != null && c.Email.ToLower() == dto.Email.ToLower());
-            if (idCliente.HasValue) emailQuery = emailQuery.Where(c => c.Id != idCliente.Value);
-            if (await emailQuery.AnyAsync()) errores.Add("Ya existe un cliente con ese email");
-        }
+        if (!string.IsNullOrWhiteSpace(dto.Email)
+            && await _clienteRepositorio.ExisteEmailAsync(dto.Email, idCliente))
+            errores.Add("Ya existe un cliente con ese email");
 
         return errores;
     }
@@ -79,7 +64,7 @@ public class ValidadorCliente : IValidadorCliente
     private async Task<List<string>> ValidarCiudadExiste(int? idCiudad)
     {
         if (!idCiudad.HasValue) return [];
-        var existe = await _context.Ciudades.AnyAsync(c => c.Id == idCiudad.Value);
+        var existe = await _clienteRepositorio.ExisteCiudadAsync(idCiudad.Value);
         return existe ? [] : ["La ciudad no existe"];
     }
 }

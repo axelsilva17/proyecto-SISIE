@@ -93,15 +93,6 @@ public class VentaHistorialDTO
     public int CantidadItems { get; set; }
 }
 
-// Resultado paginado para historial
-public class VentaPagedResult
-{
-    public IEnumerable<VentaHistorialDTO> Items { get; set; } = Enumerable.Empty<VentaHistorialDTO>();
-    public int Total { get; set; }
-    public int Page { get; set; }
-    public int PageSize { get; set; }
-}
-
 // DTO para verificar disponibilidad de stock antes de agregar al carrito
 public class StockVerificacionDTO
 {
@@ -117,4 +108,16 @@ public class CarritoVerificacionDTO
 {
     public List<StockVerificacionDTO> Productos { get; set; } = new();
     public bool TodoDisponible { get; set; }
+}
+
+// DTO para estadísticas de ventas
+public class VentasEstadisticas
+{
+    public int TotalVentas { get; set; }
+    public decimal TotalFacturado { get; set; }
+    public int VentasCanceladas { get; set; }
+    public int VentasPendientes { get; set; }
+    public int VentasEntregadas { get; set; }
+    public DateTime? FechaDesde { get; set; }
+    public DateTime? FechaHasta { get; set; }
 }

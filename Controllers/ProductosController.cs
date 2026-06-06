@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using proyecto_SISIE.Helpers;
 using proyecto_SISIE.Models.DTOs;
-using proyecto_SISIE.Services;
 using proyecto_SISIE.Services.Interfaces;
 
 namespace proyecto_SISIE.Controllers;
@@ -21,18 +21,16 @@ public class ProductosController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<ProductoPagedResult>> ObtenerTodosProductos(
+    public async Task<ActionResult<PagedResult<ProductoDTO>>> ObtenerTodosProductos(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10,
         [FromQuery] int? idCategoria = null,
         [FromQuery] bool? activo = null)
     {
-        if (page < 1) page = 1;
-        if (pageSize < 1) pageSize = 10;
-        if (pageSize > 100) pageSize = 100;
+        (page, pageSize) = PageHelper.Clamp(page, pageSize);
 
         var (items, total) = await _productoService.ObtenerTodosAsyncProducto(page, pageSize, idCategoria, activo);
-        return Ok(new ProductoPagedResult { Items = items, Total = total, Page = page, PageSize = pageSize });
+        return Ok(new PagedResult<ProductoDTO> { Items = items, Total = total, Page = page, PageSize = pageSize });
     }
 
     [HttpGet("{id}")]
