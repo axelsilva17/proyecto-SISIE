@@ -21,7 +21,7 @@ public class ProductoService : IProductoService
     public async Task<(IEnumerable<ProductoDTO> Items, int Total)> ObtenerTodosAsyncProducto(
         int pagina, int tamanioPagina, int? idCategoria, bool? activo)
     {
-        var (items, total) = await _productoRepositorio.ObtenerTodosAsync(
+        var (items, total) = await _productoRepositorio.BuscarProductosAsync(
             pagina, tamanioPagina, idCategoria, activo);
 
         var dtoItems = items.Select(p => new ProductoDTO
@@ -43,7 +43,7 @@ public class ProductoService : IProductoService
 
     public async Task<ProductoDTO?> ObtenerPorIdAsyncProducto(int id)
     {
-        var producto = await _productoRepositorio.ObtenerPorIdAsync(id);
+        var producto = await _productoRepositorio.BuscarProductoPorIdAsync(id);
         if (producto == null) return null;
         return MapToDTO(producto);
     }
@@ -65,14 +65,14 @@ public class ProductoService : IProductoService
             Activo = true
         };
 
-        producto = await _productoRepositorio.CrearAsync(producto);
+        producto = await _productoRepositorio.InsertarProductoAsync(producto);
         return MapToDTO(producto);
     }
 
 
     public async Task<ProductoDTO?> ActualizarAsyncProducto(int id, ProductoUpdateDTO dto)
     {
-        var producto = await _productoRepositorio.ObtenerPorIdCrudoAsync(id);
+        var producto = await _productoRepositorio.BuscarProductoCrudoAsync(id);
         if (producto == null) return null;
 
         var erroresNegocio = await _validador.ValidaProducto(new ProductoCreateDTO
@@ -91,20 +91,20 @@ public class ProductoService : IProductoService
         producto.Stock = dto.Stock;
         producto.IdCategoria = dto.IdCategoria;
 
-        producto = await _productoRepositorio.ActualizarAsync(producto);
+        producto = await _productoRepositorio.ModificarProductoAsync(producto);
         return MapToDTO(producto);
     }
 
 
     public async Task<bool> EliminarAsyncProducto(int id)
     {
-        return await _productoRepositorio.EliminarLogicoAsync(id);
+        return await _productoRepositorio.EliminarProductoLogicoAsync(id);
     }
 
 
     public async Task<ProductoDTO?> ToggleActivoAsyncProducto(int id)
     {
-        var producto = await _productoRepositorio.ToggleActivoAsync(id);
+        var producto = await _productoRepositorio.AlternarActivoProductoAsync(id);
         return producto == null ? null : MapToDTO(producto);
     }
 
@@ -125,13 +125,14 @@ public class ProductoService : IProductoService
 
     public async Task<StockVerificacionDTO> VerificarStockProductoAsync(int idProducto, int cantidad)
     {
-        var producto = await _productoRepositorio.ObtenerPorIdCrudoAsync(idProducto);
+        var producto = await _productoRepositorio.BuscarProductoCrudoAsync(idProducto);
         var errores = await _validadorVenta.ValidarStockProducto(idProducto, cantidad);
 
         return new StockVerificacionDTO
         {
             IdProducto = idProducto,
             NombreProducto = producto?.NombreProducto,
+            PrecioUnitario = producto?.PrecioUnitario ?? 0,
             StockDisponible = producto?.Stock ?? 0,
             HayStock = errores.Count == 0,
             Mensaje = errores.Count == 0 ? "Stock disponible" : errores.FirstOrDefault()
@@ -141,6 +142,6 @@ public class ProductoService : IProductoService
 
     public async Task<bool> ActualizarStockAsync(int idProducto, int cantidad)
     {
-        return await _productoRepositorio.ActualizarStockAsync(idProducto, cantidad);
+        return await _productoRepositorio.ModificarStockProductoAsync(idProducto, cantidad);
     }
 }

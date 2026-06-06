@@ -51,11 +51,11 @@ public class ValidadorCliente : IValidadorCliente
     {
         var errores = new List<string>();
 
-        if (await _clienteRepositorio.ExisteDniAsync(dto.Dni, idCliente))
+        if (await _clienteRepositorio.VerificarDniClienteExisteAsync(dto.Dni, idCliente))
             errores.Add("Ya existe un cliente con ese DNI");
 
         if (!string.IsNullOrWhiteSpace(dto.Email)
-            && await _clienteRepositorio.ExisteEmailAsync(dto.Email, idCliente))
+            && await _clienteRepositorio.VerificarEmailClienteExisteAsync(dto.Email, idCliente))
             errores.Add("Ya existe un cliente con ese email");
 
         return errores;
@@ -64,7 +64,7 @@ public class ValidadorCliente : IValidadorCliente
     private async Task<List<string>> ValidarCiudadExiste(int? idCiudad)
     {
         if (!idCiudad.HasValue) return [];
-        var existe = await _clienteRepositorio.ExisteCiudadAsync(idCiudad.Value);
+        var existe = await _clienteRepositorio.VerificarCiudadExisteAsync(idCiudad.Value);
         return existe ? [] : ["La ciudad no existe"];
     }
 }

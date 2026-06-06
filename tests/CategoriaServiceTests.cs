@@ -30,7 +30,7 @@ public class CategoriaServiceTests
             .ReturnsAsync(new List<string>());
 
         _repositorioMock
-            .Setup(r => r.CrearAsync(It.IsAny<Categoria>()))
+            .Setup(r => r.InsertarCategoriaAsync(It.IsAny<Categoria>()))
             .ReturnsAsync(categoria);
 
         var result = await _service.CrearAsyncCategoria(dto);
@@ -39,7 +39,7 @@ public class CategoriaServiceTests
         Assert.Equal(6, result.Id);
         Assert.Equal("Limpieza", result.NombreCategoria);
 
-        _repositorioMock.Verify(r => r.CrearAsync(It.IsAny<Categoria>()), Times.Once);
+        _repositorioMock.Verify(r => r.InsertarCategoriaAsync(It.IsAny<Categoria>()), Times.Once);
     }
 
     [Fact]
@@ -57,7 +57,7 @@ public class CategoriaServiceTests
 
         Assert.Contains("Ya existe una categoría con ese nombre", ex.Message);
 
-        _repositorioMock.Verify(r => r.CrearAsync(It.IsAny<Categoria>()), Times.Never);
+        _repositorioMock.Verify(r => r.InsertarCategoriaAsync(It.IsAny<Categoria>()), Times.Never);
     }
 
     [Fact]
@@ -75,7 +75,7 @@ public class CategoriaServiceTests
 
         Assert.Contains("El nombre es obligatorio", ex.Message);
 
-        _repositorioMock.Verify(r => r.CrearAsync(It.IsAny<Categoria>()), Times.Never);
+        _repositorioMock.Verify(r => r.InsertarCategoriaAsync(It.IsAny<Categoria>()), Times.Never);
     }
 
 }

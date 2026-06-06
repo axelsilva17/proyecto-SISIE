@@ -31,15 +31,15 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         modelBuilder.Entity<Categoria>(entity =>
         {
             entity.HasKey(c => c.Id);
-            entity.Property(c => c.NombreCategoria).IsRequired().HasMaxLength(20);
+            entity.Property(c => c.NombreCategoria).IsRequired().HasMaxLength(50);
         });
 
         // ==== CONFIGURACIÓN DE PRODUCTO ====
         modelBuilder.Entity<Producto>(entity =>
         {
             entity.HasKey(p => p.Id);
-            entity.Property(p => p.NombreProducto).IsRequired().HasMaxLength(20);
-            entity.Property(p => p.Descripcion).HasMaxLength(20);
+            entity.Property(p => p.NombreProducto).IsRequired().HasMaxLength(50);
+            entity.Property(p => p.Descripcion).HasMaxLength(100);
             entity.Property(p => p.PrecioUnitario).HasPrecision(18, 2);
             
             // Relación con Categoría
@@ -61,8 +61,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         modelBuilder.Entity<Usuario>(entity =>
         {
             entity.HasKey(u => u.Id);
-            entity.Property(u => u.NombreUsuario).IsRequired().HasMaxLength(20);
-            entity.Property(u => u.PasswordHash).IsRequired().HasMaxLength(30);
+            entity.Property(u => u.NombreUsuario).IsRequired().HasMaxLength(50);
+            entity.Property(u => u.PasswordHash).IsRequired().HasMaxLength(100);
             entity.Property(u => u.FechaCreacion).IsRequired();
             entity.Property(u => u.Activo).IsRequired();
             
@@ -77,14 +77,14 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         modelBuilder.Entity<Provincia>(entity =>
         {
             entity.HasKey(p => p.Id);
-            entity.Property(p => p.NombreProvincia).IsRequired().HasMaxLength(20);
+            entity.Property(p => p.NombreProvincia).IsRequired().HasMaxLength(50);
         });
 
         // ==== CONFIGURACIÓN DE CIUDAD ====
         modelBuilder.Entity<Ciudad>(entity =>
         {
             entity.HasKey(ci => ci.Id);
-            entity.Property(ci => ci.NombreCiudad).IsRequired().HasMaxLength(20);
+            entity.Property(ci => ci.NombreCiudad).IsRequired().HasMaxLength(50);
             entity.Property(ci => ci.Cp).IsRequired();
             
             // Relación con Provincia
@@ -98,7 +98,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         modelBuilder.Entity<Direccion>(entity =>
         {
             entity.HasKey(d => d.Id);
-            entity.Property(d => d.Calle).IsRequired().HasMaxLength(15);
+            entity.Property(d => d.Calle).IsRequired().HasMaxLength(50);
             entity.Property(d => d.Numero).IsRequired();
             
             // Relación con Ciudad
@@ -115,9 +115,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.Property(v => v.NumeroVenta).IsRequired();
             entity.Property(v => v.Descuento);
             entity.Property(v => v.Total).IsRequired().HasPrecision(18, 2);
-            entity.Property(v => v.MetodoPago).IsRequired().HasMaxLength(20);
-            entity.Property(v => v.TipoEntrega).IsRequired().HasMaxLength(20);
-            entity.Property(v => v.Notas).HasMaxLength(50);
+            entity.Property(v => v.MetodoPago).IsRequired().HasMaxLength(30);
+            entity.Property(v => v.TipoEntrega).IsRequired().HasMaxLength(30);
+            entity.Property(v => v.Notas).HasMaxLength(200);
             entity.Property(v => v.Estado).IsRequired().HasMaxLength(20);
             entity.Property(v => v.FechaCreacion).IsRequired();
             

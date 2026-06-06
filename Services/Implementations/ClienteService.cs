@@ -18,7 +18,7 @@ public class ClienteService : IClienteService
     public async Task<(IEnumerable<ClienteDTO> Items, int Total)> ObtenerTodosAsync(
         int pagina, int tamanioPagina, string? nombre, bool? activo)
     {
-        var (items, total) = await _clienteRepositorio.ObtenerTodosAsync(
+        var (items, total) = await _clienteRepositorio.BuscarClientesAsync(
             pagina, tamanioPagina, nombre, activo);
 
         var dtos = items.Select(c => new ClienteDTO
@@ -43,7 +43,7 @@ public class ClienteService : IClienteService
 
     public async Task<ClienteDTO?> ObtenerPorIdAsync(int id)
     {
-        var cliente = await _clienteRepositorio.ObtenerPorIdAsync(id);
+        var cliente = await _clienteRepositorio.BuscarClientePorIdAsync(id);
         if (cliente == null) return null;
         return MapToDTO(cliente);
     }
@@ -74,7 +74,7 @@ public class ClienteService : IClienteService
             Activo = true
         };
 
-        cliente = await _clienteRepositorio.CrearAsync(cliente);
+        cliente = await _clienteRepositorio.InsertarClienteAsync(cliente);
         return MapToDTO(cliente);
     }
 

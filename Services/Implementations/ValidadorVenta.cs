@@ -44,7 +44,7 @@ public class ValidadorVenta : IValidadorVenta
     public async Task<List<string>> ValidarStockProducto(int idProducto, int cantidad)
     {
         var errores = new List<string>();
-        var producto = await _productoRepositorio.ObtenerPorIdCrudoAsync(idProducto);
+        var producto = await _productoRepositorio.BuscarProductoCrudoAsync(idProducto);
         if (producto == null)
             errores.Add($"El producto con ID {idProducto} no existe");
         else if (!producto.Activo)
@@ -56,7 +56,7 @@ public class ValidadorVenta : IValidadorVenta
 
     private async Task<List<string>> ValidarUsuarioExiste(int idUsuario)
     {
-        var existe = await _ventaRepositorio.ExisteUsuarioAsync(idUsuario);
+        var existe = await _ventaRepositorio.VerificarUsuarioExisteAsync(idUsuario);
         return existe ? [] : ["El usuario no existe"];
     }
 
@@ -94,7 +94,7 @@ public class ValidadorVenta : IValidadorVenta
     private async Task<List<string>> ValidarDireccion(VentaCreateDTO dto)
     {
         if (!dto.IdDireccion.HasValue) return [];
-        var direccionValida = await _ventaRepositorio.ExisteDireccionAsync(dto.IdDireccion.Value);
+        var direccionValida = await _ventaRepositorio.VerificarDireccionExisteAsync(dto.IdDireccion.Value);
         return direccionValida ? [] : ["La dirección no es válida"];
     }
 

@@ -8,7 +8,6 @@ namespace proyecto_SISIE.Services.Implementations;
 public class VentaService : IVentaService
 {
     private readonly IVentaRepositorio _ventaRepositorio;
-    private readonly IProductoRepositorio _productoRepositorio;
     private readonly IProductoService _productoService;
     private readonly IClienteService _clienteService;
     private readonly IValidadorVenta _validador;
@@ -16,14 +15,12 @@ public class VentaService : IVentaService
 
     public VentaService(
         IVentaRepositorio ventaRepositorio,
-        IProductoRepositorio productoRepositorio,
         IProductoService productoService,
         IClienteService clienteService,
         IValidadorVenta validador,
         ProcesadorPago procesadorPago)
     {
         _ventaRepositorio = ventaRepositorio;
-        _productoRepositorio = productoRepositorio;
         _productoService = productoService;
         _clienteService = clienteService;
         _validador = validador;
@@ -41,9 +38,14 @@ public class VentaService : IVentaService
         var idDireccion = await ObtenerOCrearDireccion(dto, idUsuario);
         var venta = await CrearVenta(idUsuario, dto, idDireccion);
         var subtotal = await ProcesarDetallesVenta(venta.Id, dto.Detalles);
+
+        // Actualizar stock de cada producto (según diagrama de secuencia)
+        foreach (var detalleDto in dto.Detalles)
+            await _productoService.ActualizarStockAsync(detalleDto.IdProducto, detalleDto.Cantidad);
+
         var totalConMetodoPago = _procesadorPago.CalcularTotal(venta.MetodoPago, subtotal, dto.Descuento);
         venta.Total = totalConMetodoPago;
-        await _ventaRepositorio.ActualizarAsync(venta);
+        await _ventaRepositorio.ModificarVentaAsync(venta);
 
         return (await ObtenerVentaDTOCompleto(venta.Id))!;
     }
@@ -79,7 +81,7 @@ public class VentaService : IVentaService
             IdCiudad = dto.IdCiudad!.Value,
             IdUsuario = idUsuario
         };
-        nuevaDireccion = await _ventaRepositorio.CrearDireccionAsync(nuevaDireccion);
+        nuevaDireccion = await _ventaRepositorio.InsertarDireccionAsync(nuevaDireccion);
         return nuevaDireccion.Id;
     }
 
@@ -99,7 +101,7 @@ public class VentaService : IVentaService
             IdDireccion = dto.EsEnvio ? idDireccion : null,
             IdUsuario = idUsuario
         };
-        return await _ventaRepositorio.CrearAsync(venta);
+        return await _ventaRepositorio.InsertarVentaAsync(venta);
     }
 
     private async Task<decimal> ProcesarDetallesVenta(int idVenta, List<VentaDetalleDTO> detalles)
@@ -112,8 +114,7 @@ public class VentaService : IVentaService
             if (!stockVerificacion.HayStock)
                 throw new InvalidOperationException(stockVerificacion.Mensaje);
 
-            var producto = await _productoRepositorio.ObtenerPorIdCrudoAsync(detalleDto.IdProducto);
-            var precio = producto?.PrecioUnitario ?? 0;
+            var precio = stockVerificacion.PrecioUnitario;
             var subtotal = detalleDto.Cantidad * precio;
 
             var detalle = new DetalleVenta
@@ -124,8 +125,7 @@ public class VentaService : IVentaService
                 PrecioUnitario = precio,
                 SubTotal = subtotal
             };
-            await _ventaRepositorio.AgregarDetalleAsync(detalle);
-            await _productoService.ActualizarStockAsync(detalleDto.IdProducto, detalleDto.Cantidad);
+            await _ventaRepositorio.InsertarDetalleVentaAsync(detalle);
             total += subtotal;
         }
         return total;
@@ -137,26 +137,13 @@ public class VentaService : IVentaService
         int pagina, int tamanioPagina, int? idUsuario, string? estado,
         DateTime? fechaDesde, DateTime? fechaHasta)
     {
-        var (items, total) = await _ventaRepositorio.ObtenerHistorialAsync(
+        return await _ventaRepositorio.ConsultarHistorialPaginadoAsync(
             pagina, tamanioPagina, idUsuario, estado, fechaDesde, fechaHasta);
-
-        var dtoItems = items.Select(v => new VentaHistorialDTO
-        {
-            Id = v.Id,
-            NumeroVenta = v.NumeroVenta,
-            Estado = v.Estado,
-            Total = v.Total,
-            MetodoPago = v.MetodoPago,
-            FechaCreacion = v.FechaCreacion,
-            CantidadItems = v.Detalles?.Count ?? 0
-        }).ToList();
-
-        return (dtoItems, total);
     }
 
     public async Task<VentaDTO?> ActualizarEstadoVentaAsync(int id, VentaUpdateDTO dto)
     {
-        var venta = await _ventaRepositorio.ObtenerPorIdCrudoAsync(id);
+        var venta = await _ventaRepositorio.BuscarVentaCrudaAsync(id);
         if (venta == null) return null;
 
         if (venta.Estado == "Cancelada" || venta.Estado == "Entregada")
@@ -165,24 +152,19 @@ public class VentaService : IVentaService
         venta.Estado = dto.Estado;
         if (dto.Notas != null) venta.Notas = dto.Notas;
 
-        await _ventaRepositorio.ActualizarAsync(venta);
+        await _ventaRepositorio.ModificarVentaAsync(venta);
         return await ObtenerVentaDTOCompleto(id);
     }
 
     public async Task<VentaDTO?> CancelarVentaAsync(int id)
     {
-        var venta = await _ventaRepositorio.ObtenerPorIdConDetallesAsync(id);
+        // Verificar que la venta existe
+        var venta = await _ventaRepositorio.BuscarVentaConDetallesAsync(id);
         if (venta == null) return null;
-        if (venta.Estado == "Cancelada")
-            throw new InvalidOperationException("La venta ya está cancelada");
-        if (venta.Estado == "Entregada")
-            throw new InvalidOperationException("No se puede cancelar una venta entregada");
 
-        foreach (var detalle in venta.Detalles)
-            await _productoService.ActualizarStockAsync(detalle.IdProducto, -detalle.Cantidad);
+        // El SP sp_CancelarVenta valida estados y restaura stock en una transacción
+        await _ventaRepositorio.CancelarVentaConSPAsync(id);
 
-        venta.Estado = "Cancelada";
-        await _ventaRepositorio.ActualizarAsync(venta);
         return await ObtenerVentaDTOCompleto(id);
     }
 
@@ -209,7 +191,7 @@ public class VentaService : IVentaService
     public async Task<PagedResult<VentaHistorialDTO>> ObtenerVentasPorUsuarioAsync(
         int idUsuario, int pagina, int tamanioPagina)
     {
-        var existeUsuario = await _ventaRepositorio.ExisteUsuarioAsync(idUsuario);
+        var existeUsuario = await _ventaRepositorio.VerificarUsuarioExisteAsync(idUsuario);
         if (!existeUsuario)
             throw new InvalidOperationException("El usuario no existe");
 
@@ -227,12 +209,12 @@ public class VentaService : IVentaService
     public async Task<object> ObtenerEstadisticasVentasAsync(
         DateTime? fechaDesde, DateTime? fechaHasta)
     {
-        return await _ventaRepositorio.ObtenerEstadisticasAsync(fechaDesde, fechaHasta);
+        return await _ventaRepositorio.ConsultarEstadisticasVentasAsync(fechaDesde, fechaHasta);
     }
 
     private async Task<VentaDTO?> ObtenerVentaDTOCompleto(int idVenta)
     {
-        var venta = await _ventaRepositorio.ObtenerPorIdConTodoAsync(idVenta);
+        var venta = await _ventaRepositorio.BuscarVentaConTodoAsync(idVenta);
         if (venta == null) return null;
 
         return new VentaDTO

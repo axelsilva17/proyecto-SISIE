@@ -14,7 +14,7 @@ public class ClienteRepositorio : IClienteRepositorio
         _context = context;
     }
 
-    public async Task<(List<Cliente> Items, int Total)> ObtenerTodosAsync(
+    public async Task<(List<Cliente> Items, int Total)> BuscarClientesAsync(
         int pagina, int tamanioPagina, string? nombre, bool? activo)
     {
         var query = _context.Clientes.AsQueryable();
@@ -38,7 +38,7 @@ public class ClienteRepositorio : IClienteRepositorio
         return (items, total);
     }
 
-    public async Task<Cliente?> ObtenerPorIdAsync(int id)
+    public async Task<Cliente?> BuscarClientePorIdAsync(int id)
     {
         return await _context.Clientes
             .Include(c => c.Ciudad)
@@ -52,14 +52,14 @@ public class ClienteRepositorio : IClienteRepositorio
             .FirstOrDefaultAsync(c => c.Dni == dni);
     }
 
-    public async Task<Cliente> CrearAsync(Cliente cliente)
+    public async Task<Cliente> InsertarClienteAsync(Cliente cliente)
     {
         _context.Clientes.Add(cliente);
         await _context.SaveChangesAsync();
         return cliente;
     }
 
-    public async Task<bool> ExisteDniAsync(string dni, int? idExcluir)
+    public async Task<bool> VerificarDniClienteExisteAsync(string dni, int? idExcluir)
     {
         var query = _context.Clientes.Where(c => c.Dni == dni);
         if (idExcluir.HasValue)
@@ -67,7 +67,7 @@ public class ClienteRepositorio : IClienteRepositorio
         return await query.AnyAsync();
     }
 
-    public async Task<bool> ExisteEmailAsync(string email, int? idExcluir)
+    public async Task<bool> VerificarEmailClienteExisteAsync(string email, int? idExcluir)
     {
         if (string.IsNullOrWhiteSpace(email)) return false;
 
@@ -79,7 +79,7 @@ public class ClienteRepositorio : IClienteRepositorio
         return await query.AnyAsync();
     }
 
-    public async Task<bool> ExisteCiudadAsync(int idCiudad)
+    public async Task<bool> VerificarCiudadExisteAsync(int idCiudad)
     {
         return await _context.Ciudades.AnyAsync(c => c.Id == idCiudad);
     }
