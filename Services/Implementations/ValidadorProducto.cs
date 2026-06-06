@@ -74,7 +74,7 @@ public class ValidadorProducto : IValidadorProducto
     private List<string> ValidarStockFormato(int stock)
     {
         var errores = new List<string>();
-        if (stock < 0) errores.Add("El stock no puede ser negativo");
+        if (stock <= 0) errores.Add("El stock debe ser mayor a 0");
         return errores;
     }
 

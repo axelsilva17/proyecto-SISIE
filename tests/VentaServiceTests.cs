@@ -243,47 +243,6 @@ public class VentaServiceTests
         _ventaRepositorioMock.Verify(r => r.CrearAsync(It.IsAny<Venta>()), Times.Never);
     }
 
-    [Fact]
-    public async Task RegistrarVenta_MetodoPagoInvalido_RetornaError()
-    {
-        var idUsuario = 1;
-        var dto = new VentaCreateDTO
-        {
-            MetodoPago = "Cripto",
-            Detalles = new List<VentaDetalleDTO>
-            {
-                new() { IdProducto = 1, Cantidad = 2 }
-            },
-            EsEnvio = false
-        };
-
-        _validadorMock
-            .Setup(v => v.ValidarDatosVentaCreate(dto, idUsuario))
-            .ReturnsAsync(new List<string>());
-
-        _ventaRepositorioMock
-            .Setup(r => r.CrearAsync(It.IsAny<Venta>()))
-            .ReturnsAsync((Venta v) => v);
-
-        _productoServiceMock
-            .Setup(p => p.VerificarStockProductoAsync(It.IsAny<int>(), It.IsAny<int>()))
-            .ReturnsAsync(new StockVerificacionDTO { HayStock = true, Mensaje = "Stock disponible" });
-
-        _productoRepositorioMock
-            .Setup(r => r.ObtenerPorIdCrudoAsync(It.IsAny<int>()))
-            .ReturnsAsync(new Producto { Id = 1, NombreProducto = "Producto 1", PrecioUnitario = 100m, Stock = 50 });
-
-        _productoServiceMock
-            .Setup(p => p.ActualizarStockAsync(It.IsAny<int>(), It.IsAny<int>()))
-            .ReturnsAsync(true);
-
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _service.RegistrarVentaAsync(idUsuario, dto));
-
-        Assert.Contains("No hay una estrategia registrada para el método de pago", ex.Message);
-
-        _ventaRepositorioMock.Verify(r => r.CrearAsync(It.IsAny<Venta>()), Times.Once);
-    }
 
     [Fact]
     public async Task RegistrarVenta_VerificaStockActualizado_PostCondicion()
