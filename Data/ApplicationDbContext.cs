@@ -112,6 +112,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         modelBuilder.Entity<Venta>(entity =>
         {
             entity.HasKey(v => v.Id);
+            entity.ToTable(tb => tb.UseSqlOutputClause(false));
             entity.Property(v => v.NumeroVenta).IsRequired();
             entity.Property(v => v.Descuento);
             entity.Property(v => v.Total).IsRequired().HasPrecision(18, 2);
@@ -137,6 +138,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         // ==== CONFIGURACIÓN DE DETALLE VENTA (FK Compuesta) ====
         modelBuilder.Entity<DetalleVenta>(entity =>
         {
+            entity.Property(d => d.Id).ValueGeneratedOnAdd().UseIdentityColumn();
             entity.Property(d => d.SubTotal).IsRequired().HasPrecision(18, 2);
             entity.Property(d => d.Cantidad).IsRequired();
             entity.Property(d => d.PrecioUnitario).IsRequired().HasPrecision(18, 2);

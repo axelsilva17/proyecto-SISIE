@@ -180,6 +180,15 @@ var app = builder.Build();
                     creator.CreateTables();
                 }
 
+                // Diagnóstico: listar tablas existentes
+                using var diagCmd = testConn.CreateCommand();
+                diagCmd.CommandText = "SELECT TABLE_SCHEMA + '.' + TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE'";
+                using var reader = diagCmd.ExecuteReader();
+                var tablas = new List<string>();
+                while (reader.Read()) tablas.Add(reader.GetString(0));
+                reader.Close();
+                Console.WriteLine($"[DBG] Tablas en BD ({tablas.Count}): {string.Join(", ", tablas)}");
+
                 schemaReady = true;
             }
             catch (SqlException ex) when (ex.Number == 4060 || ex.Number == 18456)
@@ -350,9 +359,9 @@ static void EjecutarSqlProgrammable(ApplicationDbContext db)
         // ===== TABLA DE AUDITORÍA =====
         @"
 IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'AuditoriaVenta')
-CREATE TABLE AuditoriaVenta (
+CREATE TABLE dbo.AuditoriaVenta (
     Id INT IDENTITY(1,1) PRIMARY KEY,
-    IdVenta INT NOT NULL FOREIGN KEY REFERENCES Ventas(Id),
+    IdVenta INT NOT NULL FOREIGN KEY REFERENCES dbo.Ventas(Id),
     EstadoAnterior VARCHAR(20),
     EstadoNuevo VARCHAR(20) NOT NULL,
     Usuario VARCHAR(100),
@@ -360,8 +369,8 @@ CREATE TABLE AuditoriaVenta (
 )",
         // ===== TRIGGER: Auditoría de cambios de estado =====
         @"
-CREATE OR ALTER TRIGGER trg_Audit_VentaEstado
-ON Ventas AFTER UPDATE
+CREATE TRIGGER trg_Audit_VentaEstado
+ON dbo.Ventas AFTER UPDATE
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -376,8 +385,8 @@ END",
         // ===== TRIGGER: Prevenir modificar entregadas/canceladas =====
         // NOTA: INSTEAD OF no es compatible con FKs CASCADE en SQL Server.
         @"
-CREATE OR ALTER TRIGGER trg_PreventCancelarEntregada
-ON Ventas AFTER UPDATE
+CREATE TRIGGER trg_PreventCancelarEntregada
+ON dbo.Ventas AFTER UPDATE
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -398,6 +407,19 @@ BEGIN
 END"
     };
 
+    // Helper: drop object si existe (compatible SQL Server 2008+)
+    void DropIfExists(string type, string schema, string name)
+    {
+        using var dropCmd = sqlConn.CreateCommand();
+        dropCmd.CommandText = $"IF OBJECT_ID('{schema}.{name}', '{type}') IS NOT NULL DROP {type} {schema}.{name}";
+        dropCmd.ExecuteNonQuery();
+    }
+
+    // Dropear triggers existentes antes de recrearlos
+    DropIfExists("TRIGGER", "dbo", "trg_Audit_VentaEstado");
+    DropIfExists("TRIGGER", "dbo", "trg_PreventCancelarEntregada");
+
+    // Crear objetos (tablas de auditoría, triggers)
     foreach (var sql in tablesAndTriggers)
     {
         try
@@ -412,12 +434,13 @@ END"
         }
     }
 
-    // Los SPs se crean uno por uno como batch independiente
-    var spScripts = new[]
+    // Los SPs: primero DROP si existen, luego CREATE
+    // (CREATE OR ALTER no está disponible en algunas versiones de SQL Server)
+    var spDefs = new (string name, string sql)[]
     {
         // ===== SP: Registrar Venta (transaccional) =====
-        @"
-CREATE OR ALTER PROCEDURE sp_RegistrarVenta
+        ("sp_RegistrarVenta", @"
+CREATE PROCEDURE sp_RegistrarVenta
     @NumeroVenta INT, @Descuento INT, @MetodoPago VARCHAR(30), @TipoEntrega VARCHAR(30),
     @Estado VARCHAR(20) = 'Pendiente', @Notas VARCHAR(200) = NULL, @IdDireccion INT = NULL,
     @IdUsuario INT, @Total DECIMAL(18,2) = 0
@@ -427,7 +450,7 @@ BEGIN
     DECLARE @IdVenta INT, @ErrMsg NVARCHAR(4000);
     BEGIN TRY
         BEGIN TRANSACTION;
-        INSERT INTO Ventas (NumeroVenta, Descuento, MetodoPago, TipoEntrega, Estado,
+        INSERT INTO dbo.Ventas (NumeroVenta, Descuento, MetodoPago, TipoEntrega, Estado,
             Notas, FechaCreacion, IdDireccion, IdUsuario, Total)
         VALUES (@NumeroVenta, @Descuento, @MetodoPago, @TipoEntrega, @Estado,
             @Notas, GETDATE(), @IdDireccion, @IdUsuario, @Total);
@@ -440,10 +463,10 @@ BEGIN
         IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
         THROW 50010, @ErrMsg, 1;
     END CATCH;
-END",
-        // ===== SP: Registrar Detalle Venta (solo inserta, stock por ActualizarStockAsync) =====
-        @"
-CREATE OR ALTER PROCEDURE sp_RegistrarDetalleVenta
+END"),
+        // ===== SP: Registrar Detalle Venta =====
+        ("sp_RegistrarDetalleVenta", @"
+CREATE PROCEDURE sp_RegistrarDetalleVenta
     @IdVenta INT, @IdProducto INT, @Cantidad INT, @PrecioUnitario DECIMAL(18,2)
 AS
 BEGIN
@@ -451,14 +474,14 @@ BEGIN
     DECLARE @ErrMsg NVARCHAR(4000), @StockActual INT;
     BEGIN TRY
         BEGIN TRANSACTION;
-        SELECT @StockActual = Stock FROM Productos WHERE Id = @IdProducto;
+        SELECT @StockActual = Stock FROM dbo.Productos WHERE Id = @IdProducto;
         IF @StockActual IS NULL THROW 50020, 'Producto no encontrado.', 1;
         IF @StockActual < @Cantidad
         BEGIN
             SET @ErrMsg = 'Stock insuficiente. Disp: ' + CAST(@StockActual AS VARCHAR) + ', req: ' + CAST(@Cantidad AS VARCHAR);
             THROW 50021, @ErrMsg, 1;
         END
-        INSERT INTO DetallesVenta (IdVenta, IdProducto, Cantidad, PrecioUnitario, SubTotal)
+        INSERT INTO dbo.DetallesVenta (IdVenta, IdProducto, Cantidad, PrecioUnitario, SubTotal)
         VALUES (@IdVenta, @IdProducto, @Cantidad, @PrecioUnitario, @Cantidad * @PrecioUnitario);
         SELECT SCOPE_IDENTITY() AS Id;
         COMMIT TRANSACTION;
@@ -468,10 +491,10 @@ BEGIN
         IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
         THROW 50022, @ErrMsg, 1;
     END CATCH;
-END",
+END"),
         // ===== SP: Cancelar Venta con restauración de stock =====
-        @"
-CREATE OR ALTER PROCEDURE sp_CancelarVenta
+        ("sp_CancelarVenta", @"
+CREATE PROCEDURE sp_CancelarVenta
     @IdVenta INT
 AS
 BEGIN
@@ -484,9 +507,9 @@ BEGIN
         IF @EstadoActual = 'Cancelada' THROW 50031, 'La venta ya está cancelada.', 1;
         IF @EstadoActual = 'Entregada' THROW 50032, 'No se puede cancelar una venta entregada.', 1;
         UPDATE p SET Stock = p.Stock + dv.Cantidad
-        FROM Productos p INNER JOIN DetallesVenta dv ON p.Id = dv.IdProducto
+        FROM dbo.Productos p INNER JOIN dbo.DetallesVenta dv ON p.Id = dv.IdProducto
         WHERE dv.IdVenta = @IdVenta;
-        UPDATE Ventas SET Estado = 'Cancelada' WHERE Id = @IdVenta;
+        UPDATE dbo.Ventas SET Estado = 'Cancelada' WHERE Id = @IdVenta;
         COMMIT TRANSACTION;
     END TRY
     BEGIN CATCH
@@ -494,35 +517,35 @@ BEGIN
         IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
         THROW 50033, @ErrMsg, 1;
     END CATCH;
-END",
+END"),
         // ===== SP: Historial paginado (consulta) =====
-        @"
-CREATE OR ALTER PROCEDURE sp_ObtenerHistorialVentas
+        ("sp_ObtenerHistorialVentas", @"
+CREATE PROCEDURE sp_ObtenerHistorialVentas
     @Pagina INT = 1, @TamanoPagina INT = 10, @IdUsuario INT = NULL,
     @Estado VARCHAR(20) = NULL, @FechaDesde DATETIME2 = NULL, @FechaHasta DATETIME2 = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
     DECLARE @Offset INT = (@Pagina - 1) * @TamanoPagina;
-    SELECT COUNT(*) AS Total FROM Ventas v
+    SELECT COUNT(*) AS Total FROM dbo.Ventas v
     WHERE (@IdUsuario IS NULL OR v.IdUsuario = @IdUsuario)
       AND (@Estado IS NULL OR v.Estado = @Estado)
       AND (@FechaDesde IS NULL OR v.FechaCreacion >= @FechaDesde)
       AND (@FechaHasta IS NULL OR v.FechaCreacion <= @FechaHasta);
     SELECT v.Id, v.NumeroVenta, v.Estado, v.Total,
         v.MetodoPago, v.FechaCreacion,
-        (SELECT COUNT(*) FROM DetallesVenta dv WHERE dv.IdVenta = v.Id) AS CantidadItems
-    FROM Ventas v
+        (SELECT COUNT(*) FROM dbo.DetallesVenta dv WHERE dv.IdVenta = v.Id) AS CantidadItems
+    FROM dbo.Ventas v
     WHERE (@IdUsuario IS NULL OR v.IdUsuario = @IdUsuario)
       AND (@Estado IS NULL OR v.Estado = @Estado)
       AND (@FechaDesde IS NULL OR v.FechaCreacion >= @FechaDesde)
       AND (@FechaHasta IS NULL OR v.FechaCreacion <= @FechaHasta)
     ORDER BY v.FechaCreacion DESC
     OFFSET @Offset ROWS FETCH NEXT @TamanoPagina ROWS ONLY;
-END",
+END"),
         // ===== SP: Estadísticas (consulta) =====
-        @"
-CREATE OR ALTER PROCEDURE sp_ObtenerEstadisticasVentas
+        ("sp_ObtenerEstadisticasVentas", @"
+CREATE PROCEDURE sp_ObtenerEstadisticasVentas
     @FechaDesde DATETIME2 = NULL, @FechaHasta DATETIME2 = NULL
 AS
 BEGIN
@@ -532,25 +555,53 @@ BEGIN
         COUNT(CASE WHEN Estado = 'Pendiente' THEN 1 END) AS VentasPendientes,
         COUNT(CASE WHEN Estado = 'Entregada' THEN 1 END) AS VentasEntregadas,
         @FechaDesde AS FechaDesde, @FechaHasta AS FechaHasta
-    FROM Ventas
+    FROM dbo.Ventas
     WHERE (@FechaDesde IS NULL OR FechaCreacion >= @FechaDesde)
       AND (@FechaHasta IS NULL OR FechaCreacion <= @FechaHasta);
-END"
+END")
     };
 
-    // Ejecutar SPs uno por uno (cada uno es un batch independiente)
-    foreach (var sql in spScripts)
+    // Primero dropear todos los SPs si existen, luego crearlos
+    foreach (var (name, _) in spDefs)
+        DropIfExists("PROCEDURE", "dbo", name);
+
+    foreach (var (_, sql) in spDefs)
     {
         try
         {
             using var cmd = sqlConn.CreateCommand();
             cmd.CommandText = sql;
             cmd.ExecuteNonQuery();
+            Console.WriteLine($"[DBG] SP creado correctamente");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[SQL Programmable] Info: {ex.Message}");
+            Console.WriteLine($"[SQL Programmable] Error al crear SP: {ex.Message}");
         }
+    }
+
+    // Verificar que los SPs se crearon correctamente
+    try
+    {
+        using var verCmd = sqlConn.CreateCommand();
+        verCmd.CommandText = @"
+SELECT name, 
+       SUBSTRING(OBJECT_DEFINITION(OBJECT_ID('dbo.' + name)), 1, 200) AS def_preview
+FROM sys.procedures 
+WHERE name LIKE 'sp_%'
+ORDER BY name";
+        using var verReader = verCmd.ExecuteReader();
+        while (verReader.Read())
+        {
+            var spName = verReader.GetString(0);
+            var def = verReader.IsDBNull(1) ? "(SIN DEFINICIÓN)" : verReader.GetString(1);
+            Console.WriteLine($"[DBG] SP {spName}: {def.Replace("\r\n", " ").Replace("\n", " ")}");
+        }
+        verReader.Close();
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[DBG] Error al verificar SPs: {ex.Message}");
     }
 
     sqlConn.Close();
