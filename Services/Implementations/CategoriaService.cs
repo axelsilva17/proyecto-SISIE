@@ -30,7 +30,7 @@ public class CategoriaService : ICategoriaService
 
     public async Task<CategoriaDTO> CrearAsyncCategoria(CategoriaCreateDTO dto)
     {
-        var erroresNegocio = await _validador.ValidaCategoria(dto);
+        var erroresNegocio = await _validador.ValidarDatosCategoria(dto, null);
         if (erroresNegocio.Any()) throw new InvalidOperationException(string.Join(", ", erroresNegocio));
 
         var categoria = new Categoria { NombreCategoria = dto.NombreCategoria };
@@ -43,7 +43,7 @@ public class CategoriaService : ICategoriaService
         var categoria = await _categoriaRepositorio.BuscarCategoriaPorIdAsync(id);
         if (categoria == null) return null;
 
-        var erroresNegocio = await _validador.ValidaCategoria(dto, id);
+        var erroresNegocio = await _validador.ValidarDatosCategoria(dto, id);
         if (erroresNegocio.Any()) throw new InvalidOperationException(string.Join(", ", erroresNegocio));
 
         categoria.NombreCategoria = dto.NombreCategoria;

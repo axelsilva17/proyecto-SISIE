@@ -26,7 +26,7 @@ public class CategoriaServiceTests
         var categoria = new Categoria { Id = 6, NombreCategoria = "Limpieza" };
 
         _validadorMock
-            .Setup(v => v.ValidaCategoria(dto, null))
+            .Setup(v => v.ValidarDatosCategoria(dto, null))
             .ReturnsAsync(new List<string>());
 
         _repositorioMock
@@ -49,7 +49,7 @@ public class CategoriaServiceTests
         var errores = new List<string> { "Ya existe una categoría con ese nombre" };
 
         _validadorMock
-            .Setup(v => v.ValidaCategoria(dto, null))
+            .Setup(v => v.ValidarDatosCategoria(dto, null))
             .ReturnsAsync(errores);
 
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(
@@ -67,7 +67,7 @@ public class CategoriaServiceTests
         var errores = new List<string> { "El nombre es obligatorio" };
 
         _validadorMock
-            .Setup(v => v.ValidaCategoria(dto, null))
+            .Setup(v => v.ValidarDatosCategoria(dto, null))
             .ReturnsAsync(errores);
 
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(

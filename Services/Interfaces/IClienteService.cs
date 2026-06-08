@@ -8,4 +8,5 @@ public interface IClienteService
     Task<ClienteDTO?> ObtenerPorIdAsync(int id);
     Task<ClienteDTO?> BuscarPorDniAsync(string dni);
     Task<ClienteDTO> AgregarAsyncCliente(ClienteCreateDTO clienteDto);
-}
+    Task AutoRegistrarClienteSiCorresponde(VentaCreateDTO dto);
+    }

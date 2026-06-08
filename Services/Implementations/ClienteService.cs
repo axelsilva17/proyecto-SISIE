@@ -94,4 +94,22 @@ public class ClienteService : IClienteService
         Activo = cliente.Activo,
         CantidadVentas = cliente.Ventas?.Count ?? 0
     };
+
+    public async Task AutoRegistrarClienteSiCorresponde(VentaCreateDTO dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.DniCliente) || string.IsNullOrWhiteSpace(dto.NombreCliente))
+            return;
+
+        var clienteExistente =         await _clienteRepositorio.BuscarPorDniAsync(dto.DniCliente);
+        if (clienteExistente != null) return;
+
+        var nuevoCliente = new ClienteCreateDTO
+        {
+            Dni = dto.DniCliente,
+            Nombre = dto.NombreCliente,
+            Telefono = dto.TelefonoCliente ?? string.Empty,
+            Email = dto.EmailCliente?.ToLower()
+        };
+        await AgregarAsyncCliente(nuevoCliente);
+    }
 }

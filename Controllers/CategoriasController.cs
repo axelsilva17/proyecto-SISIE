@@ -38,7 +38,7 @@ public class CategoriasController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<CategoriaDTO>> CrearCategoria([FromBody] CategoriaCreateDTO categoria)
     {
-        var errores = await _validador.ValidarDatosCategoria(categoria);
+        var errores = await _validador.ValidarDatosCategoria(categoria, null);
         if (errores.Count > 0)
             return BadRequest(new { success = false, message = "Error de validación", errors = errores });
 
@@ -56,7 +56,7 @@ public class CategoriasController : ControllerBase
     [HttpPut("{id}")]
     public async Task<ActionResult<CategoriaDTO>> ActualizarCategoria(int id, [FromBody] CategoriaCreateDTO categoria)
     {
-        var errores = await _validador.ValidaCategoria(categoria, id);
+        var errores = await _validador.ValidarDatosCategoria(categoria, id);
         if (errores.Count > 0)
             return BadRequest(new { success = false, message = "Error de validación", errors = errores });
 

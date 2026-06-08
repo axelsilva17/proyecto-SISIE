@@ -14,20 +14,12 @@ public class ValidadorVenta : IValidadorVenta
         _productoRepositorio = productoRepositorio;
     }
 
-    public Task<List<string>> ValidarDatosVenta(VentaCreateDTO dto)
-    {
-        var errores = new List<string>();
-        errores.AddRange(ValidarDetallesVacios(dto.Detalles));
-        errores.AddRange(ValidarMetodoPago(dto.MetodoPago));
-        errores.AddRange(ValidarDatosCliente(dto));
-        return Task.FromResult(errores);
-    }
-
-    public async Task<List<string>> ValidarDatosVentaCreate(VentaCreateDTO dto, int idUsuario)
+    public async Task<List<string>> ValidarDatosVenta(VentaCreateDTO dto, int idUsuario)
     {
         var errores = new List<string>();
         errores.AddRange(await ValidarUsuarioExiste(idUsuario));
         errores.AddRange(ValidarDetallesVacios(dto.Detalles));
+        errores.AddRange(ValidarMetodoPago(dto.MetodoPago));
         errores.AddRange(ValidarEnvio(dto));
         errores.AddRange(await ValidarDireccion(dto));
         errores.AddRange(await ValidarProductosEnDetalles(dto.Detalles));
@@ -103,22 +95,6 @@ public class ValidadorVenta : IValidadorVenta
         var errores = new List<string>();
         foreach (var detalle in detalles ?? [])
             errores.AddRange(await ValidarStockProducto(detalle.IdProducto, detalle.Cantidad));
-        return errores;
-    }
-
-    private List<string> ValidarDatosCliente(VentaCreateDTO dto)
-    {
-        var errores = new List<string>();
-        if (string.IsNullOrWhiteSpace(dto.DniCliente)) return errores;
-
-        if (dto.DniCliente.Length < 7 || dto.DniCliente.Length > 15)
-            errores.Add("El DNI del cliente debe tener entre 7 y 15 caracteres");
-        if (string.IsNullOrWhiteSpace(dto.NombreCliente))
-            errores.Add("El nombre del cliente es obligatorio");
-        if (string.IsNullOrWhiteSpace(dto.TelefonoCliente))
-            errores.Add("El teléfono del cliente es obligatorio");
-        if (!string.IsNullOrWhiteSpace(dto.EmailCliente) && !dto.EmailCliente.Contains("@"))
-            errores.Add("El email del cliente debe contener @");
         return errores;
     }
 

@@ -29,9 +29,9 @@ public class VentaService : IVentaService
 
     public async Task<VentaDTO> RegistrarVentaAsync(int idUsuario, VentaCreateDTO dto)
     {
-        await AutoRegistrarClienteSiCorresponde(dto);
+        await _clienteService.AutoRegistrarClienteSiCorresponde(dto);
 
-        var erroresNegocio = await _validador.ValidarDatosVentaCreate(dto, idUsuario);
+        var erroresNegocio = await _validador.ValidarDatosVenta(dto, idUsuario);
         if (erroresNegocio.Any())
             throw new InvalidOperationException(string.Join(", ", erroresNegocio));
 
@@ -50,23 +50,7 @@ public class VentaService : IVentaService
         return (await ObtenerVentaDTOCompleto(venta.Id))!;
     }
 
-    private async Task AutoRegistrarClienteSiCorresponde(VentaCreateDTO dto)
-    {
-        if (string.IsNullOrWhiteSpace(dto.DniCliente) || string.IsNullOrWhiteSpace(dto.NombreCliente))
-            return;
-
-        var clienteExistente = await _clienteService.BuscarPorDniAsync(dto.DniCliente);
-        if (clienteExistente != null) return;
-
-        var nuevoCliente = new ClienteCreateDTO
-        {
-            Dni = dto.DniCliente,
-            Nombre = dto.NombreCliente,
-            Telefono = dto.TelefonoCliente ?? string.Empty,
-            Email = dto.EmailCliente?.ToLower()
-        };
-        await _clienteService.AgregarAsyncCliente(nuevoCliente);
-    }
+    
 
     private async Task<int?> ObtenerOCrearDireccion(VentaCreateDTO dto, int idUsuario)
     {

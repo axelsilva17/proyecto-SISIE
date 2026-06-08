@@ -100,7 +100,7 @@ public class VentaServiceTests
         var ventaCreada = CrearVentaCompleta(1, idUsuario, detalles);
 
         _validadorMock
-            .Setup(v => v.ValidarDatosVentaCreate(dto, idUsuario))
+            .Setup(v => v.ValidarDatosVenta(dto, idUsuario))
             .ReturnsAsync(new List<string>());
 
         _ventaRepositorioMock
@@ -170,7 +170,7 @@ public class VentaServiceTests
         };
 
         _validadorMock
-            .Setup(v => v.ValidarDatosVentaCreate(dto, idUsuario))
+            .Setup(v => v.ValidarDatosVenta(dto, idUsuario))
             .ReturnsAsync(errores);
 
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(
@@ -201,7 +201,7 @@ public class VentaServiceTests
         };
 
         _validadorMock
-            .Setup(v => v.ValidarDatosVentaCreate(dto, idUsuario))
+            .Setup(v => v.ValidarDatosVenta(dto, idUsuario))
             .ReturnsAsync(errores);
 
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(
@@ -226,7 +226,7 @@ public class VentaServiceTests
         var errores = new List<string> { "Debe incluir al menos un producto" };
 
         _validadorMock
-            .Setup(v => v.ValidarDatosVentaCreate(dto, idUsuario))
+            .Setup(v => v.ValidarDatosVenta(dto, idUsuario))
             .ReturnsAsync(errores);
 
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(
@@ -258,7 +258,7 @@ public class VentaServiceTests
         var ventaCreada = CrearVentaCompleta(1, idUsuario, detalles);
 
         _validadorMock
-            .Setup(v => v.ValidarDatosVentaCreate(dto, idUsuario))
+            .Setup(v => v.ValidarDatosVenta(dto, idUsuario))
             .ReturnsAsync(new List<string>());
 
         _ventaRepositorioMock

@@ -9,14 +9,7 @@ public class ValidadorCategoria : IValidadorCategoria
 
     public ValidadorCategoria(ICategoriaRepositorio categoriaRepositorio) => _categoriaRepositorio = categoriaRepositorio;
 
-    public Task<List<string>> ValidarDatosCategoria(CategoriaCreateDTO dto)
-    {
-        var errores = new List<string>();
-        errores.AddRange(ValidarNombreFormato(dto.NombreCategoria));
-        return Task.FromResult(errores);
-    }
-
-    public async Task<List<string>> ValidaCategoria(CategoriaCreateDTO dto, int? idCategoria = null)
+    public async Task<List<string>> ValidarDatosCategoria(CategoriaCreateDTO dto, int? idCategoria)
     {
         var errores = new List<string>();
         errores.AddRange(ValidarNombreFormato(dto.NombreCategoria));

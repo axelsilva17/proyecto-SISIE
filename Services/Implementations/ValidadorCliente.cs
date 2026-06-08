@@ -9,14 +9,6 @@ public class ValidadorCliente : IValidadorCliente
 
     public ValidadorCliente(IClienteRepositorio clienteRepositorio) => _clienteRepositorio = clienteRepositorio;
 
-    public async Task<List<string>> ValidarDatosCliente(ClienteCreateDTO dto)
-    {
-        var errores = new List<string>();
-        errores.AddRange(ValidarFormato(dto));
-        errores.AddRange(await ValidarCiudadExiste(dto.IdCiudad));
-        return errores;
-    }
-
     public async Task<List<string>> ValidarDatosCliente(ClienteCreateDTO dto, int? idCliente)
     {
         var errores = new List<string>();

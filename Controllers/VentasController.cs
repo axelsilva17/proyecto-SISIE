@@ -39,13 +39,22 @@ public class VentasController : ControllerBase
     [HttpPost("registrar")]
     public async Task<ActionResult<VentaDTO>> RegistrarVenta([FromBody] VentaCreateDTO ventaDto)
     {
-        var errores = await _validador.ValidarDatosVenta(ventaDto);
+        int idUsuario;
+        try
+        {
+            idUsuario = await ObtenerIdUsuarioAsync();
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(new { success = false, message = ex.Message });
+        }
+
+        var errores = await _validador.ValidarDatosVenta(ventaDto, idUsuario);
         if (errores.Count > 0)
             return BadRequest(new { success = false, message = "Error de validación", errors = errores });
 
         try
         {
-            var idUsuario = await ObtenerIdUsuarioAsync();
             var venta = await _ventaService.RegistrarVentaAsync(idUsuario, ventaDto);
             return CreatedAtAction(nameof(ObtenerVentaPorId), new { id = venta.Id }, venta);
         }

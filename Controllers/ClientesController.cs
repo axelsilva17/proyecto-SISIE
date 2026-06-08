@@ -61,7 +61,7 @@ public class ClientesController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<ClienteDTO>> Agregar([FromBody] ClienteCreateDTO clienteDto)
     {
-        var errores = await _validador.ValidarDatosCliente(clienteDto);
+        var errores = await _validador.ValidarDatosCliente(clienteDto, null);
         if (errores.Count > 0)
             return BadRequest(new { success = false, message = "Error de validación", errors = errores });
 
