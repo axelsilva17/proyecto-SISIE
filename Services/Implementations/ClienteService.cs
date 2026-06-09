@@ -97,16 +97,26 @@ public class ClienteService : IClienteService
 
     public async Task AutoRegistrarClienteSiCorresponde(VentaCreateDTO dto)
     {
-        if (string.IsNullOrWhiteSpace(dto.DniCliente) || string.IsNullOrWhiteSpace(dto.NombreCliente))
-            return;
+        if (string.IsNullOrWhiteSpace(dto.DniCliente)) return;
 
-        var clienteExistente =         await _clienteRepositorio.BuscarPorDniAsync(dto.DniCliente);
+        var errores = new List<string>();
+        if (string.IsNullOrWhiteSpace(dto.NombreCliente))
+            errores.Add("El nombre del cliente es obligatorio");
+        if (string.IsNullOrWhiteSpace(dto.TelefonoCliente))
+            errores.Add("El teléfono del cliente es obligatorio");
+        if (!string.IsNullOrWhiteSpace(dto.EmailCliente) && !dto.EmailCliente.Contains("@"))
+            errores.Add("El email del cliente debe contener @");
+
+        if (errores.Count > 0)
+            throw new InvalidOperationException(string.Join(", ", errores));
+
+        var clienteExistente = await _clienteRepositorio.BuscarPorDniAsync(dto.DniCliente);
         if (clienteExistente != null) return;
 
         var nuevoCliente = new ClienteCreateDTO
         {
             Dni = dto.DniCliente,
-            Nombre = dto.NombreCliente,
+            Nombre = dto.NombreCliente!,
             Telefono = dto.TelefonoCliente ?? string.Empty,
             Email = dto.EmailCliente?.ToLower()
         };

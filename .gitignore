@@ -3,3 +3,16 @@
 
 # Diseño y documentación interna
 DESIGN.md
+
+# .NET
+bin/
+obj/
+*.user
+*.suo
+*.db
+
+# VS
+.vs/
+
+# Tests output
+test_*.txt
