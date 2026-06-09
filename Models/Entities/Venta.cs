@@ -18,9 +18,9 @@ public class Venta
     [Column(TypeName = "decimal(18,2)")]
     public decimal Total { get; set; }
     
-    [Required]
-    [StringLength(20)]
-    public string MetodoPago { get; set; } = string.Empty;
+    // FK al método de pago
+    public int IdMetodoPago { get; set; }
+    public MetodoPago? MetodoPago { get; set; }
     
     [Required]
     [StringLength(20)]

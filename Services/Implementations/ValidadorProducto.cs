@@ -14,6 +14,7 @@ public class ValidadorProducto : IValidadorProducto
         _validadorCategoria = validadorCategoria;
     }
 
+        // Valida los datos de un producto antes de crear uno nuevo
     public Task<List<string>> ValidarDatosProductoCreate(ProductoCreateDTO dto)
     {
         var errores = new List<string>();

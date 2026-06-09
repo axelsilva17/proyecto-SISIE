@@ -1,14 +1,11 @@
 namespace proyecto_SISIE.Services.Strategy;
 
-
-/// Estrategia para pago con tarjeta de crédito/débito.
-/// Aplica un recargo del 3% sobre el total con descuento.
-
 public class TarjetaStrategy : IMetodoPagoStrategy
 {
     private const decimal Recargo = 0.03m;
 
-    public string MetodoPago => "Tarjeta";
+    public int IdMetodoPago => 2;
+    public string NombreMetodoPago => "Tarjeta";
 
     public decimal CalcularTotal(decimal subtotal, int descuento)
     {

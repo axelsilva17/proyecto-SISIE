@@ -9,19 +9,15 @@ public class ProcesadorPago
         _estrategias = estrategias;
     }
 
-
-    /// Selecciona la estrategia adecuada según el método de pago y calcula el total.
-    
-    /// Total final redondeado a 2 decimales.
-
-    public decimal CalcularTotal(string metodoPago, decimal subtotal, int descuento)
+    /// <summary>Selecciona la estrategia según el ID del método de pago y calcula el total.</summary>
+    public decimal CalcularTotal(int idMetodoPago, decimal subtotal, int descuento)
     {
         var estrategia = _estrategias.FirstOrDefault(e =>
-            e.MetodoPago.Equals(metodoPago, StringComparison.OrdinalIgnoreCase));
+            e.IdMetodoPago == idMetodoPago);
 
         if (estrategia is null)
             throw new InvalidOperationException(
-                $"No hay una estrategia registrada para el método de pago '{metodoPago}'");
+                $"No hay una estrategia registrada para el método de pago con ID '{idMetodoPago}'");
 
         return estrategia.CalcularTotal(subtotal, descuento);
     }

@@ -14,18 +14,19 @@ public class ValidadorVenta : IValidadorVenta
         _productoRepositorio = productoRepositorio;
     }
 
+    // Valida los datos de la venta antes de crearla o actualizarla
     public async Task<List<string>> ValidarDatosVenta(VentaCreateDTO dto, int idUsuario)
     {
         var errores = new List<string>();
         errores.AddRange(await ValidarUsuarioExiste(idUsuario));
         errores.AddRange(ValidarDetallesVacios(dto.Detalles));
-        errores.AddRange(ValidarMetodoPago(dto.MetodoPago));
+        errores.AddRange(ValidarMetodoPago(dto.IdMetodoPago));
         errores.AddRange(ValidarEnvio(dto));
         errores.AddRange(await ValidarDireccion(dto));
         errores.AddRange(await ValidarProductosEnDetalles(dto.Detalles));
         return errores;
     }
-
+    // Valida los datos de la venta antes de actualizar su estado
     public Task<List<string>> ValidarDatosVentaUpdate(VentaUpdateDTO dto)
     {
         var errores = new List<string>();
@@ -33,6 +34,7 @@ public class ValidadorVenta : IValidadorVenta
         return Task.FromResult(errores);
     }
 
+    // Valida que el producto exista, esté activo y tenga stock suficiente para la cantidad solicitada
     public async Task<List<string>> ValidarStockProducto(int idProducto, int cantidad)
     {
         var errores = new List<string>();
@@ -45,6 +47,7 @@ public class ValidadorVenta : IValidadorVenta
             errores.Add($"Stock insuficiente para '{producto.NombreProducto}'. Disponible: {producto.Stock}");
         return errores;
     }
+    
 
     private async Task<List<string>> ValidarUsuarioExiste(int idUsuario)
     {
@@ -66,9 +69,13 @@ public class ValidadorVenta : IValidadorVenta
         return errores;
     }
 
-    private List<string> ValidarMetodoPago(string? metodoPago)
+    
+    private List<string> ValidarMetodoPago(int idMetodoPago)
     {
-        return string.IsNullOrWhiteSpace(metodoPago) ? ["El método de pago es obligatorio"] : [];
+        var errores = new List<string>();
+        if (idMetodoPago <= 0)
+            errores.Add("El método de pago es obligatorio");
+        return errores;
     }
 
     private List<string> ValidarEnvio(VentaCreateDTO dto)
@@ -90,6 +97,7 @@ public class ValidadorVenta : IValidadorVenta
         return direccionValida ? [] : ["La dirección no es válida"];
     }
 
+    // Valida cada producto en los detalles de la venta para asegurarse de que existan, estén activos y tengan stock suficiente
     private async Task<List<string>> ValidarProductosEnDetalles(List<VentaDetalleDTO>? detalles)
     {
         var errores = new List<string>();

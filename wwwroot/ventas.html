@@ -211,22 +211,17 @@
                         
                         <div class="space-y-2">
                             <label class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
-                                <input type="radio" name="pago" value="efectivo" checked class="text-brand-orange">
+                                <input type="radio" name="pago" value="1" checked class="text-brand-orange">
                                 <i class="fas fa-money-bill-wave text-green-600 w-5"></i>
                                 <span>Efectivo</span>
                             </label>
                             <label class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
-                                <input type="radio" name="pago" value="debito" class="text-brand-orange">
+                                <input type="radio" name="pago" value="2" class="text-brand-orange">
                                 <i class="fas fa-credit-card text-blue-600 w-5"></i>
-                                <span>Tarjeta Débito</span>
+                                <span>Tarjeta</span>
                             </label>
                             <label class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
-                                <input type="radio" name="pago" value="credito" class="text-brand-orange">
-                                <i class="fas fa-credit-card text-purple-600 w-5"></i>
-                                <span>Tarjeta Crédito</span>
-                            </label>
-                            <label class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
-                                <input type="radio" name="pago" value="transferencia" class="text-brand-orange">
+                                <input type="radio" name="pago" value="3" class="text-brand-orange">
                                 <i class="fas fa-university text-gray-600 w-5"></i>
                                 <span>Transferencia</span>
                             </label>
@@ -786,7 +781,7 @@
                 
                 const datosVentaAPI = {
                     descuento: parseFloat(document.getElementById('descuento').value) || 0,
-                    metodoPago: document.querySelector('input[name="pago"]:checked').value,
+                    idMetodoPago: parseInt(document.querySelector('input[name="pago"]:checked').value),
                     tipoEntrega: tipoEntrega,
                     notas: document.getElementById('notas').value || null,
                     esEnvio: esEnvio,
@@ -815,7 +810,10 @@
                 if (!ventaRes.ok) {
                     const errorData = await ventaRes.json();
                     console.log('Venta error:', errorData);
-                    showMessage('Error: ' + (errorData.message || 'No se pudo guardar la venta'), 'error');
+                    let mensaje = errorData.message || 'No se pudo guardar la venta';
+                    if (errorData.errors && errorData.errors.length > 0)
+                        mensaje = errorData.errors.join('. ');
+                    showMessage(mensaje, 'error');
                     btn.disabled = false;
                     btn.innerHTML = '<i class="fas fa-save mr-2"></i>Finalizar Venta';
                     return;
@@ -840,7 +838,7 @@
                     subtotal: parseFloat(document.getElementById('subtotal').textContent.replace('$', '')),
                     descuento: parseFloat(document.getElementById('descuento').value) || 0,
                     total: parseFloat(document.getElementById('total').textContent.replace('$', '')),
-                    metodoPago: document.querySelector('input[name="pago"]:checked').value,
+                    metodoPago: ['Efectivo', 'Tarjeta', 'Transferencia'][parseInt(document.querySelector('input[name="pago"]:checked').value) - 1],
                     tipoEntrega: tipoEntrega,
                     provincia: document.getElementById('provincia').value || '',
                     ciudad: document.getElementById('ciudad').value || '',
@@ -1034,7 +1032,7 @@
             html += '</div>';
             
             // Método de pago
-            html += '<div style="border-bottom: 1px dashed #000; padding: 5px 0; margin: 10px 0;"><strong>Pago:</strong> ' + venta.metodoPago.charAt(0).toUpperCase() + venta.metodoPago.slice(1) + '</div>';
+            html += '<div style="border-bottom: 1px dashed #000; padding: 5px 0; margin: 10px 0;"><strong>Pago:</strong> ' + venta.metodoPago + '</div>';
             
             // Tipo de entrega
             let entregaTexto = '';

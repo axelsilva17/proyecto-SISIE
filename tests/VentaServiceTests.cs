@@ -24,7 +24,8 @@ public class VentaServiceTests
         _validadorMock = new Mock<IValidadorVenta>();
 
         var mockEstrategia = new Mock<IMetodoPagoStrategy>();
-        mockEstrategia.Setup(e => e.MetodoPago).Returns("Efectivo");
+        mockEstrategia.Setup(e => e.IdMetodoPago).Returns(1);
+        mockEstrategia.Setup(e => e.NombreMetodoPago).Returns("Efectivo");
         mockEstrategia.Setup(e => e.CalcularTotal(It.IsAny<decimal>(), It.IsAny<int>()))
             .Returns<decimal, int>((subtotal, descuento) =>
             {

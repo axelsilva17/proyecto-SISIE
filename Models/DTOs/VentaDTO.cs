@@ -5,7 +5,7 @@ public class VentaCreateDTO
 {
     public int Descuento { get; set; }
 
-    public string MetodoPago { get; set; } = string.Empty;
+    public int IdMetodoPago { get; set; }
 
     public string TipoEntrega { get; set; } = string.Empty;
 
@@ -14,7 +14,6 @@ public class VentaCreateDTO
     public int? IdDireccion { get; set; }
 
     // Dirección de envío (cuando no tiene dirección guardada)
-    // Puede ser: "Barrio - Casa 5" o "Av. Principal 123"
     public string? DireccionEnvio { get; set; }
 
     // Departamento (opcional) para edificios o complejos
@@ -58,7 +57,8 @@ public class VentaDTO
     public int NumeroVenta { get; set; }
     public int Descuento { get; set; }
     public decimal Total { get; set; }
-    public string MetodoPago { get; set; } = string.Empty;
+    public int IdMetodoPago { get; set; }
+    public string? NombreMetodoPago { get; set; }
     public string TipoEntrega { get; set; } = string.Empty;
     public string? Notas { get; set; }
     public string Estado { get; set; } = string.Empty;
@@ -88,7 +88,7 @@ public class VentaHistorialDTO
     public int NumeroVenta { get; set; }
     public string Estado { get; set; } = string.Empty;
     public decimal Total { get; set; }
-    public string MetodoPago { get; set; } = string.Empty;
+    public string NombreMetodoPago { get; set; } = string.Empty;
     public DateTime FechaCreacion { get; set; }
     public int CantidadItems { get; set; }
 }

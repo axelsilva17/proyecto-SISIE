@@ -27,9 +27,10 @@ public class VentaService : IVentaService
         _procesadorPago = procesadorPago;
     }
 
+    //Registra la venta utilizando los metodos del servicios y repositorios para aplicar los sps
     public async Task<VentaDTO> RegistrarVentaAsync(int idUsuario, VentaCreateDTO dto)
     {
-        await _clienteService.AutoRegistrarClienteSiCorresponde(dto);
+        await _clienteService.AutoRegistrarClienteSiCorresponde(dto);//si el cliente no existe se registra automaticamente
 
         var erroresNegocio = await _validador.ValidarDatosVenta(dto, idUsuario);
         if (erroresNegocio.Any())
@@ -39,11 +40,11 @@ public class VentaService : IVentaService
         var venta = await CrearVenta(idUsuario, dto, idDireccion);
         var subtotal = await ProcesarDetallesVenta(venta.Id, dto.Detalles);
 
-        // Actualizar stock de cada producto (según diagrama de secuencia)
+        // Actualizar stock de cada producto 
         foreach (var detalleDto in dto.Detalles)
             await _productoService.ActualizarStockAsync(detalleDto.IdProducto, detalleDto.Cantidad);
 
-        var totalConMetodoPago = _procesadorPago.CalcularTotal(venta.MetodoPago, subtotal, dto.Descuento);
+        var totalConMetodoPago = _procesadorPago.CalcularTotal(venta.IdMetodoPago, subtotal, dto.Descuento);
         venta.Total = totalConMetodoPago;
         await _ventaRepositorio.ModificarVentaAsync(venta);
 
@@ -74,7 +75,7 @@ public class VentaService : IVentaService
         {
             NumeroVenta = numeroVenta,
             Descuento = dto.Descuento,
-            MetodoPago = dto.MetodoPago,
+            IdMetodoPago = dto.IdMetodoPago,
             TipoEntrega = dto.EsEnvio ? "Envío" : "Mostrador",
             Notas = dto.Notas,
             Estado = "Pendiente",
@@ -205,7 +206,8 @@ public class VentaService : IVentaService
             NumeroVenta = venta.NumeroVenta,
             Descuento = venta.Descuento,
             Total = venta.Total,
-            MetodoPago = venta.MetodoPago,
+            IdMetodoPago = venta.IdMetodoPago,
+            NombreMetodoPago = venta.MetodoPago?.Nombre,
             TipoEntrega = venta.TipoEntrega,
             Notas = venta.Notas,
             Estado = venta.Estado,

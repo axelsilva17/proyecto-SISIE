@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace proyecto_SISIE.Models.Entities;
 
@@ -20,6 +21,7 @@ public class Direccion
     public string? Departamento { get; set; }
     
     // FK a Usuario (para saber qué usuario creó esta dirección)
+    [ForeignKey(nameof(Usuario))]
     public int IdUsuario { get; set; }
     public Usuario? Usuario { get; set; }
     

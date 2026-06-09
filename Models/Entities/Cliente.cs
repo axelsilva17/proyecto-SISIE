@@ -41,6 +41,4 @@ public class Cliente
     
     public bool Activo { get; set; } = true;
     
-    // Navegación - ventas realizadas por este cliente
-    public ICollection<Venta> Ventas { get; set; } = new List<Venta>();
 }

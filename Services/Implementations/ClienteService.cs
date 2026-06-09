@@ -35,7 +35,7 @@ public class ClienteService : IClienteService
             NombreCiudad = c.Ciudad?.NombreCiudad,
             FechaCreacion = c.FechaCreacion,
             Activo = c.Activo,
-            CantidadVentas = c.Ventas?.Count ?? 0
+            CantidadVentas = 0
         }).ToList();
 
         return (dtos, total);
@@ -92,7 +92,7 @@ public class ClienteService : IClienteService
         NombreCiudad = cliente.Ciudad?.NombreCiudad,
         FechaCreacion = cliente.FechaCreacion,
         Activo = cliente.Activo,
-        CantidadVentas = cliente.Ventas?.Count ?? 0
+        CantidadVentas = 0
     };
 
     public async Task AutoRegistrarClienteSiCorresponde(VentaCreateDTO dto)

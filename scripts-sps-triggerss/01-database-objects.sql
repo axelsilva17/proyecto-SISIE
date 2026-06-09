@@ -4,14 +4,10 @@
 -- Este script contiene todos los objetos programables (SPs, triggers, tablas
 -- auxiliares) que se crean automáticamente al iniciar la aplicación.
 --
--- NOTA: Las tablas principales (Ventas, DetallesVenta, Productos, Categorias,
--- Usuarios, Clientes, Direcciones, Ciudades) son creadas por EF Core Migrations.
--- Ejecutar primero las migraciones de EF o el script de esquema generado por:
---     dotnet ef migrations script -o 00-ef-schema.sql
+-- NOTA: Para crear la BD desde cero, ejecutar primero:
+--   00-schema-completo.sql (crea BD + tablas + seed + SPs + triggers)
+-- Este script es solo para actualizar SPs/triggers si ya tenés la BD.
 --
--- Orden de ejecución:
---   1. EF Migrations (tablas principales)
---   2. Este script (SPs, triggers, tabla de auditoría)
 -- ============================================================================
 
 SET NOCOUNT ON;
@@ -30,6 +26,28 @@ CREATE TABLE AuditoriaVenta (
     Usuario VARCHAR(100),
     FechaCambio DATETIME2 DEFAULT GETDATE()
 );
+GO
+
+-- ============================================================================
+-- TABLA: MetodoPago (solo si EF no la creó)
+-- ============================================================================
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'MetodosPago')
+CREATE TABLE MetodosPago (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    Nombre VARCHAR(50) NOT NULL,
+    RecargoPorcentaje DECIMAL(5,2) NOT NULL DEFAULT 0,
+    Activo BIT NOT NULL DEFAULT 1
+);
+GO
+
+-- Seed de métodos de pago (solo si están vacíos)
+IF NOT EXISTS (SELECT 1 FROM MetodosPago)
+BEGIN
+    INSERT INTO MetodosPago (Nombre, RecargoPorcentaje, Activo) VALUES
+        ('Efectivo', 0, 1),
+        ('Tarjeta', 3, 1),
+        ('Transferencia', 1.5, 1);
+END;
 GO
 
 -- ============================================================================
@@ -87,7 +105,7 @@ GO
 CREATE OR ALTER PROCEDURE sp_RegistrarVenta
     @NumeroVenta INT,
     @Descuento INT,
-    @MetodoPago VARCHAR(30),
+    @IdMetodoPago INT,
     @TipoEntrega VARCHAR(30),
     @Estado VARCHAR(20) = 'Pendiente',
     @Notas VARCHAR(200) = NULL,
@@ -100,9 +118,9 @@ BEGIN
     DECLARE @IdVenta INT, @ErrMsg NVARCHAR(4000);
     BEGIN TRY
         BEGIN TRANSACTION;
-        INSERT INTO Ventas (NumeroVenta, Descuento, MetodoPago, TipoEntrega, Estado,
+        INSERT INTO Ventas (NumeroVenta, Descuento, IdMetodoPago, TipoEntrega, Estado,
             Notas, FechaCreacion, IdDireccion, IdUsuario, Total)
-        VALUES (@NumeroVenta, @Descuento, @MetodoPago, @TipoEntrega, @Estado,
+        VALUES (@NumeroVenta, @Descuento, @IdMetodoPago, @TipoEntrega, @Estado,
             @Notas, GETDATE(), @IdDireccion, @IdUsuario, @Total);
         SET @IdVenta = SCOPE_IDENTITY();
         SELECT @IdVenta AS IdVenta;
@@ -212,9 +230,10 @@ BEGIN
 
     -- Segundo result set: Items paginados
     SELECT v.Id, v.NumeroVenta, v.Estado, v.Total,
-        v.MetodoPago, v.FechaCreacion,
+        mp.Nombre AS NombreMetodoPago, v.FechaCreacion,
         (SELECT COUNT(*) FROM DetallesVenta dv WHERE dv.IdVenta = v.Id) AS CantidadItems
     FROM Ventas v
+    LEFT JOIN MetodosPago mp ON v.IdMetodoPago = mp.Id
     WHERE (@IdUsuario IS NULL OR v.IdUsuario = @IdUsuario)
       AND (@Estado IS NULL OR v.Estado = @Estado)
       AND (@FechaDesde IS NULL OR v.FechaCreacion >= @FechaDesde)

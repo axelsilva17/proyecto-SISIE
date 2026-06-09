@@ -1,14 +1,11 @@
 namespace proyecto_SISIE.Services.Strategy;
 
-
-/// Estrategia para pago por transferencia bancaria.
-/// Aplica un recargo del 1.5% sobre el total con descuento.
-
 public class TransferenciaStrategy : IMetodoPagoStrategy
 {
     private const decimal Recargo = 0.015m;
 
-    public string MetodoPago => "Transferencia";
+    public int IdMetodoPago => 3;
+    public string NombreMetodoPago => "Transferencia";
 
     public decimal CalcularTotal(decimal subtotal, int descuento)
     {

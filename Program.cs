@@ -303,6 +303,17 @@ var app = builder.Build();
         };
         db.Clientes.AddRange(clientes);
     }
+
+    // Seed de métodos de pago
+    if (!db.MetodosPago.Any())
+    {
+        db.MetodosPago.AddRange(
+            new proyecto_SISIE.Models.Entities.MetodoPago { Nombre = "Efectivo", RecargoPorcentaje = 0, Activo = true },
+            new proyecto_SISIE.Models.Entities.MetodoPago { Nombre = "Tarjeta", RecargoPorcentaje = 3, Activo = true },
+            new proyecto_SISIE.Models.Entities.MetodoPago { Nombre = "Transferencia", RecargoPorcentaje = 1.5m, Activo = true }
+        );
+    }
+
     db.SaveChanges();
 }
 
@@ -453,7 +464,7 @@ END"
         // ===== SP: Registrar Venta (transaccional) =====
         ("sp_RegistrarVenta", @"
 CREATE PROCEDURE sp_RegistrarVenta
-    @NumeroVenta INT, @Descuento INT, @MetodoPago VARCHAR(30), @TipoEntrega VARCHAR(30),
+    @NumeroVenta INT, @Descuento INT, @IdMetodoPago INT, @TipoEntrega VARCHAR(30),
     @Estado VARCHAR(20) = 'Pendiente', @Notas VARCHAR(200) = NULL, @IdDireccion INT = NULL,
     @IdUsuario INT, @Total DECIMAL(18,2) = 0
 AS
@@ -462,9 +473,9 @@ BEGIN
     DECLARE @IdVenta INT, @ErrMsg NVARCHAR(4000);
     BEGIN TRY
         BEGIN TRANSACTION;
-        INSERT INTO dbo.Ventas (NumeroVenta, Descuento, MetodoPago, TipoEntrega, Estado,
+        INSERT INTO dbo.Ventas (NumeroVenta, Descuento, IdMetodoPago, TipoEntrega, Estado,
             Notas, FechaCreacion, IdDireccion, IdUsuario, Total)
-        VALUES (@NumeroVenta, @Descuento, @MetodoPago, @TipoEntrega, @Estado,
+        VALUES (@NumeroVenta, @Descuento, @IdMetodoPago, @TipoEntrega, @Estado,
             @Notas, GETDATE(), @IdDireccion, @IdUsuario, @Total);
         SET @IdVenta = SCOPE_IDENTITY();
         SELECT @IdVenta AS IdVenta;

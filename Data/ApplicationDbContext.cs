@@ -22,6 +22,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Producto> Productos { get; set; } = null!;
     public DbSet<DetalleVenta> DetallesVenta { get; set; } = null!;
     public DbSet<Cliente> Clientes { get; set; } = null!;
+    public DbSet<MetodoPago> MetodosPago { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -116,11 +117,16 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.Property(v => v.NumeroVenta).IsRequired();
             entity.Property(v => v.Descuento);
             entity.Property(v => v.Total).IsRequired().HasPrecision(18, 2);
-            entity.Property(v => v.MetodoPago).IsRequired().HasMaxLength(30);
             entity.Property(v => v.TipoEntrega).IsRequired().HasMaxLength(30);
             entity.Property(v => v.Notas).HasMaxLength(200);
             entity.Property(v => v.Estado).IsRequired().HasMaxLength(20);
             entity.Property(v => v.FechaCreacion).IsRequired();
+            
+            // Relación con MetodoPago
+            entity.HasOne(v => v.MetodoPago)
+                .WithMany()
+                .HasForeignKey(v => v.IdMetodoPago)
+                .OnDelete(DeleteBehavior.Restrict);
             
             // Relación con Usuario
             entity.HasOne(v => v.Usuario)
@@ -177,6 +183,14 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                 .WithMany(ci => ci.Clientes)
                 .HasForeignKey(c => c.IdCiudad)
                 .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // ==== CONFIGURACIÓN DE METODO PAGO ====
+        modelBuilder.Entity<MetodoPago>(entity =>
+        {
+            entity.HasKey(m => m.Id);
+            entity.Property(m => m.Nombre).IsRequired().HasMaxLength(50);
+            entity.Property(m => m.RecargoPorcentaje).HasPrecision(5, 2);
         });
     }
 }

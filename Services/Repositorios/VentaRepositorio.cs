@@ -16,6 +16,7 @@ public class VentaRepositorio : IVentaRepositorio
         _context = context;
     }
 
+    
     public async Task<Venta?> BuscarVentaConTodoAsync(int id)
     {
         return await _context.Ventas
@@ -26,6 +27,7 @@ public class VentaRepositorio : IVentaRepositorio
             .FirstOrDefaultAsync(v => v.Id == id);
     }
 
+    // Incluye solo los detalles sin cargar relaciones adicionales
     public async Task<Venta?> BuscarVentaConDetallesAsync(int id)
     {
         return await _context.Ventas
@@ -38,8 +40,8 @@ public class VentaRepositorio : IVentaRepositorio
         return await _context.Ventas.FindAsync(id);
     }
 
-   
 
+    // Método de actualización genérica, asume que la entidad ya fue cargada y modificada previamente
     public async Task<Venta> ModificarVentaAsync(Venta venta)
     {
         await _context.SaveChangesAsync();
@@ -61,14 +63,13 @@ public async Task<Direccion> InsertarDireccionAsync(Direccion direccion)
     {
         return await _context.Direcciones.AnyAsync(d => d.Id == idDireccion);
     }
-   
 
-    // ============================================
-    // MÉTODOS CON STORED PROCEDURES
-    // ============================================
+
+    // MÉTODOS CON PROCEDIMIENTOS ALMACENADOS
+
 
     //SP de Actualizacion inserta la venta
-     public async Task<Venta> InsertarVentaAsync(Venta venta)
+    public async Task<Venta> InsertarVentaAsync(Venta venta)
     {
         using var command = _context.Database.GetDbConnection().CreateCommand();
         command.CommandText = "sp_RegistrarVenta";
@@ -77,7 +78,7 @@ public async Task<Direccion> InsertarDireccionAsync(Direccion direccion)
         {
             new SqlParameter("@NumeroVenta", venta.NumeroVenta),
             new SqlParameter("@Descuento", venta.Descuento),
-            new SqlParameter("@MetodoPago", venta.MetodoPago),
+            new SqlParameter("@IdMetodoPago", venta.IdMetodoPago),
             new SqlParameter("@TipoEntrega", venta.TipoEntrega),
             new SqlParameter("@Estado", venta.Estado ?? "Pendiente"),
             new SqlParameter("@Notas", (object?)venta.Notas ?? DBNull.Value),
@@ -125,8 +126,8 @@ public async Task<Direccion> InsertarDireccionAsync(Direccion direccion)
         return detalle;
     }
 
-    
 
+    //SP de Actualizacion, cancela la venta cambiando su estado a "Cancelada"
     public async Task CancelarVentaConSPAsync(int idVenta)
     {
         var parameter = new SqlParameter("@IdVenta", idVenta);
@@ -134,6 +135,8 @@ public async Task<Direccion> InsertarDireccionAsync(Direccion direccion)
             .ExecuteSqlRawAsync("EXEC sp_CancelarVenta @IdVenta", parameter);
     }
 
+
+    //SP de Consulta, historial de ventas con filtros y paginacion
     public async Task<(List<VentaHistorialDTO> Items, int Total)> ConsultarHistorialPaginadoAsync(
         int pagina, int tamanioPagina, int? idUsuario, string? estado,
         DateTime? fechaDesde, DateTime? fechaHasta)
@@ -172,7 +175,7 @@ public async Task<Direccion> InsertarDireccionAsync(Direccion direccion)
                 NumeroVenta = reader.GetInt32(reader.GetOrdinal("NumeroVenta")),
                 Estado = reader.GetString(reader.GetOrdinal("Estado")),
                 Total = reader.GetDecimal(reader.GetOrdinal("Total")),
-                MetodoPago = reader.GetString(reader.GetOrdinal("MetodoPago")),
+                NombreMetodoPago = reader.GetString(reader.GetOrdinal("NombreMetodoPago")),
                 FechaCreacion = reader.GetDateTime(reader.GetOrdinal("FechaCreacion")),
                 CantidadItems = reader.GetInt32(reader.GetOrdinal("CantidadItems"))
             });
