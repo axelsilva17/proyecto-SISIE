@@ -256,7 +256,7 @@ $idP2 = $prodVenta2.Content.id
 Write-Host "  Producto $idP1 (stock 50) | Producto $idP2 (stock 50)" -ForegroundColor Gray
 
 # Body base para ventas con los productos recien creados
-$baseBody = @{ dniCliente = "12345678"; nombreCliente = "Juan Perez"; telefonoCliente = "3794000000"; emailCliente = "juan@mail.com"; esEnvio = $false; metodoPago = "Efectivo"; tipoEntrega = "Mostrador" }
+$baseBody = @{ dniCliente = "12345678"; nombreCliente = "Juan Perez"; telefonoCliente = "3794000000"; emailCliente = "juan@mail.com"; esEnvio = $false; idMetodoPago = 1; tipoEntrega = "Mostrador" }
 
 # CP-V01 — Registro exitoso
 $bodyV01 = $baseBody.Clone()

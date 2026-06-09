@@ -67,7 +67,7 @@ public class VentaServiceTests
             NumeroVenta = 1001,
             Descuento = 0,
             Total = detalles.Sum(d => d.SubTotal),
-            MetodoPago = "Efectivo",
+            IdMetodoPago = 1,
             TipoEntrega = "Mostrador",
             Estado = "Pendiente",
             FechaCreacion = DateTime.Now,
@@ -93,7 +93,7 @@ public class VentaServiceTests
 
         var dto = new VentaCreateDTO
         {
-            MetodoPago = "Efectivo",
+            IdMetodoPago = 1,
             Detalles = detalles,
             EsEnvio = false
         };
@@ -139,7 +139,7 @@ public class VentaServiceTests
         var result = await _service.RegistrarVentaAsync(idUsuario, dto);
 
         Assert.NotNull(result);
-        Assert.Equal("Efectivo", result.MetodoPago);
+        Assert.Equal(1, result.IdMetodoPago);
         Assert.Equal("Mostrador", result.TipoEntrega);
         Assert.Equal("Pendiente", result.Estado);
         Assert.True(result.Total > 0);
@@ -160,7 +160,7 @@ public class VentaServiceTests
 
         var dto = new VentaCreateDTO
         {
-            MetodoPago = "Efectivo",
+            IdMetodoPago = 1,
             Detalles = detalles,
             EsEnvio = false
         };
@@ -188,7 +188,7 @@ public class VentaServiceTests
         var idUsuario = 1;
         var dto = new VentaCreateDTO
         {
-            MetodoPago = "Efectivo",
+            IdMetodoPago = 1,
             Detalles = new List<VentaDetalleDTO>
             {
                 new() { IdProducto = 999, Cantidad = 1 }
@@ -219,7 +219,7 @@ public class VentaServiceTests
         var idUsuario = 1;
         var dto = new VentaCreateDTO
         {
-            MetodoPago = "Efectivo",
+            IdMetodoPago = 1,
             Detalles = new List<VentaDetalleDTO>(),
             EsEnvio = false
         };
@@ -251,7 +251,7 @@ public class VentaServiceTests
 
         var dto = new VentaCreateDTO
         {
-            MetodoPago = "Efectivo",
+            IdMetodoPago = 1,
             Detalles = detalles,
             EsEnvio = false
         };
