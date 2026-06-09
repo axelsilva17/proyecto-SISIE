@@ -556,9 +556,10 @@ BEGIN
       AND (@FechaDesde IS NULL OR v.FechaCreacion >= @FechaDesde)
       AND (@FechaHasta IS NULL OR v.FechaCreacion <= @FechaHasta);
     SELECT v.Id, v.NumeroVenta, v.Estado, v.Total,
-        v.MetodoPago, v.FechaCreacion,
+        mp.Nombre AS NombreMetodoPago, v.FechaCreacion,
         (SELECT COUNT(*) FROM dbo.DetallesVenta dv WHERE dv.IdVenta = v.Id) AS CantidadItems
     FROM dbo.Ventas v
+    LEFT JOIN dbo.MetodosPago mp ON v.IdMetodoPago = mp.Id
     WHERE (@IdUsuario IS NULL OR v.IdUsuario = @IdUsuario)
       AND (@Estado IS NULL OR v.Estado = @Estado)
       AND (@FechaDesde IS NULL OR v.FechaCreacion >= @FechaDesde)
