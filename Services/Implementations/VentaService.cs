@@ -50,8 +50,6 @@ public class VentaService : IVentaService
         return (await ObtenerVentaDTOCompleto(venta.Id))!;
     }
 
-    
-
     private async Task<int?> ObtenerOCrearDireccion(VentaCreateDTO dto, int idUsuario)
     {
         if (!dto.EsEnvio || dto.IdDireccion.HasValue)

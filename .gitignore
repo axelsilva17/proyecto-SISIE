@@ -1,47 +1,5 @@
-# Build results
-bin/
-obj/
+# Agentes locales (no compartir)
+.agents/
 
-# NuGet packages
-*.nupkg
-
-# Visual Studio
-.vs/
-*.user
-*.suo
-*.cache
-
-# Entity Framework
-*.db
-*.db-shm
-*.db-wal
-
-# SQLite temp files
-sqlite-temp/
-sqlite.zip
-check_views.sql
-
-# Dotnet tools
-.DS_Store
-
-# Logs
-*.log
-
-# Engram persistent memory
-.engram/
-
-# Agent configuration (tracked separately in skills)
-.atl/
-
-# Project artifacts — not for version control
-docs/
-.pi/
-.agents/skills/disenador/
-openspec/
-node_modules/
-scripts/
-release-*.txt
-AGENTS.md
-tasks.md
-design.md
-appsettings.Development.json
+# Diseño y documentación interna
+DESIGN.md
