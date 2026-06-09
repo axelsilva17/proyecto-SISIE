@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Data.SqlClient;
+using System.Diagnostics;
 using Microsoft.IdentityModel.Tokens;
 using AspNetCoreRateLimit;
 using proyecto_SISIE.Data;
@@ -40,7 +41,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 // JWT Authentication
 var jwtKey = builder.Configuration["Jwt:Key"] 
     ?? throw new InvalidOperationException(
-        "JWT Key no configurada en appsettings.json");
+        "JWT Key no configurada. Crear variable de entorno Jwt__Key o agregarla en appsettings.json");
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "proyecto-SISIE";
 var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "proyecto-SISIE";
 
@@ -334,6 +335,17 @@ app.MapControllers();
 
 // Página por defecto del Frontend
 app.MapFallbackToFile("index.html");
+
+// Abrir navegador automáticamente después de iniciar
+_ = Task.Run(async () =>
+{
+    await Task.Delay(2000);
+    try
+    {
+        Process.Start(new ProcessStartInfo("http://localhost:5000") { UseShellExecute = true });
+    }
+    catch { /* Si falla, el usuario abre el navegador manual */ }
+});
 
 app.Run();
 

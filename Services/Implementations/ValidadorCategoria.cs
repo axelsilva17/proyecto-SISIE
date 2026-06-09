@@ -17,7 +17,7 @@ public class ValidadorCategoria : IValidadorCategoria
         return errores;
     }
 
-    private List<string> ValidarNombreFormato(string nombre)
+    public List<string> ValidarNombreFormato(string nombre)
     {
         var errores = new List<string>();
         if (string.IsNullOrWhiteSpace(nombre)) errores.Add("El nombre es obligatorio");

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>proyecto_SISIE</RootNamespace>
     <DefaultItemExcludes>$(DefaultItemExcludes);tests\**\*</DefaultItemExcludes>
+    <UserSecretsId>ddcb7d02-487d-4c1c-a918-b6c6a6d5e97f</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

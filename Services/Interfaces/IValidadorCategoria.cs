@@ -6,5 +6,5 @@ public interface IValidadorCategoria
 {
     Task<List<string>> ValidarDatosCategoria(CategoriaCreateDTO dto, int? idCategoria);
     Task<List<string>> ValidarCategoriaExiste(int idCategoria);
-    List<string> ValidarNombreFormato(string nombre)
+    List<string> ValidarNombreFormato(string nombre);
 }
