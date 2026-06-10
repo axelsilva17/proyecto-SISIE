@@ -1,3 +1,4 @@
+// Libreria moq, crear objetos simulados para pruebas unitarias
 using Moq;
 using proyecto_SISIE.Models.DTOs;
 using proyecto_SISIE.Models.Entities;
@@ -6,7 +7,7 @@ using proyecto_SISIE.Services.Interfaces;
 using proyecto_SISIE.Services.Strategy;
 
 namespace proyecto_SISIE.Tests;
-
+// Pruebas unitarias para VentaService 
 public class VentaServiceTests
 {
     private readonly Mock<IVentaRepositorio> _ventaRepositorioMock;
@@ -18,6 +19,7 @@ public class VentaServiceTests
 
     public VentaServiceTests()
     {
+        //simulaciones de servicios y repositorios para pruebas unitarias
         _ventaRepositorioMock = new Mock<IVentaRepositorio>();
         _productoServiceMock = new Mock<IProductoService>();
         _clienteServiceMock = new Mock<IClienteService>();
@@ -100,14 +102,17 @@ public class VentaServiceTests
 
         var ventaCreada = CrearVentaCompleta(1, idUsuario, detalles);
 
+        //mockea las validaciones para que pasen sin errores
         _validadorMock
             .Setup(v => v.ValidarDatosVenta(dto, idUsuario))
             .ReturnsAsync(new List<string>());
 
+        //mockea la inserción de la venta para que retorne la venta creada
         _ventaRepositorioMock
             .Setup(r => r.InsertarVentaAsync(It.IsAny<Venta>()))
             .ReturnsAsync(ventaCreada);
 
+        //mockea la verificación de stock para que haya suficiente stock disponible
         _productoServiceMock
             .Setup(p => p.VerificarStockProductoAsync(1, 2))
             .ReturnsAsync(new StockVerificacionDTO
@@ -136,6 +141,7 @@ public class VentaServiceTests
             .Setup(p => p.VerificarStockProductoAsync(It.IsAny<int>(), It.IsAny<int>()))
             .ReturnsAsync(new StockVerificacionDTO { HayStock = true, Mensaje = "Stock disponible", PrecioUnitario = 100m });
 
+        // Ejecuta el método a probar
         var result = await _service.RegistrarVentaAsync(idUsuario, dto);
 
         Assert.NotNull(result);
@@ -158,6 +164,7 @@ public class VentaServiceTests
             new() { IdProducto = 1, Cantidad = 999 }
         };
 
+        //mockea la validación para que retorne un error de stock insuficiente
         var dto = new VentaCreateDTO
         {
             IdMetodoPago = 1,
@@ -174,6 +181,7 @@ public class VentaServiceTests
             .Setup(v => v.ValidarDatosVenta(dto, idUsuario))
             .ReturnsAsync(errores);
 
+        // Ejecuta el método a probar y verifica que lance la excepción con el mensaje correcto
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(
             () => _service.RegistrarVentaAsync(idUsuario, dto));
 
@@ -220,6 +228,7 @@ public class VentaServiceTests
         var dto = new VentaCreateDTO
         {
             IdMetodoPago = 1,
+            //simula carrito de compras vacío
             Detalles = new List<VentaDetalleDTO>(),
             EsEnvio = false
         };

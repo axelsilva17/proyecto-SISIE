@@ -8,6 +8,7 @@ namespace proyecto_SISIE.Tests;
 
 public class CategoriaServiceTests
 {
+    // Configuración de los mocks y la instancia del servicio
     private readonly Mock<ICategoriaRepositorio> _repositorioMock;
     private readonly Mock<IValidadorCategoria> _validadorMock;
     private readonly CategoriaService _service;
@@ -16,6 +17,7 @@ public class CategoriaServiceTests
     {
         _repositorioMock = new Mock<ICategoriaRepositorio>();
         _validadorMock = new Mock<IValidadorCategoria>();
+        // Creación de la instancia del servicio con los mocks
         _service = new CategoriaService(_repositorioMock.Object, _validadorMock.Object);
     }
 
@@ -45,6 +47,7 @@ public class CategoriaServiceTests
     [Fact]
     public async Task CrearCategoria_NombreDuplicado_LanzaExcepcion()
     {
+        // Simulación de una validación que detecta un nombre de categoría duplicado
         var dto = new CategoriaCreateDTO { NombreCategoria = "Herramientas Manuales" };
         var errores = new List<string> { "Ya existe una categoría con ese nombre" };
 

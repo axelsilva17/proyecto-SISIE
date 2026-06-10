@@ -274,10 +274,10 @@ Run-TestCase -Id "CP-V02" -Description "Stock insuficiente — cantidad 9999" `
     -Body ($bodyV02 | ConvertTo-Json) `
     -ExpectedStatus @(400)
 
-# CP-V03 — Producto inexistente
+# CP-V03 — Producto no encontrado
 $bodyV03 = $baseBody.Clone()
 $bodyV03.detalles = @(@{ idProducto = 99999; cantidad = 1 })
-Run-TestCase -Id "CP-V03" -Description "Producto inexistente — Id no existe en BD" `
+Run-TestCase -Id "CP-V03" -Description "No se encontro producto" `
     -Endpoint "/api/ventas/registrar" -Method POST `
     -Body ($bodyV03 | ConvertTo-Json) `
     -ExpectedStatus @(400, 404)
@@ -285,7 +285,7 @@ Run-TestCase -Id "CP-V03" -Description "Producto inexistente — Id no existe en
 # CP-V04 — Lista de productos vacia
 $bodyV04 = $baseBody.Clone()
 $bodyV04.detalles = @()
-Run-TestCase -Id "CP-V04" -Description "Lista de productos vacia" `
+Run-TestCase -Id "CP-V04" -Description "Agrega al menos un producto " `
     -Endpoint "/api/ventas/registrar" -Method POST `
     -Body ($bodyV04 | ConvertTo-Json) `
     -ExpectedStatus @(400)
